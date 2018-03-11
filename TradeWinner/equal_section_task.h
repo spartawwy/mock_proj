@@ -6,10 +6,7 @@
 class EqualSectionTask: public StrategyTask
 {
 public:
-
-	enum class TypeAction : char { NOOP = 0, PREPARE_BUY, PREPARE_SELL, CLEAR};
-    std::string ToString(TypeAction val);
-
+	 
 	static void CalculateSections(double price, IN T_TaskInformation &task_info, OUT std::vector<T_SectionAutom> &sections);
 	static void TranslateSections(IN std::vector<T_SectionAutom> &sections, OUT std::string &sections_str);
 
@@ -21,7 +18,7 @@ public:
 
 private:
 
-	TypeAction JudgeTypeAction(std::shared_ptr<QuotesData> & quote_data, int total_position, int valide_position, int *out_index=nullptr);
+	TypeAction JudgeTypeAction(std::shared_ptr<QuotesData> & quote_data);
 
 	std::vector<T_SectionAutom> sections_;
 

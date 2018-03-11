@@ -77,7 +77,10 @@ void BrokerCfgWin::DoOkBtnClicked()
     auto p_broker_info = app_->db_moudle().FindUserBrokerByBroker(ui_.cb_broker->currentData().toInt());
     assert(p_broker_info);
     if( !app_->trade_agent().Setup(p_broker_info->type, acc_no_input) )
+	{
+		QMessageBox::information(nullptr, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("登录失败! 请选择对应券商并输入正确证券账号!"));
 		return;
+	}
     //int department_id = ui_.cb_department->currentData().toInt();
     auto ret = app_->LoginBroker(ui_.cb_broker->currentData().toInt()
             , ui_.cb_department->currentData().toInt()

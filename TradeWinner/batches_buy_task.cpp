@@ -97,8 +97,7 @@ void BatchesBuyTask::HandleQuoteData()
         this->app_->AppendLog2Ui("触发任务:%d 分批买入 %s 价格:%.2f 数量:%d ", para_.id, this->code_data(), price, para_.quantity);
         
 		// buy the stock
-        this->app_->trade_agent().SendOrder(this->app_->trade_client_id()
-            , (int)TypeOrderCategory::BUY, 0
+        this->app_->trade_agent().SendOrder(app_->trade_client_id(), (int)TypeOrderCategory::BUY, 0
             , const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code, this->code_data()
             , price, para_.quantity
             , result, error_info); 

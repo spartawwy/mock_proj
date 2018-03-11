@@ -185,6 +185,9 @@
     <ClCompile Include="about_soft_win.cpp">
       <Filter>win</Filter>
     </ClCompile>
+    <ClCompile Include="advance_section_task.cpp">
+      <Filter>task</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="trade_winner.ui">
@@ -320,6 +323,12 @@
     </ClInclude>
     <ClInclude Include="about_soft_win.h">
       <Filter>win</Filter>
+    </ClInclude>
+    <ClInclude Include="advance_section_task.h">
+      <Filter>task</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\common_base.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

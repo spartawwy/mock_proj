@@ -270,7 +270,7 @@ bool WinnerApp::LoginBroker(int broker_id, int depart_id, const std::string& acc
 		, const_cast<char*>(account.c_str())
 		, const_cast<char*>(account.c_str())  // default trade no is account no  
 		, const_cast<char*>(password.c_str())
-		, p_broker_info->type == TypeBroker::ZHONGYGJ ? password.c_str() : ""// communication password 
+		, p_broker_info->type == TypeBroker::ZHONGY_GJ ? password.c_str() : ""// communication password 
 		, error_info);
 #elif 0
 	trade_client_id_ = trade_agent_.Logon("218.205.84.239" //"115.238.180.23"
@@ -430,7 +430,7 @@ T_CodeMapPosition WinnerApp::QueryPosition()
 
 	int start = 14;
 	int content_col = 13;
-	if( p_user_broker_info_->type == TypeBroker::ZHONGYGJ )
+	if( p_user_broker_info_->type == TypeBroker::ZHONGY_GJ )
 		start = 15;
 	else if ( p_user_broker_info_->type == TypeBroker::PING_AN )
 	{
@@ -441,12 +441,13 @@ T_CodeMapPosition WinnerApp::QueryPosition()
 		for( int n = 0; n < (result_array.size() - start) / content_col; ++n )
 		{
 			T_PositionData  pos_data;
-			pos_data.code = result_array.at( start + n * content_col);
-			TSystem::utility::replace_all_distinct(pos_data.code, "\t", "");
+			auto str_code = result_array.at( start + n * content_col);
+			TSystem::utility::replace_all_distinct(str_code, "\t", "");
+            strcpy_s(pos_data.code, str_code.c_str());
 			double qty_can_sell = 0;
 			try
 			{
-				pos_data.pinyin = result_array.at( start + n * content_col + 1);
+				strcpy_s(pos_data.pinyin, result_array.at( start + n * content_col + 1).c_str());
 				pos_data.total = boost::lexical_cast<double>(result_array.at( start + n * content_col + 2 ));
 				pos_data.avaliable = boost::lexical_cast<double>(result_array.at(start + n * content_col + 3));
 				pos_data.cost = boost::lexical_cast<double>(result_array.at(start + n * content_col + 4));
@@ -510,7 +511,7 @@ void WinnerApp::AddPosition(const std::string& code, int pos)
 	if( iter == stocks_position_.end() )
 	{
 		T_PositionData  pos_data;
-		pos_data.code = code;
+		strcpy_s(pos_data.code,  code.c_str());
 		pos_data.total = pos; 
 		stocks_position_.insert(std::make_pair(code, std::move(pos_data)));
 	}else
@@ -520,7 +521,7 @@ void WinnerApp::AddPosition(const std::string& code, int pos)
 }
 
 // sub avaliable position
-void WinnerApp::SubPosition(const std::string& code, int pos)
+void WinnerApp::SubAvaliablePosition(const std::string& code, int pos)
 {
 	assert( pos > 0 );
 	std::lock_guard<std::mutex>  locker(stocks_position_mutex_);
@@ -543,7 +544,7 @@ void WinnerApp::SubPosition(const std::string& code, int pos)
 
 T_Capital WinnerApp::QueryCapital()
 {
-	T_Capital capital = {0};
+	T_Capital capital;
 
 	auto result = std::make_shared<Buffer>(5*1024);
 

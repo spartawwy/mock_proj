@@ -11,6 +11,8 @@
 #include <QtCore/qstring.h> 
 #include <QTime>
 
+#include "common_base.h"
+
 #ifndef IN
 #define  IN
 #define  OUT
@@ -23,7 +25,14 @@
 #define EQSEC_MAX_STOP_PRICE 999.00
 #define EQSEC_MIN_CLEAR_PRICE 0.0
 
+#define MAX_STOCK_PRICE 9999.0
+#define MIN_STOCK_PRICE 0.0
+
 #define APP_CODE_TEXT "GBK"
+
+#define DO_LOG(tag, b)  do{ app_->local_logger().LogLocal((tag), b); }while(0);
+#define USE_TRADE_FLAG
+
 #if 0
 std::vector<std::string> split(const std::string& line, const std::string& seperator = " ", 
 		const std::string& quotation = "\"");
@@ -44,12 +53,7 @@ const char cst_entrepren_plate_index_name[]  = "创业板指数";
 const QString cst_entreplate_compre_index = "399102"; //创业板综合
 const char cst_entreplate_compre_index_name[]  = "创业板综指";
 
-enum class TypeMarket : char
-{
-    SZ = 0,
-    SH
-};
-
+ 
 enum class TypeOrderCategory : char
 {
     BUY = 0,
@@ -59,19 +63,6 @@ enum class TypeOrderCategory : char
     BQ_HQ,
     SQ_HQ,
     CQ_HQ,
-};
-// 0资金  1股份   2当日委托  3当日成交     4可撤单   5股东代码  6融资余额   7融券余额  8可融证券</param>
-enum class TypeQueryCategory : char
-{
-    CAPITAL = 0,
-    STOCK = 1,
-    TODAY_DELEGATE = 2,
-    TODAY_FILL = 3,
-    CAN_RECALL_ORDER,
-    SHARED_HOLDER_CODE = 5,
-    RZYE,
-    RQYE,
-    KRZQ,
 };
 
 enum class TypeUserLevel : char
@@ -83,8 +74,8 @@ enum class TypeBroker : char
 {
     FANG_ZHENG = 1,    //方正
     PING_AN,           //平安
-	ZHONGXIN,          //中信
-    ZHONGYGJ,          //中银国际
+	ZHONG_XIN,          //中信
+    ZHONGY_GJ,          //中银国际
 	YINGHE_ZQ,         //银河证券
 };
 
@@ -101,6 +92,7 @@ enum class TypeTask : char
 
 	EQUAL_SECTION,
     INDEX_RISKMAN, // 8
+	ADVANCE_SECTION,
 };
 
 enum class TypeQuoteLevel : char
@@ -150,16 +142,6 @@ struct T_SectionAutom
 	T_SectionAutom(TypeEqSection type, double resp_price) : section_type(type), represent_price(resp_price){}
 };
 
-struct T_AccountData
-{
-    char shared_holder_code[64]; 
-    char name[64];
-    TypeMarket type;
-    char capital_code[64]; 
-    char seat_code[64];
-    char rzrq_tag[64];  //融资融券 标识
-};
-
 struct T_UserInformation
 {
     int id;
@@ -193,20 +175,6 @@ struct T_AccountInformation
     T_AccountInformation() : id(-1), broker_id(-1) {}
 };
 
-struct T_PositionData
-{
-    std::string code;
-    std::string pinyin;
-    int total;
-    int avaliable;
-    double cost;
-    double value;
-    double profit;
-    double profit_percent;
-    T_PositionData() : code(), pinyin(), total(0), avaliable(0), cost(0.0), value(0.0), profit(0.0), profit_percent(0.0){}
-    T_PositionData(const T_PositionData &lh) : code(lh.code), pinyin(lh.pinyin), total(lh.total),avaliable(lh.avaliable), cost(lh.cost), value(lh.value), profit(lh.profit), profit_percent(lh.profit_percent){}
-    T_PositionData(const T_PositionData &&lh) : code(std::move(lh.code)), pinyin(std::move(lh.pinyin)), total(lh.total),avaliable(lh.avaliable), cost(lh.cost), value(lh.value), profit(lh.profit), profit_percent(lh.profit_percent){}
-};
 
 class  QuotesData
 {
@@ -240,41 +208,11 @@ public:
         , price_s_5(0.0)
     {
     }
-};
-
-class Buffer
-{
-public:
-	// notice size + 1 == 1024 is suitable for avoid memory fragment
-    explicit Buffer(unsigned int size=64) : size_(size), p_data_(nullptr) 
+    ~QuotesData()
     {
-        p_data_ = new char[size + 1];
-        memset(p_data_, 0, size + 1); 
     }
-    explicit Buffer(const char* p_str, unsigned int size) 
-    {
-        assert(p_str);
-        p_data_ = new char[size + 1];
-        size_ = size;
-        memcpy(p_data_, p_str, size);
-        p_data_[size] = '\0';
-    } 
-
-    ~Buffer(){ if( p_data_ ) delete[] p_data_; p_data_ = nullptr;};
-
-    char * data() { return p_data_; }
-    const char *c_data() const {return p_data_;}
-    unsigned int size() const {return size_;}
-    void reset() { memset(p_data_, 0, size_ + 1); }
-
-private:
-
-    Buffer(Buffer&);
-    Buffer& operator = (Buffer&);
-
-    unsigned int size_;
-    char *p_data_;
 };
+
 
 struct T_BrokerInfo
 {
@@ -357,6 +295,14 @@ struct T_IndexRelateTask
 	T_IndexRelateTask(const T_IndexRelateTask &lh) : rel_type(lh.rel_type), is_down_trigger(lh.is_down_trigger), stock_code(lh.stock_code), is_buy(lh.is_buy){}
 };
 
+struct T_AdvanceSectionTask
+{
+	std::string portion_sections;
+	std::string portion_states;
+    double pre_trade_price;
+	bool is_original;
+};
+
 struct T_TaskInformation
 {
     unsigned int id;
@@ -372,6 +318,7 @@ struct T_TaskInformation
 	unsigned int quantity;    // 买入数量, 每次数量
 	T_SectionTask secton_task;
 	T_IndexRelateTask index_rel_task;
+	T_AdvanceSectionTask advance_section_task;
 	int target_price_level;   // 0--即时价  1--买一和卖一 2--买二和卖二 3--买三和卖三 ...
 	int start_time; 
 	int end_time;
@@ -414,12 +361,7 @@ struct T_StockCodeName
     T_StockCodeName(const T_StockCodeName &lh) : code(lh.code), name(lh.name){}
 };
 
-struct T_Capital
-{
-    double remain;
-    double available;
-    double total;
-};
+
 //struct T_StockPosition
 //{
 //    std::string  code;
@@ -447,7 +389,7 @@ bool IsStrNum(const std::string& str);
 
 std::string TagOfLog();
 std::string TagOfOrderLog();
-std::string TagOfEqSecLog(const std::string& code);
+
 
 std::tuple<int, std::string> CurrentDateTime();
 bool IsNowTradeTime();
@@ -457,8 +399,11 @@ QString IndexCode2IndexName(const QString& code);
 void utf8ToGbk(std::string& strUtf8);
 void gbkToUtf8(std::string& strGbk);
 
-#ifndef MOCK_TRADE
-#define USE_TRADE_FLAG
-#endif
+double Round(double dVal, short iPlaces);
+
+double Get2UpRebouncePercent(double base, double bottom, double cur);
+double Get2DownRebouncePercent(double base, double top, double cur);
+
+ 
 
 #endif

@@ -156,7 +156,7 @@ void InflectionSellTask::HandleQuoteData()
             this->app_->EmitSigShowUi(ret_str, true);
         }else
         {
-            this->app_->SubPosition(para_.stock, qty);
+            this->app_->SubAvaliablePosition(para_.stock, qty);
             auto ret_str = new std::string(utility::FormatStr("任务:%d 拐点卖出 %s %.2f %d 成功!", para_.id, para_.stock.c_str(), price, qty));
             this->app_->EmitSigShowUi(ret_str, true);
         }

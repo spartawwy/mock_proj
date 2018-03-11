@@ -104,7 +104,7 @@ public:
     T_PositionData* QueryPosition_LazyMode(const std::string& code);
 
     void AddPosition(const std::string& code, int pos);
-    void SubPosition(const std::string& code, int pos);
+    void SubAvaliablePosition(const std::string& code, int pos);
 
 	T_StockPriceInfo * GetStockPriceInfo(const std::string& code, bool is_lazy=true);
      

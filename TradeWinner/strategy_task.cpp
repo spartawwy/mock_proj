@@ -112,3 +112,9 @@ int StrategyTask::GetTototalPosition()
 	auto p_pos = this->app_->QueryPosition_LazyMode(para_.stock);
 	return p_pos ? p_pos->total : 0;
 }
+
+int StrategyTask::GetAvaliablePosition()
+{
+    auto p_pos = this->app_->QueryPosition_LazyMode(para_.stock);
+    return p_pos ? p_pos->avaliable : 0;
+}

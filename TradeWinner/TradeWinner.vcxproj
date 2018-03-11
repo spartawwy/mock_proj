@@ -159,6 +159,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="about_soft_win.cpp" />
+    <ClCompile Include="advance_section_task.cpp" />
     <ClCompile Include="batches_buy_task.cpp" />
     <ClCompile Include="batches_sell_task.cpp" />
     <ClCompile Include="breakdown_task.cpp" />
@@ -298,10 +299,12 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\common_base.h" />
     <ClInclude Include="..\include\TdxHqApi.h" />
     <ClInclude Include="..\include\TdxTradeApi.h" />
     <ClInclude Include="..\StkQuoter\stk_quoter_api.h" />
     <ClInclude Include="about_soft_win.h" />
+    <ClInclude Include="advance_section_task.h" />
     <ClInclude Include="batches_buy_task.h" />
     <ClInclude Include="batches_sell_task.h" />
     <ClInclude Include="breakdown_task.h" />

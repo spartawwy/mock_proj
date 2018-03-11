@@ -165,11 +165,6 @@ std::string TagOfOrderLog()
     //return  "OrderData_" + TSystem::Today()
 }
 
-std::string TagOfEqSecLog(const std::string& code)
-{
-    return TSystem::utility::FormatStr("EqSec_%s_%d", code.c_str(), TSystem::Today());
-}
-
 std::tuple<int, std::string> CurrentDateTime()
 {
     time_t rawtime;
@@ -294,4 +289,40 @@ void gbkToUtf8(std::string& strGbk)
     QByteArray ByteUtf8 = utf8Codec->fromUnicode(strUnicode);
 
     strGbk = ByteUtf8.data();
+}
+
+double Round(double dVal, short iPlaces)  
+{
+#if 0
+	char s[20];
+	double dRetval; 
+	sprintf_s(s, sizeof(s), "%.*lf\0", iPlaces, dVal);
+	sscanf_s(s,  "%lf", &dRetval);  
+#else 
+		double dRetval;
+		double dMod = 0.0000001;
+		if( dVal < 0.0 ) dMod = -0.0000001;
+		dRetval = dVal;
+		dRetval += (5.0/pow(10.0, iPlaces+1.0));
+		dRetval *= pow(10.0, iPlaces);
+		dRetval = floor(dRetval+dMod);
+		dRetval /= pow(10.0, iPlaces);
+#endif
+		return(dRetval);
+}
+
+double Get2UpRebouncePercent(double base, double bottom, double cur)
+{
+    double percent_inflect = 0.0; 
+    if( cur > bottom )
+        percent_inflect = (cur - bottom) * 100 / base;
+    return percent_inflect;
+}
+
+double Get2DownRebouncePercent(double base, double top, double cur)
+{
+    double percent_inflect = 0.0; 
+    if( cur < top )
+        percent_inflect =  (top - cur) * 100 / base; 
+    return percent_inflect;
 }

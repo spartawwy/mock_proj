@@ -107,7 +107,7 @@ void TradeAgent::SetupAccountInfo( char*str)
     switch(broker_type_)
     {
     case TypeBroker::FANG_ZHENG:
-    case TypeBroker::ZHONGYGJ:
+    case TypeBroker::ZHONGY_GJ:
         start_index = 7;
         shared_holder_code_index = 0;
         name_index = 1;
@@ -125,7 +125,7 @@ void TradeAgent::SetupAccountInfo( char*str)
         seat_code_index = 4;
         rzrq_tag_index = 5;
         break;
-    case TypeBroker::ZHONGXIN:
+    case TypeBroker::ZHONG_XIN:
         start_index = 10;
         capital_code_index = 0;
         shared_holder_code_index = 1;
