@@ -1,0 +1,328 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;cxx;c;def</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{84825d40-e253-4e5a-9f00-ec294e0e0c49}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{fde54757-a4f9-42c2-af49-a02a17828171}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="moudle">
+      <UniqueIdentifier>{17466779-754f-4e86-a9d0-616d07fa57bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="task">
+      <UniqueIdentifier>{8f008fde-b878-4590-b5cc-f4050eaf415f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="win">
+      <UniqueIdentifier>{4fe77f8e-f21b-4c38-9f13-d2743a864aed}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_tradewinner.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stock_ticker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="common.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_winner_app.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_winner_app.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="winner_app.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_winner_win.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_winner_win.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="trade_agent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="strategy_task.cpp">
+      <Filter>task</Filter>
+    </ClCompile>
+    <ClCompile Include="breakdown_task.cpp">
+      <Filter>task</Filter>
+    </ClCompile>
+    <ClCompile Include="db_moudle.cpp">
+      <Filter>moudle</Filter>
+    </ClCompile>
+    <ClCompile Include="task_factory.cpp">
+      <Filter>task</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_login_win.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_login_win.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_broker_cfg_win.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_broker_cfg_win.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="MySpinBox.cpp">
+      <Filter>moudle</Filter>
+    </ClCompile>
+    <ClCompile Include="HintList.cpp">
+      <Filter>moudle</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_HintList.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_HintList.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="inflection_sell_task.cpp">
+      <Filter>task</Filter>
+    </ClCompile>
+    <ClCompile Include="follow_sell_task.cpp">
+      <Filter>task</Filter>
+    </ClCompile>
+    <ClCompile Include="winner_win.cpp">
+      <Filter>win</Filter>
+    </ClCompile>
+    <ClCompile Include="sell_task_win.cpp">
+      <Filter>win</Filter>
+    </ClCompile>
+    <ClCompile Include="broker_cfg_win.cpp">
+      <Filter>win</Filter>
+    </ClCompile>
+    <ClCompile Include="login_win.cpp">
+      <Filter>win</Filter>
+    </ClCompile>
+    <ClCompile Include="message_win.cpp">
+      <Filter>win</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_message_win.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_message_win.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="buy_task_win.cpp">
+      <Filter>win</Filter>
+    </ClCompile>
+    <ClCompile Include="breakup_buy_task.cpp">
+      <Filter>task</Filter>
+    </ClCompile>
+    <ClCompile Include="inflection_buy_task.cpp">
+      <Filter>task</Filter>
+    </ClCompile>
+    <ClCompile Include="batches_sell_task.cpp">
+      <Filter>task</Filter>
+    </ClCompile>
+    <ClCompile Include="batches_buy_task.cpp">
+      <Filter>task</Filter>
+    </ClCompile>
+    <ClCompile Include="cookie.cpp">
+      <Filter>moudle</Filter>
+    </ClCompile>
+    <ClCompile Include="equal_section_task.cpp">
+      <Filter>task</Filter>
+    </ClCompile>
+    <ClCompile Include="eqsection_task_win.cpp">
+      <Filter>win</Filter>
+    </ClCompile>
+    <ClCompile Include="rwini.cpp">
+      <Filter>moudle</Filter>
+    </ClCompile>
+    <ClCompile Include="mutex_wrapper.cpp">
+      <Filter>moudle</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_calc_win.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_calc_win.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="calc_win.cpp">
+      <Filter>win</Filter>
+    </ClCompile>
+    <ClCompile Include="index_task.cpp">
+      <Filter>task</Filter>
+    </ClCompile>
+    <ClCompile Include="index_trade_win.cpp">
+      <Filter>win</Filter>
+    </ClCompile>
+    <ClCompile Include="about_soft_win.cpp">
+      <Filter>win</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="trade_winner.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tradewinner.qrc">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="winner_app.h">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="login_dlg.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="broker_cfg.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="HintList.h">
+      <Filter>moudle</Filter>
+    </CustomBuild>
+    <CustomBuild Include="winner_win.h">
+      <Filter>win</Filter>
+    </CustomBuild>
+    <CustomBuild Include="login_win.h">
+      <Filter>win</Filter>
+    </CustomBuild>
+    <CustomBuild Include="broker_cfg_win.h">
+      <Filter>win</Filter>
+    </CustomBuild>
+    <CustomBuild Include="msg.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="message_win.h">
+      <Filter>win</Filter>
+    </CustomBuild>
+    <CustomBuild Include="calc.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="calc_win.h">
+      <Filter>win</Filter>
+    </CustomBuild>
+    <CustomBuild Include="about_soft.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GeneratedFiles\ui_trade_winner.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stock_ticker.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="handler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trade_agent.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="strategy_task.h">
+      <Filter>task</Filter>
+    </ClInclude>
+    <ClInclude Include="breakdown_task.h">
+      <Filter>task</Filter>
+    </ClInclude>
+    <ClInclude Include="db_moudle.h">
+      <Filter>moudle</Filter>
+    </ClInclude>
+    <ClInclude Include="task_factory.h">
+      <Filter>task</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_login_dlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_broker_cfg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MySpinBox.h">
+      <Filter>moudle</Filter>
+    </ClInclude>
+    <ClInclude Include="inflection_sell_task.h">
+      <Filter>task</Filter>
+    </ClInclude>
+    <ClInclude Include="follow_sell_task.h">
+      <Filter>task</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_msg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="breakup_buy_task.h">
+      <Filter>task</Filter>
+    </ClInclude>
+    <ClInclude Include="inflection_buy_task.h">
+      <Filter>task</Filter>
+    </ClInclude>
+    <ClInclude Include="batches_sell_task.h">
+      <Filter>task</Filter>
+    </ClInclude>
+    <ClInclude Include="batches_buy_task.h">
+      <Filter>task</Filter>
+    </ClInclude>
+    <ClInclude Include="cookie.h">
+      <Filter>moudle</Filter>
+    </ClInclude>
+    <ClInclude Include="equal_section_task.h">
+      <Filter>task</Filter>
+    </ClInclude>
+    <ClInclude Include="rwini.h">
+      <Filter>moudle</Filter>
+    </ClInclude>
+    <ClInclude Include="..\StkQuoter\stk_quoter_api.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mutex_wrapper.h">
+      <Filter>moudle</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_calc.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="index_task.h">
+      <Filter>task</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\TdxHqApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\TdxTradeApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_about_soft.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="about_soft_win.h">
+      <Filter>win</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TradeWinner.rc" />
+  </ItemGroup>
+</Project>
