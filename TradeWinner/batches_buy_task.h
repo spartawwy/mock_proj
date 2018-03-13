@@ -24,6 +24,11 @@ public:
         T_StepItem() : has_buy(false), up_price(0.0), bottom_price(0.0){}
     };
     std::vector<T_StepItem> step_items_;
+
+private:
+
+    std::string BatchesBuyTask::TagOfCurTask();
+
 };
 
 #endif

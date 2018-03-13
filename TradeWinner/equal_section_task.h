@@ -20,6 +20,8 @@ private:
 
 	TypeAction JudgeTypeAction(std::shared_ptr<QuotesData> & quote_data);
 
+    std::string TagOfCurTask();
+
 	std::vector<T_SectionAutom> sections_;
 
 	//------used for rebounce trade

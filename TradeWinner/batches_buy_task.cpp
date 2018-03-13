@@ -1,5 +1,6 @@
 #include "batches_buy_task.h"
 
+#include <TLib/core/tsystem_time.h>
 #include <TLib/core/tsystem_utility_functions.h>
 
 #include "winner_app.h"
@@ -33,7 +34,10 @@ BatchesBuyTask::BatchesBuyTask(T_TaskInformation &task_info, WinnerApp *app)
             break;
         step_items_[i].up_price = para_.alert_price * (100 - i * para_.step) / 100;
         step_items_[i].bottom_price = para_.alert_price * (100 - (i + 1) * para_.step) / 100;
-        //app_->local_logger().LogLocal(utility::FormatStr("BatchesBuyTask %d up_price:%.2f btm_price:%.2f", para_.id, step_items_[i].up_price, step_items_[i].bottom_price));
+        if( i < 10 )
+            app_->local_logger().LogLocal(TagOfCurTask()
+                , utility::FormatStr("%d index:%d step:%.2f up_price:%.2f btm_price:%.2f"
+                , para_.id, i, para_.step, step_items_[i].up_price, step_items_[i].bottom_price));
     }
 }
 
@@ -73,6 +77,8 @@ void BatchesBuyTask::HandleQuoteData()
             return;
         if( step_items_[index].has_buy )
             return;
+        app_->local_logger().LogLocal(TagOfCurTask(), utility::FormatStr(" trigger stepItem %d: bottom: %.2f up:%.2f", index, step_items_[index].bottom_price, step_items_[index].up_price));
+        
         step_items_[index].has_buy = true;
         if( ++times_has_buy_ >= para_.bs_times )
             is_waitting_removed_ = true;
@@ -144,4 +150,9 @@ void BatchesBuyTask::HandleQuoteData()
         });
     } 
 
+}
+
+std::string BatchesBuyTask::TagOfCurTask()
+{ 
+    return TSystem::utility::FormatStr("BatBuy_%s_%d", para_.stock.c_str(), TSystem::Today());
 }
