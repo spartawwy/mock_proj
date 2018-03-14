@@ -28,6 +28,7 @@ public:
 private:
 
     std::string BatchesBuyTask::TagOfCurTask();
+    bool is_wait_trade_result_;
 
 };
 

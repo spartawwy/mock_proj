@@ -25,6 +25,11 @@ public:
         T_StepItem() : has_selled(false), up_price(0.0), bottom_price(0.0){}
     };
     std::vector<T_StepItem> step_items_;
+
+private:
+
+    bool is_waitting_removed_;
+    bool is_wait_trade_result_;
 };
 
 #endif
