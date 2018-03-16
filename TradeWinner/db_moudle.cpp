@@ -919,7 +919,7 @@ std::vector<T_PositionItem> DBMoudle::GetPosition(int user_id, std::string date_
     std::string name;
     if( !utility::ExistTable("Position", *db_conn_) )
         return std::vector<T_PositionItem>();
-    std::string sql = utility::FormatStr("SELECT code, avaliable, frozen FROM Position WHERE code like '%%%s%%' ", code_num.c_str());
+    std::string sql = utility::FormatStr("SELECT code, avaliable, frozen FROM Position WHERE use_id=%d AND date='%s' ", user_id, date_str.c_str());
 
     db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
     {  

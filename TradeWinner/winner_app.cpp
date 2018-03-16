@@ -399,7 +399,7 @@ std::shared_ptr<StrategyTask> WinnerApp::FindStrategyTask(int task_id)
 
 T_CodeMapPosition WinnerApp::QueryPosition()
 { 
-    db_moudle_.GetStockCode();
+    //db_moudle_.GetStockCode(); // todo:
 
 #if 0
 	auto result = std::make_shared<Buffer>(5*1024);

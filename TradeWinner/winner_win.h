@@ -148,8 +148,8 @@ private:
 	void InitIndexTradeWin();
 
     // back test related 
-    void InitBacktestWin();
-	 
+    bool InitBacktestWin();
+	void UnInstallBacktest();
     //-------------------
     Ui::TradeWinnerClass ui;
     AboutSoftWin  about_win_;

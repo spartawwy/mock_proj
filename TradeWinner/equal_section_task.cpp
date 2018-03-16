@@ -27,6 +27,8 @@ format: section0_type$section0_price#section1_type$section1_price
 #include <TLib/core/tsystem_utility_functions.h>
 #include <TLib/core/tsystem_core_error.h>
 
+#include <QDebug> //tmpcode:
+
 #include "winner_app.h"
 
  
@@ -224,6 +226,11 @@ void EqualSectionTask::HandleQuoteData()
 		timed_mutex_wrapper.unlock(); 
 		this->app_->RemoveTask(this->task_id(), TypeTask::EQUAL_SECTION); // invoke self destroy
 	};
+    // tmp for debug ---------
+    static unsigned int num = 0;
+    qDebug() << ++num << " EqualSectionTask::HandleQuoteData" << "\n"; 
+    return;
+    //-------------end debug --------
 
     if( is_waitting_removed_ )
         return;

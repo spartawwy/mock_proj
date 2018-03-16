@@ -303,6 +303,9 @@ struct T_AdvanceSectionTask
 	std::string portion_states;
     double pre_trade_price;
 	bool is_original;
+    T_AdvanceSectionTask() :  pre_trade_price(0.0), is_original(false){}
+    T_AdvanceSectionTask(const T_AdvanceSectionTask &lh) : portion_sections(lh.portion_sections), portion_states(lh.portion_states)
+        , pre_trade_price(lh.pre_trade_price), is_original(lh.is_original){}
 };
 
 struct T_TaskInformation
@@ -331,7 +334,7 @@ struct T_TaskInformation
     T_TaskInformation() : id(0), type(TypeTask::BREAK_SELL), alert_price(0),back_alert_trigger(0), rebounce(0), continue_second(0), step(0), quantity(0), target_price_level(0), start_time(0), end_time(0), is_loop(0), state(0), bs_times(0), assistant_field() {} 
      
     T_TaskInformation(const T_TaskInformation& lh) : id(lh.id), type(lh.type), stock(lh.stock), stock_pinyin(lh.stock_pinyin), alert_price(lh.alert_price), back_alert_trigger(lh.back_alert_trigger)
-		, rebounce(lh.rebounce), continue_second(lh.continue_second), step(lh.step), quantity(lh.quantity), secton_task(lh.secton_task), index_rel_task(lh.index_rel_task)
+		, rebounce(lh.rebounce), continue_second(lh.continue_second), step(lh.step), quantity(lh.quantity), secton_task(lh.secton_task), index_rel_task(lh.index_rel_task), advance_section_task(lh.advance_section_task)
 		, target_price_level(lh.target_price_level), start_time(lh.start_time), end_time(lh.end_time), is_loop(lh.is_loop), state(lh.state), bs_times(lh.bs_times)
 		, assistant_field(lh.assistant_field) { }
 

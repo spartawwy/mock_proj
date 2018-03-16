@@ -135,6 +135,7 @@ WinnerWin::WinnerWin(WinnerApp *app, QWidget *parent)
 
 WinnerWin::~WinnerWin()
 {
+    UnInstallBacktest();
 }
 
 // notice : task_info.stock_pinyin 's code will change to gbk

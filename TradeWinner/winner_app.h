@@ -112,6 +112,8 @@ public:
  
     bool SellAllPosition(IndexTask * task);   
 
+    WinnerWin& winner_win() { return  winner_win_; }
+
 signals:
 
     //(StrategyTask*, change kind)
