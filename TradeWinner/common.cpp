@@ -96,6 +96,20 @@ QString ToQString(TindexTaskType val)
     return "";
 }
 
+std::string ToString(TypeEqSection val)
+{
+    switch(val)
+    {
+    case TypeEqSection::STOP: return  "STOP section";
+    case TypeEqSection::SELL: return  "SELL section";
+    case TypeEqSection::NOOP: return  "NOOP section";
+    case TypeEqSection::BUY: return  "BUY section";
+    case TypeEqSection::CLEAR: return "CLEAR section";
+    default: assert(0);
+    }
+    return "";
+}
+
 void Delay(unsigned short mseconds)
 {
     //TSystem::WaitFor([]()->bool { return false;}, mseconds); // only make effect to timer

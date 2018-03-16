@@ -41,9 +41,11 @@ static const int cst_tab_index_task_list = 0;
 static const int cst_tab_index_buy_task = 1;
 static const int cst_tab_index_sell_task = 2;
 static const int cst_tab_index_eqsec_task = 3;
-static const int cst_tab_capital = 4;
-static const int cst_tab_index_log = 5;
-static const int cst_tab_index_stkindex_task = 6;
+static const int cst_tab_advsec_task = 4;
+static const int cst_tab_capital = 5;
+static const int cst_tab_index_log = 6;
+static const int cst_tab_index_stkindex_task = 7;
+static const int cst_tab_index_backtest = 8;
 
 WinnerWin::WinnerWin(WinnerApp *app, QWidget *parent)
     : QMainWindow(parent)
@@ -120,10 +122,14 @@ WinnerWin::WinnerWin(WinnerApp *app, QWidget *parent)
     //------------------tab index trade task----------------
 	InitIndexTradeWin();
 
+    //------------------tab backtest ------------------
+    InitBacktestWin();
+
 	status_label_ = new QLabel("");
     status_label_->setIndent(3);
     statusBar()->addWidget(status_label_, 1);
 	statusBar()->update();
+
 
 }
 

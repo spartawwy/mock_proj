@@ -188,6 +188,9 @@
     <ClCompile Include="advance_section_task.cpp">
       <Filter>task</Filter>
     </ClCompile>
+    <ClCompile Include="backtest_win.cpp">
+      <Filter>win</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="trade_winner.ui">
@@ -333,5 +336,8 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TradeWinner.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="readme.txt" />
   </ItemGroup>
 </Project>

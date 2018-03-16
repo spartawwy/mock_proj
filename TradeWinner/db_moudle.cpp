@@ -796,6 +796,20 @@ int DBMoudle::CheckLogin(const std::string& name, const std::string& pwd, T_User
     {
         Open(db_conn_);
     }
+    if( name == "test" )
+    {
+        if( pwd == "123456" )
+        {
+            user_info->id = USER_ID_TEST;
+            user_info->level = 2;
+            user_info->name = "test";
+            user_info->password = pwd;
+            user_info->account_id = 0;
+            return 9999;
+        }
+    }else
+        return -1;
+
     if( !utility::ExistTable("UserInformation", *db_conn_) )
         return ret;
 
@@ -893,4 +907,23 @@ void DBMoudle::Open(std::shared_ptr<SQLite::SQLiteConnection>& db_conn)
                 , "DBMoudle::Open"
                 , "can't open database: " + db_file);
     
+}
+
+std::vector<T_PositionItem> DBMoudle::GetPosition(int user_id, std::string date_str)
+{  
+    if( !db_conn_ )
+    {
+        Open(db_conn_);
+    }
+   
+    std::string name;
+    if( !utility::ExistTable("Position", *db_conn_) )
+        return std::vector<T_PositionItem>();
+    std::string sql = utility::FormatStr("SELECT code, avaliable, frozen FROM Position WHERE code like '%%%s%%' ", code_num.c_str());
+
+    db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
+    {  
+        return 0;
+    });
+    return std::vector<T_PositionItem>();
 }

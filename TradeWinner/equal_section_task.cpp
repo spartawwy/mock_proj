@@ -177,7 +177,7 @@ TypeAction EqualSectionTask::JudgeTypeAction(std::shared_ptr<QuotesData> & quote
 				if( valide_position < para_.quantity ) qty = valide_position;
 				if( qty == 0 )
 				{
-					//app_->local_logger().LogLocal(TSystem::utility::FormatStr("warning: %d EqualSectionTask %s sell curprice:%.2f, but no available position", para_.id, para_.stock.c_str(), iter->cur_price));
+                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("warning: %d EqualSectionTask %s sell curprice:%.2f, but no available position ret TypeAction::NOOP", para_.id, para_.stock.c_str(), quote_data->cur_price));
 					return TypeAction::NOOP;
 				}
 				return TypeAction::PREPARE_SELL;
@@ -198,6 +198,17 @@ TypeAction EqualSectionTask::JudgeTypeAction(std::shared_ptr<QuotesData> & quote
 		} //switch
 	} //for
 	return action;
+}
+
+void EqualSectionTask::PrintSections()
+{
+    DO_LOG(TagOfCurTask(), "EqualSectionTask::PrintSections----");
+    unsigned short index = 0;
+	for( ; index < sections_.size(); ++index )
+	{
+        sections_[index].represent_price;
+        DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("index:%d type:%s represent price:%.2f", index, ToString(sections_[index].section_type).c_str(), sections_[index].represent_price) );
+    }
 }
 
 void EqualSectionTask::HandleQuoteData()
@@ -290,7 +301,7 @@ void EqualSectionTask::HandleQuoteData()
                 DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("eqsec task %d Type change from PREPARE_BUY to %d; cur_price:%.2f", para_.id, cur_type_action_, iter->cur_price));
 				if( cur_type_action_ != TypeAction::CLEAR )
 				{
-					if( cur_type_action_ != TypeAction::NOOP )
+					if( cur_type_action_ != TypeAction::NOOP ) // enter sell section, not stop cause it filter price jump
 						prepare_rebounce_price_ = iter->cur_price;
 					goto NOT_TRADE; // because first in trigger
 				}
@@ -308,6 +319,8 @@ void EqualSectionTask::HandleQuoteData()
 				if( iter->cur_price < cond4_buy_backtrigger_price_ ) cond4_buy_backtrigger_price_ = iter->cur_price;
 				if( para_.back_alert_trigger && cond4_buy_backtrigger_price_ < prepare_rebounce_price_ && iter->cur_price > prepare_rebounce_price_ )
 				{
+                    DO_LOG(TagOfCurTask(), utility::FormatStr("eqsec task %d backtrigger backtrig:%.2f prepare_reb_price:%.2f cur:%.2f to buy"
+                        , para_.id, cond4_buy_backtrigger_price_, prepare_rebounce_price_, iter->cur_price)); 
 					order_type = TypeOrderCategory::BUY; 
 					goto BEFORE_TRADE;
 				}
@@ -330,7 +343,7 @@ void EqualSectionTask::HandleQuoteData()
                 DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("eqsec task %d Type change from PREPARE_SELL to %d; cur_price:%.2f", para_.id, cur_type_action_, iter->cur_price));
 				if( cur_type_action_ != TypeAction::CLEAR )
 				{
-					if( cur_type_action_ != TypeAction::NOOP )
+					if( cur_type_action_ != TypeAction::NOOP ) // enter buy section, not stop cause it filter price jump
 						prepare_rebounce_price_ = iter->cur_price;
 					goto NOT_TRADE; // because first in trigger
 				}
@@ -344,10 +357,12 @@ void EqualSectionTask::HandleQuoteData()
 					goto BEFORE_TRADE; 
 				}
 			}else
-			{
+			{   // judge if sell it ---------------
 				if( iter->cur_price > cond4_sell_backtrigger_price_ ) cond4_sell_backtrigger_price_ = iter->cur_price;
 				if( para_.back_alert_trigger && cond4_sell_backtrigger_price_ > prepare_rebounce_price_ && iter->cur_price < prepare_rebounce_price_ + 0.1 )
 				{
+                    DO_LOG(TagOfCurTask(), utility::FormatStr("eqsec task %d backtrigger backtrig:%.2f prepare_reb_price:%.2f cur:%.2f to sell"
+                        , para_.id, cond4_sell_backtrigger_price_, prepare_rebounce_price_, iter->cur_price)); 
 					order_type = TypeOrderCategory::SELL; 
 					goto BEFORE_TRADE;
 				}
@@ -449,17 +464,17 @@ BEFORE_TRADE:
         else
             price = GetQuoteTargetPrice(*iter, order_type == TypeOrderCategory::BUY ? true : false);
          
+        std::string cn_order_str = order_type == TypeOrderCategory::BUY ? "买入" : "卖出";
 #ifdef USE_TRADE_FLAG
         assert(this->app_->trade_agent().account_data(market_type_));
-
         //auto sh_hld_code  = const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code;
-        std::string cn_order_str = order_type == TypeOrderCategory::BUY ? "买入" : "卖出";
+       
         this->app_->local_logger().LogLocal(TagOfOrderLog(), 
             TSystem::utility::FormatStr("区间任务:%d %s %s 价格:%.2f 数量:%d ", para_.id, cn_order_str.c_str(), this->code_data(), price, qty)); 
         this->app_->AppendLog2Ui("区间任务:%d %s %s 价格:%.2f 数量:%d ", para_.id, cn_order_str.c_str(), this->code_data(), price, qty);
 #if 1
         // order the stock
-        this->app_->trade_agent().SendOrder(app_->trade_client_id(), (int)order_type, 0
+        this->app_->trade_agent().SendOrder(this->app_->trade_client_id(), (int)order_type, 0
             , const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code, this->code_data()
             , price, qty
             , result, error_info); 
@@ -486,12 +501,14 @@ BEFORE_TRADE:
             if( !is_to_clear )
             {  // re calculate
                 CalculateSections(iter->cur_price, para_, sections_);
+                PrintSections();
 			    // for rebouce -------
 			    bottom_price_ = cst_max_stock_price;
 			    top_price_ = 0.0;
 			    cond4_sell_backtrigger_price_ = 0.0;
 			    cond4_buy_backtrigger_price_ = cst_max_stock_price;
                 // save to db: save cur_price as start_price in assistant_field 
+                DO_LOG(TagOfCurTask(), utility::FormatStr("DB UpdateEqualSection %d price:%.2f", para_.id, iter->cur_price));
                 app_->db_moudle().UpdateEqualSection(para_.id, para_.secton_task.is_original, iter->cur_price);
                 app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ unlock");
                 this->timed_mutex_wrapper_.unlock();
@@ -520,8 +537,7 @@ BEFORE_TRADE:
 
 }
 
-
 std::string EqualSectionTask::TagOfCurTask()
 { 
-    return TSystem::utility::FormatStr("BatBuy_%s_%d", para_.stock.c_str(), TSystem::Today());
+    return TSystem::utility::FormatStr("EqSec_%s_%d", para_.stock.c_str(), TSystem::Today());
 }

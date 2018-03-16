@@ -272,12 +272,11 @@ BEFORE_TRADE:
             price = iter->price_b_3;
         else
             price = GetQuoteTargetPrice(*iter, order_type == TypeOrderCategory::BUY ? true : false);
-
+        std::string cn_order_str = order_type == TypeOrderCategory::BUY ? "买入" : "卖出";
 #ifdef USE_TRADE_FLAG
         assert(this->app_->trade_agent().account_data(market_type_));
 
         //auto sh_hld_code  = const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code;
-        std::string cn_order_str = order_type == TypeOrderCategory::BUY ? "买入" : "卖出";
         this->app_->local_logger().LogLocal(TagOfOrderLog(), 
             TSystem::utility::FormatStr("贝塔任务:%d %s %s 价格:%.2f 数量:%d ", para_.id, cn_order_str.c_str(), this->code_data(), price, qty)); 
         this->app_->AppendLog2Ui("贝塔任务:%d %s %s 价格:%.2f 数量:%d ", para_.id, cn_order_str.c_str(), this->code_data(), price, qty);

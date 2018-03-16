@@ -32,7 +32,7 @@ Cookie::TRetCookie Cookie::Init()
     TRetCookie  ret = TRetCookie::OK;
 
     //const char* shared_name = "cookietrdw";
-    const char* shared_name = "cookietrdw10";
+    const char* shared_name = "cookietrdw_mock";
      
     _mkdir("c:\\trade_localf");
 
@@ -40,7 +40,7 @@ Cookie::TRetCookie Cookie::Init()
 
     mmfm_ = INVALID_HANDLE_VALUE;
     // create file
-    mmHandle_ = CreateFile("c:\\trade_localf\\my.cookie10",
+    mmHandle_ = CreateFile("c:\\trade_localf\\my_mock.cookie",
              GENERIC_READ | GENERIC_WRITE,  //access_mode
              FILE_SHARE_READ | FILE_SHARE_WRITE, //share_mode
              NULL,

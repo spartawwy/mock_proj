@@ -99,7 +99,7 @@ bool WinnerApp::Init()
  
 	db_moudle_.Init();
 	  
-#if 1
+
 	login_win_.Init();
 	ret = login_win_.exec(); 
 	if( ret != QDialog::Accepted )
@@ -107,7 +107,7 @@ bool WinnerApp::Init()
 		Stop();
 		return false;
 	}
-
+#if 0
 	db_moudle_.LoadAllUserBrokerInfo();
 
 	p_user_account_info_ = db_moudle_.FindUserAccountInfo(user_info_.id);
@@ -125,10 +125,7 @@ bool WinnerApp::Init()
 		Stop();
 		return false;
 	}
-
-#endif
-
-#ifdef USE_TRADE_FLAG
+     
 	//=========================trade account login =================
 	 
 	Buffer result(1024);
@@ -219,6 +216,7 @@ void WinnerApp::Stop()
 	exit_flag_ = true;
 	//FireShutdown();
 	Shutdown();
+    this->quit();
 }
 
 void WinnerApp::RemoveTask(unsigned int task_id, TypeTask task_type)
@@ -401,6 +399,9 @@ std::shared_ptr<StrategyTask> WinnerApp::FindStrategyTask(int task_id)
 
 T_CodeMapPosition WinnerApp::QueryPosition()
 { 
+    db_moudle_.GetStockCode();
+
+#if 0
 	auto result = std::make_shared<Buffer>(5*1024);
 
 	char error[1024] = {0};
@@ -414,12 +415,7 @@ T_CodeMapPosition WinnerApp::QueryPosition()
 	qDebug() << QString::fromLocal8Bit( result->data() ) << "\n";
 #endif
 	std::string str_result = result->c_data();
-
-	/*TSystem::utility::replace_all_distinct(str_result, "\n\t", "\t");
-	TSystem::utility::replace_all_distinct(str_result, "\t\n", "\t");
-	qDebug() << " line 378" << "\n";
-	qDebug() << str_result.c_str() << " ----\n"; no effect*/
-
+      
 	TSystem::utility::replace_all_distinct(str_result, "\n", "\t");
 	/*qDebug() << " line 382" << "\n";
 	qDebug() << str_result.c_str() << " ----\n";*/
@@ -468,7 +464,7 @@ T_CodeMapPosition WinnerApp::QueryPosition()
 				iter->second = pos_data;
 		}
 	} 
-
+#endif 
 	return stocks_position_;
 }
 

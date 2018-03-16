@@ -40,8 +40,9 @@ void BreakDownTask::HandleQuoteData()
                 char error_info[1024] = {0};
 
                 // to choice price to sell
-                const auto price = GetQuoteTargetPrice(*iter, false);
-
+                auto price = GetQuoteTargetPrice(*iter, false);
+                if( price < 0.01 ) // when limit down 
+                    price = iter->price_s_1;
 	            int qty = HandleSellByStockPosition(price);
                 if( qty == 0 )
                     return;

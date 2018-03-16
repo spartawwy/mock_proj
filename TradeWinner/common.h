@@ -19,6 +19,8 @@
 #define  INOUT
 #endif
 
+#define USER_ID_TEST  9999  // id for user 'test'
+
 #define EQSEC_MAX_POSITION 9999900
 #define EQSEC_MIN_POSITION 0
 
@@ -31,7 +33,7 @@
 #define APP_CODE_TEXT "GBK"
 
 #define DO_LOG(tag, b)  do{ app_->local_logger().LogLocal((tag), b); }while(0);
-#define USE_TRADE_FLAG
+//#define USE_TRADE_FLAG
 
 #if 0
 std::vector<std::string> split(const std::string& line, const std::string& seperator = " ", 
@@ -361,6 +363,15 @@ struct T_StockCodeName
     T_StockCodeName(const T_StockCodeName &lh) : code(lh.code), name(lh.name){}
 };
 
+ // ----------  ------------
+typedef struct _t_position_item
+{
+    //int user_id;
+    char code[16];
+    std::string date;
+    double availiable;
+    double frozen;
+}T_PositionItem;
 
 //struct T_StockPosition
 //{
@@ -374,6 +385,7 @@ QString ToQString(TypeTask val);
 QString ToQString(TypeQuoteLevel val);
 QString ToQString(TaskCurrentState val);
 QString ToQString(TindexTaskType val);
+std::string ToString(TypeEqSection val);
 
 void Delay(unsigned short mseconds);
 

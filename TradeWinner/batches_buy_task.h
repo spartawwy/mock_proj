@@ -27,9 +27,12 @@ public:
 
 private:
 
-    std::string BatchesBuyTask::TagOfCurTask();
-    bool is_wait_trade_result_;
+    std::string TagOfCurTask(); 
 
+    bool  is_wait_trade_result_; 
+
+    unsigned int continue_trade_fail_count_;
+    unsigned int trade_fail_ctr_count_;
 };
 
 #endif

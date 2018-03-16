@@ -98,6 +98,9 @@ public slots:
 	void DoTrdIndexRelBtnBtnChecked(bool);
 	void DoTrdIndexClearBtnChecked(bool);
 
+    //---------------back test related ---
+    void DoStartBacktest(bool);
+
     //------------------
 	
     void ChangeTabBuyAssistantImg(TypeTask type);
@@ -143,8 +146,11 @@ private:
 
 	// index trade task related 
 	void InitIndexTradeWin();
-	 
 
+    // back test related 
+    void InitBacktestWin();
+	 
+    //-------------------
     Ui::TradeWinnerClass ui;
     AboutSoftWin  about_win_;
 

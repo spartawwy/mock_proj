@@ -160,6 +160,7 @@
   <ItemGroup>
     <ClCompile Include="about_soft_win.cpp" />
     <ClCompile Include="advance_section_task.cpp" />
+    <ClCompile Include="backtest_win.cpp" />
     <ClCompile Include="batches_buy_task.cpp" />
     <ClCompile Include="batches_sell_task.cpp" />
     <ClCompile Include="breakdown_task.cpp" />
@@ -564,6 +565,9 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\ui_%(Filename).h;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\uic.exe" -o ".\GeneratedFiles\ui_%(Filename).h" "%(FullPath)"</Command>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="readme.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

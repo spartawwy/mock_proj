@@ -20,10 +20,7 @@ namespace TSystem
 {
     class TaskStrand;
 }
-//namespace TSystem
-//{
-//    class LocalLogger;
-//}
+
 class WinnerApp;
 
 class DBMoudle
@@ -65,6 +62,8 @@ public:
      
     void GetStockCode(const std::string &code, std::vector<T_StockCodeName>& ret);
     std::string GetStockName(const std::string &code);
+     
+    std::vector<T_PositionItem> GetPosition(int user_id, std::string date_str);
 
 private:
 
