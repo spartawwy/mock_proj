@@ -419,6 +419,6 @@ double Round(double dVal, short iPlaces);
 double Get2UpRebouncePercent(double base, double bottom, double cur);
 double Get2DownRebouncePercent(double base, double top, double cur);
 
- 
+double CaculateFee(double total, bool is_buy);
 
 #endif

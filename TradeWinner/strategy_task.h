@@ -13,12 +13,28 @@
 
 enum class TypeAction : char { NOOP = 0, PREPARE_BUY, PREPARE_SELL, CLEAR};
 
+struct T_MockStrategyPara 
+{
+    int  avaliable_position;
+    int  frozon_position;
+    double capital;
+    T_MockStrategyPara() : avaliable_position(0), frozon_position(0), capital(0.0){}
+    T_MockStrategyPara(const T_MockStrategyPara &lh) : avaliable_position(lh.avaliable_position), frozon_position(lh.frozon_position), capital(lh.capital){}
+    T_MockStrategyPara & operator = (const T_MockStrategyPara &lh) 
+    {
+        if( this == &lh ) return *this;
+        avaliable_position = lh.avaliable_position;
+        frozon_position = lh.frozon_position;
+        capital = lh.capital; 
+        return *this;
+    }
+};
 class WinnerApp;
 class StrategyTask
 {
 public: 
 
-    StrategyTask(T_TaskInformation &task_info, WinnerApp *app);
+    StrategyTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *mock_para=nullptr);
 
     virtual ~StrategyTask()
     { 
@@ -59,8 +75,13 @@ public:
     QTime tp_start() { return tp_start_; }
     QTime tp_end() { return tp_end_; }
 
-    unsigned int life_count_;
-    
+    // ---------for mock ------------ 
+    void do_mock_date_change(int date);
+    double GetMockAssets(double price);
+    //-------------------------------
+
+    unsigned int life_count_; 
+
 protected:
      
    int HandleSellByStockPosition(double price, bool remove_task = true);
@@ -85,6 +106,14 @@ protected:
    TSystem::TaskStrand   strand_;
      
    TimedMutexWrapper  timed_mutex_wrapper_;
+   
+   // ---------for mock ------------
+   bool is_mock_;
+   T_MockStrategyPara ori_mock_para_;
+   T_MockStrategyPara mock_para_;
+   int mock_date_;
+   bool has_get_mock_assets_;
+   double mock_assets_;
 };
 
 #endif

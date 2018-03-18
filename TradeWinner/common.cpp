@@ -340,3 +340,10 @@ double Get2DownRebouncePercent(double base, double top, double cur)
         percent_inflect =  (top - cur) * 100 / base; 
     return percent_inflect;
 }
+
+double CaculateFee(double total, bool is_sell)
+{
+    if( total < 0.001 ) return 0.0;
+    
+    return ((total * 0.0003 > 5.0 ) ? total * 0.0003 : 5.0) + (is_sell ? total * 0.001 : 0);
+}

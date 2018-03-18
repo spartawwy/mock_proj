@@ -10,7 +10,7 @@ public:
 	static void CalculateSections(double price, IN T_TaskInformation &task_info, OUT std::vector<T_SectionAutom> &sections);
 	static void TranslateSections(IN std::vector<T_SectionAutom> &sections, OUT std::string &sections_str);
 
-    EqualSectionTask(T_TaskInformation &task_info, WinnerApp *app);
+    EqualSectionTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *mock_para=nullptr);
 
     virtual ~EqualSectionTask(){}
     virtual void HandleQuoteData() override;

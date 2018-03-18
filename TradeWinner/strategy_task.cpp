@@ -1,6 +1,7 @@
 #include "strategy_task.h"
 
 #include <TLib/core/tsystem_utility_functions.h>
+#include <TLib/core/tsystem_time.h>
 
 #include "common.h"
 
@@ -8,7 +9,7 @@
 
 const unsigned int cst_max_data_count = 60 * 60 * 4;
  
-StrategyTask::StrategyTask(T_TaskInformation &task_info, WinnerApp *app)
+StrategyTask::StrategyTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *mock_para)
     : app_(app)
     , para_(task_info)
     , market_type_(GetStockMarketType(task_info.stock))
@@ -21,8 +22,12 @@ StrategyTask::StrategyTask(T_TaskInformation &task_info, WinnerApp *app)
     , life_count_(0)
     , strand_(app->task_pool())
     , timed_mutex_wrapper_()
+    , is_mock_(mock_para != nullptr)
 {
-    
+    if( is_mock_ )
+    {
+       mock_para_ = ori_mock_para_ = *mock_para;
+    }
 }
 
 bool StrategyTask::IsPriceJumpUp(double pre_price, double cur_price)
@@ -87,6 +92,31 @@ void StrategyTask::ObtainData(std::shared_ptr<QuotesData> &data)
          app_->Emit(this, static_cast<int>(TaskStatChangeType::CUR_PRICE_CHANGE));
     }
     //std::chrono::system_clock::now().;
+}
+
+void StrategyTask::do_mock_date_change(int date)
+{
+    mock_date_ = date;
+    strand_.PostTask([this]()
+    {
+        mock_para_.avaliable_position += mock_para_.frozon_position;
+        mock_para_.frozon_position = 0;
+    });
+}
+
+double StrategyTask::GetMockAssets(double price)
+{ 
+    has_get_mock_assets_ = false;
+    mock_assets_ = 0.0;
+    strand_.PostTask([price, this]()
+    { 
+        this->mock_assets_ = (mock_para_.avaliable_position + mock_para_.frozon_position) * price + mock_para_.capital;
+        this->has_get_mock_assets_ = true;
+    });
+    if( TSystem::WaitFor( [this]()->bool{ return this->has_get_mock_assets_;}, 60*1000) )
+       return mock_assets_;
+    else
+       return mock_assets_;
 }
 
 // notice: called in trade_strand

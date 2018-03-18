@@ -99,8 +99,8 @@ void EqualSectionTask::TranslateSections(IN std::vector<T_SectionAutom> &section
     }
 }
 
-EqualSectionTask::EqualSectionTask(T_TaskInformation &task_info, WinnerApp *app)
-    : StrategyTask(task_info, app)
+EqualSectionTask::EqualSectionTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *mock_para)
+    : StrategyTask(task_info, app, mock_para)
 	, bottom_price_(cst_max_stock_price)
 	, top_price_(0.0)
 	, cur_type_action_(TypeAction::NOOP)
@@ -142,9 +142,17 @@ EqualSectionTask::EqualSectionTask(T_TaskInformation &task_info, WinnerApp *app)
 TypeAction EqualSectionTask::JudgeTypeAction(std::shared_ptr<QuotesData> & quote_data)
 {
 	TypeAction  action = TypeAction::NOOP;
-	
-	const int total_position = GetTototalPosition();
-	const int valide_position = this->app_->QueryPosAvaliable_LazyMode(para_.stock);
+	int total_position = 0;
+    int valide_position = 0;
+    if( is_mock_ )
+    {
+        total_position = mock_para_.avaliable_position + mock_para_.frozon_position;
+        valide_position = mock_para_.avaliable_position;
+    }else
+    {
+	    total_position = GetTototalPosition();
+	    valide_position = this->app_->QueryPosAvaliable_LazyMode(para_.stock);
+    }
 	int qty = 0;
 
 	unsigned short index = 0;
@@ -229,7 +237,7 @@ void EqualSectionTask::HandleQuoteData()
     // tmp for debug ---------
     static unsigned int num = 0;
     qDebug() << ++num << " EqualSectionTask::HandleQuoteData" << "\n"; 
-    return;
+    //return;
     //-------------end debug --------
 
     if( is_waitting_removed_ )
@@ -250,7 +258,9 @@ void EqualSectionTask::HandleQuoteData()
         return;
     };
 
-    if( !timed_mutex_wrapper_.try_lock_for(1000) )
+    int ms_for_wait_lock = 1000;
+    if( is_mock_ ) ms_for_wait_lock = 5000;
+    if( !timed_mutex_wrapper_.try_lock_for(ms_for_wait_lock) )  
     {
         DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
         app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock fail"); 
@@ -258,8 +268,18 @@ void EqualSectionTask::HandleQuoteData()
     };
     app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock ok");
 
-	const int avaliable_pos = this->app_->QueryPosAvaliable_LazyMode(para_.stock);
-	const int total_position = GetTototalPosition();
+    int total_position = 0;
+    int avaliable_pos = 0;
+    if( is_mock_ )
+    {
+        total_position = mock_para_.avaliable_position + mock_para_.frozon_position;
+        avaliable_pos = mock_para_.avaliable_position;
+    }else
+    {
+        total_position = GetTototalPosition();
+        avaliable_pos = this->app_->QueryPosAvaliable_LazyMode(para_.stock);
+    }
+     
 	int index = 0;
 
 	if( para_.rebounce > 0.0 ) // use rebounce 
@@ -425,7 +445,7 @@ void EqualSectionTask::HandleQuoteData()
 						app_->local_logger().LogLocal(TSystem::utility::FormatStr("warning: %d EqualSectionTask %s switch section_type:%d, curprice:%.2f but position achieve min_position", para_.id, para_.stock.c_str(), (int)sections_[index].section_type, iter->cur_price));
 						goto NOT_TRADE;
 					}  
-					//auto val = this->app_->QueryPosAvaliable_LazyMode(para_.stock);
+					 
 					if( avaliable_pos < para_.quantity ) qty = avaliable_pos;
 					if( qty == 0 )
 					{
@@ -466,12 +486,37 @@ BEFORE_TRADE:
 
         // to choice price to order
         auto price = 0.0;
-        if( cur_type_action_ == TypeAction::CLEAR )
-            price = iter->price_b_3;
-        else
-            price = GetQuoteTargetPrice(*iter, order_type == TypeOrderCategory::BUY ? true : false);
+        if( is_mock_ )
+        {
+            price = iter->cur_price;
+        }else
+        {
+            if( cur_type_action_ == TypeAction::CLEAR )
+                price = iter->price_b_3;
+            else
+                price = GetQuoteTargetPrice(*iter, order_type == TypeOrderCategory::BUY ? true : false);
+        }
          
         std::string cn_order_str = order_type == TypeOrderCategory::BUY ? "买入" : "卖出";
+
+        //------------------do trade -------------
+        if( is_mock_ )
+        {
+            if( order_type == TypeOrderCategory::BUY )
+            {
+                mock_para_.frozon_position += qty;
+                mock_para_.capital -= price * qty + CaculateFee(price*qty, order_type == TypeOrderCategory::SELL);
+            }else
+            {
+               /* if( mock_para_.avaliable_position < qty )
+                {
+                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("error: avaliable:%d < sell qty:%d", mock_para_.avaliable_position, qty) );
+                }else*/
+                assert(mock_para_.avaliable_position >= qty);
+                mock_para_.avaliable_position -= qty;
+                mock_para_.capital += price * qty - CaculateFee(price*qty, order_type == TypeOrderCategory::SELL);
+            }
+        }
 #ifdef USE_TRADE_FLAG
         assert(this->app_->trade_agent().account_data(market_type_));
         //auto sh_hld_code  = const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code;
@@ -479,14 +524,12 @@ BEFORE_TRADE:
         this->app_->local_logger().LogLocal(TagOfOrderLog(), 
             TSystem::utility::FormatStr("区间任务:%d %s %s 价格:%.2f 数量:%d ", para_.id, cn_order_str.c_str(), this->code_data(), price, qty)); 
         this->app_->AppendLog2Ui("区间任务:%d %s %s 价格:%.2f 数量:%d ", para_.id, cn_order_str.c_str(), this->code_data(), price, qty);
-#if 1
+ 
         // order the stock
         this->app_->trade_agent().SendOrder(this->app_->trade_client_id(), (int)order_type, 0
             , const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code, this->code_data()
             , price, qty
             , result, error_info); 
-#endif
-         
 #endif
 		cur_type_action_ = TypeAction::NOOP; // for rebounce
         // judge result 

@@ -74,6 +74,8 @@ void WinnerWin::DoStartBacktest(bool)
 #else
     static std::vector<std::shared_ptr<StrategyTask> > task_vector;
     static std::vector<std::shared_ptr<T_TaskInformation> > taskinfo_vector;
+    static std::vector<std::shared_ptr<T_FenbiCallBack> > callback_vector;
+    static std::vector<std::shared_ptr<T_MockStrategyPara> > mock_strategy_para_vector;
 #endif 
     if( !WinnerHisHq_GetHisFenbiData )
     {
@@ -86,6 +88,8 @@ void WinnerWin::DoStartBacktest(bool)
 #else
     task_vector.clear();
     taskinfo_vector.clear();
+    callback_vector.clear();
+    mock_strategy_para_vector.clear();
 #endif 
     auto task_info = std::make_shared<T_TaskInformation>();
 
@@ -106,32 +110,49 @@ void WinnerWin::DoStartBacktest(bool)
     task_info->secton_task.raise_percent = 0.2;
     task_info->secton_task.max_position = 1000;
     task_info->secton_task.max_trig_price = 35.0;
-    task_info->secton_task.min_trig_price = 26.0;
-      
+    task_info->secton_task.min_trig_price = 26.0; 
     taskinfo_vector.push_back( std::move(task_info));
 
-    auto equal_sec_task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_);
-#if 0
-    task_taskinfo_vector.push_back( std::make_tuple(std::move(equal_sec_task), std::move(task_info)) );
-#else
+    auto mock_para = std::make_shared<T_MockStrategyPara>();
+    mock_para->avaliable_position = 10000;
+    mock_para->capital = 200000.00;
+    mock_strategy_para_vector.push_back(std::move(mock_para));
+
+    auto equal_sec_task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
     task_vector.push_back( std::move(equal_sec_task) );
-#endif
+    auto fenbi_callback_obj = std::make_shared<T_FenbiCallBack>();
+    fenbi_callback_obj->call_back_func = FenbiCallBackFunc;
+    fenbi_callback_obj->para = std::addressof(task_vector[0]);
+    callback_vector.push_back(std::move(fenbi_callback_obj));
 
     char error[1024] = {0};
     WinnerHisHq_GetHisFenbiData(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
         , date
-        , FenbiCallBackFunc
-        , std::addressof(task_vector[0])
+        , callback_vector[0].get()
         , error);
 }
 
 void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
 {
-    static unsigned int num = 0;
-    qDebug() << ++num << " " << quote_data->price << "\n"; 
+    //static unsigned int num = 0; 
+
+    T_FenbiCallBack *p_callback_obj = (T_FenbiCallBack*)para; 
+    qDebug() << p_callback_obj->serial++ << " " << quote_data->price << "\n"; 
+     
     auto quotes_data = std::make_shared<QuotesData>();
     quotes_data->cur_price = quote_data->price;
-    std::shared_ptr<StrategyTask>& strategy_task = *(std::shared_ptr<StrategyTask>*)para;
+    
+    std::shared_ptr<StrategyTask>& strategy_task = *((std::shared_ptr<StrategyTask>*)(p_callback_obj->para));
+    if( quote_data->date != p_callback_obj->date )
+    {
+        p_callback_obj->date = quote_data->date; 
+        strategy_task->do_mock_date_change(quote_data->date);
+    }
     strategy_task->ObtainData(quotes_data);
+    if( is_end )
+    {
+        double assets = strategy_task->GetMockAssets(quotes_data->cur_price);
+        qDebug() << "assets: " << assets << "\n";
+    }
 
 }
