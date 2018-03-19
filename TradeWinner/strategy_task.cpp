@@ -113,10 +113,18 @@ double StrategyTask::GetMockAssets(double price)
         this->mock_assets_ = (mock_para_.avaliable_position + mock_para_.frozon_position) * price + mock_para_.capital;
         this->has_get_mock_assets_ = true;
     });
-    if( TSystem::WaitFor( [this]()->bool{ return this->has_get_mock_assets_;}, 60*1000) )
-       return mock_assets_;
-    else
-       return mock_assets_;
+    app()->local_logger().LogLocal("Waitfor mock assets");
+    if( TSystem::WaitFor( [this]()->bool
+    { 
+        return this->has_get_mock_assets_;
+    }, 5*1000*1000) )
+    {
+
+    }else
+        this->has_get_mock_assets_ = this->has_get_mock_assets_;
+    app()->local_logger().LogLocal(" ret Waitfor mock assets");
+    return mock_assets_;
+
 }
 
 // notice: called in trade_strand

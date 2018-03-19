@@ -12,7 +12,9 @@ public:
 
     EqualSectionTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *mock_para=nullptr);
 
-    virtual ~EqualSectionTask(){}
+    virtual ~EqualSectionTask()
+    {
+    }
     virtual void HandleQuoteData() override;
     virtual void UnReg() override { timed_mutex_wrapper_.unlock(); } 
 
