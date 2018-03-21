@@ -1,4 +1,4 @@
- 
+
 #include "winner_win.h"
 
 #include "winner_app.h"
@@ -79,10 +79,10 @@ void WinnerWin::DoStartBacktest(bool)
 #endif 
     if( !WinnerHisHq_GetHisFenbiData )
     {
-       app_->winner_win().DoStatusBar("回测接口未安装!");
-       return;
+        app_->winner_win().DoStatusBar("回测接口未安装!");
+        return;
     }
-     
+
 #if 0
     task_taskinfo_vector.clear();
 #else
@@ -93,10 +93,10 @@ void WinnerWin::DoStartBacktest(bool)
 #endif 
     auto task_info = std::make_shared<T_TaskInformation>();
 
-    int date = 20180315;
+
     task_info->id = 123;
     task_info->type = TypeTask::EQUAL_SECTION;
-    task_info->stock = "000063";
+    task_info->stock = "600123";
     task_info->back_alert_trigger = false;
     //task_in->o.rebounce = 0.3;
     task_info->continue_second = 0;
@@ -126,10 +126,15 @@ void WinnerWin::DoStartBacktest(bool)
     callback_vector.push_back(std::move(fenbi_callback_obj));
 
     char error[1024] = {0};
-    WinnerHisHq_GetHisFenbiData(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
-        , date
+    int date[] = { 20180212/*, 20180213, 20180214, 20180215, 20180216, 20180222*/ };
+    for(int i = 0; i < sizeof(date)/sizeof(date[0]); ++i )
+    {
+        WinnerHisHq_GetHisFenbiData(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
+            , date[i]
         , callback_vector[0].get()
-        , error);
+            , error);
+    }
+
 }
 
 void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
@@ -138,10 +143,10 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
 
     T_FenbiCallBack *p_callback_obj = (T_FenbiCallBack*)para; 
     qDebug() << p_callback_obj->serial++ << " " << quote_data->price << "\n"; 
-     
+
     auto quotes_data = std::make_shared<QuotesData>();
     quotes_data->cur_price = quote_data->price;
-    
+
     std::shared_ptr<StrategyTask>& strategy_task = *((std::shared_ptr<StrategyTask>*)(p_callback_obj->para));
     if( quote_data->date != p_callback_obj->date )
     {
