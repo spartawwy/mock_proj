@@ -144,10 +144,10 @@ TypeAction EqualSectionTask::JudgeTypeAction(std::shared_ptr<QuotesData> & quote
 	TypeAction  action = TypeAction::NOOP;
 	int total_position = 0;
     int valide_position = 0;
-    if( is_mock_ )
+    if( is_back_test_ )
     {
-        total_position = mock_para_.avaliable_position + mock_para_.frozon_position;
-        valide_position = mock_para_.avaliable_position;
+        total_position = bktest_para_.avaliable_position + bktest_para_.frozon_position;
+        valide_position = bktest_para_.avaliable_position;
     }else
     {
 	    total_position = GetTototalPosition();
@@ -259,7 +259,7 @@ void EqualSectionTask::HandleQuoteData()
     };
 
     int ms_for_wait_lock = 1000;
-    if( is_mock_ ) ms_for_wait_lock = 5000;
+    if( is_back_test_ ) ms_for_wait_lock = 5000;
     if( !timed_mutex_wrapper_.try_lock_for(ms_for_wait_lock) )  
     {
         DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
@@ -270,10 +270,15 @@ void EqualSectionTask::HandleQuoteData()
 
     int total_position = 0;
     int avaliable_pos = 0;
-    if( is_mock_ )
+    if( is_back_test_ )
     {
-        total_position = mock_para_.avaliable_position + mock_para_.frozon_position;
-        avaliable_pos = mock_para_.avaliable_position;
+        if( !has_set_ori_bktest_price_ )
+        {
+            has_set_ori_bktest_price_ = true;
+            ori_bktest_price_ = iter->cur_price;
+        }
+        total_position = bktest_para_.avaliable_position + bktest_para_.frozon_position;
+        avaliable_pos = bktest_para_.avaliable_position;
     }else
     {
         total_position = GetTototalPosition();
@@ -486,7 +491,7 @@ BEFORE_TRADE:
 
         // to choice price to order
         auto price = 0.0;
-        if( is_mock_ )
+        if( is_back_test_ )
         {
             price = iter->cur_price;
         }else
@@ -498,25 +503,7 @@ BEFORE_TRADE:
         }
          
         std::string cn_order_str = order_type == TypeOrderCategory::BUY ? "买入" : "卖出";
-
-        //------------------do trade -------------
-        if( is_mock_ )
-        {
-            if( order_type == TypeOrderCategory::BUY )
-            {
-                mock_para_.frozon_position += qty;
-                mock_para_.capital -= price * qty + CaculateFee(price*qty, order_type == TypeOrderCategory::SELL);
-            }else
-            {
-               /* if( mock_para_.avaliable_position < qty )
-                {
-                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("error: avaliable:%d < sell qty:%d", mock_para_.avaliable_position, qty) );
-                }else*/
-                assert(mock_para_.avaliable_position >= qty);
-                mock_para_.avaliable_position -= qty;
-                mock_para_.capital += price * qty - CaculateFee(price*qty, order_type == TypeOrderCategory::SELL);
-            }
-        }
+         
 #ifdef USE_TRADE_FLAG
         assert(this->app_->trade_agent().account_data(market_type_));
         //auto sh_hld_code  = const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code;
@@ -531,14 +518,39 @@ BEFORE_TRADE:
             , price, qty
             , result, error_info); 
 #endif
+        //------------------do trade -------------
+        if( is_back_test_ )
+        {
+            if( order_type == TypeOrderCategory::BUY )
+            {
+                bktest_para_.frozon_position += qty;
+                bktest_para_.capital -= price * qty + CaculateFee(price*qty, order_type == TypeOrderCategory::SELL);
+            }else
+            {
+               /* if( mock_para_.avaliable_position < qty )
+                {
+                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("error: avaliable:%d < sell qty:%d", mock_para_.avaliable_position, qty) );
+                }else*/
+                assert(bktest_para_.avaliable_position >= qty);
+                bktest_para_.avaliable_position -= qty;
+                bktest_para_.capital += price * qty - CaculateFee(price*qty, order_type == TypeOrderCategory::SELL);
+            }
+        }
 		cur_type_action_ = TypeAction::NOOP; // for rebounce
         // judge result 
         if( strlen(error_info) == 0 ) // trade ok
         { 
-            auto ret_str = new std::string(utility::FormatStr("区间任务:%d %s %s %.2f %d 成功!", para_.id, cn_order_str.c_str(), para_.stock.c_str(), price, qty));
-            this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str);
-            this->app_->EmitSigShowUi(ret_str, true);
- 
+            auto ret_str = new std::string(utility::FormatStr("%d 区间任务:%d %s %s %.2f %d 成功!", bktest_mock_date_, para_.id, cn_order_str.c_str(), para_.stock.c_str(), price, qty));
+            
+            if( !is_back_test_ )
+            {
+                this->app_->EmitSigShowUi(ret_str, true);
+                this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str);
+            }else
+            {
+                this->app_->local_logger().LogLocal("bktest", *ret_str);
+                delete ret_str;
+            }
             para_.secton_task.is_original = false;
 
             bool is_to_clear = false;
@@ -566,12 +578,17 @@ BEFORE_TRADE:
             {
                 auto ret_str = new std::string(utility::FormatStr("区间任务:%d %s 破底清仓!", para_.id, para_.stock.c_str()));
                 this->app_->AppendLog2Ui(ret_str->c_str());
-                this->app_->EmitSigShowUi(ret_str);
-
+                
                 is_waitting_removed_ = true;
                 app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ unlock");
                 this->timed_mutex_wrapper_.unlock();
-                this->app_->RemoveTask(this->task_id(), TypeTask::EQUAL_SECTION); // invoker delete self
+
+                if( !is_back_test_ )
+                {
+                    this->app_->EmitSigShowUi(ret_str);
+                    this->app_->RemoveTask(this->task_id(), TypeTask::EQUAL_SECTION); // invoker delete self
+                }else
+                    delete ret_str; ret_str = nullptr;
             }
         }else  // trade fail
         {
@@ -579,7 +596,11 @@ BEFORE_TRADE:
                 , para_.id, cn_order_str.c_str(), para_.stock.c_str(), price, qty, error_info));
             this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str);
             this->app_->AppendLog2Ui(ret_str->c_str());
-            this->app_->EmitSigShowUi(ret_str, true);
+            if( !is_back_test_ )
+                this->app_->EmitSigShowUi(ret_str, true);
+            else
+                delete ret_str; ret_str = nullptr;
+
             app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ unlock");
             this->timed_mutex_wrapper_.unlock();
         }

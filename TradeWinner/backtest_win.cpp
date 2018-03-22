@@ -1,5 +1,6 @@
-
 #include "winner_win.h"
+
+#include <TLib/core/tsystem_utility_functions.h>
 
 #include "winner_app.h"
 
@@ -17,6 +18,8 @@ static HMODULE st_api_handle = nullptr;
 static WinnerHisHq_ConnectDelegate WinnerHisHq_Connect = nullptr;
 static WinnerHisHq_DisconnectDelegate WinnerHisHq_DisConnect = nullptr;
 static WinnerHisHq_GetHisFenbiDataDelegate WinnerHisHq_GetHisFenbiData  = nullptr;
+
+static const std::string cst_back_test_tag = "bktest";
 
 bool WinnerWin::InitBacktestWin()
 {
@@ -47,11 +50,17 @@ bool WinnerWin::InitBacktestWin()
     }
     char result[1024] = {0};
     char error[1024] = {0};
-#if 1
+    char server_ip[] = "192.168.1.5";
+    int port = 50010;
+
+    app_->local_logger().LogLocal(utility::FormatStr("InitBacktestWin WinnerHisHq_Connect %s : %d waiting", server_ip, port));
+#if 0
     int ret_val = WinnerHisHq_Connect("192.168.1.5", 50010, result, error);
 #else
     int ret_val = WinnerHisHq_Connect("128.1.1.3", 50010, result, error);
 #endif 
+    app_->local_logger().LogLocal("InitBacktestWin WinnerHisHq_Connect ret");
+
     return ret_val == 0;
 
 }
@@ -108,9 +117,9 @@ void WinnerWin::DoStartBacktest(bool)
     task_info->secton_task.raise_percent = 0.7;
     task_info->secton_task.fall_infection = 0.2;
     task_info->secton_task.raise_percent = 0.2;
-    task_info->secton_task.max_position = 1000;
-    task_info->secton_task.max_trig_price = 35.0;
-    task_info->secton_task.min_trig_price = 26.0; 
+    task_info->secton_task.max_position = 3000*100;
+    task_info->secton_task.max_trig_price = 9.8;
+    task_info->secton_task.min_trig_price = 8.0; 
     taskinfo_vector.push_back( std::move(task_info));
 
     auto mock_para = std::make_shared<T_MockStrategyPara>();
@@ -126,7 +135,12 @@ void WinnerWin::DoStartBacktest(bool)
     callback_vector.push_back(std::move(fenbi_callback_obj));
 
     char error[1024] = {0};
-    int date[] = { 20180212/*, 20180213, 20180214, 20180215, 20180216, 20180222*/ };
+    //int date[] = { 20180212, 20180213, 20180214, 20180215, 20180216, 20180222 };
+    int date[] = { 20171020, 20171021, 20171022, 20171023, 20171024, 20171025, 20171026, 20171027, 20171028, 20171029, 20171030,20171031
+  , 20171101, 20171102,  20171103,  20171104,  20171105,  20171106,  20171107,  20171108,  20171109, 20171110 
+  , 20171111, 20171112,  20171113,  20171114,  20171115,  20171116,  20171117,  20171118,  20171119, 20171120 
+  , 20171121, 20171122,  20171123,  20171124,  20171125,  20171126,  20171127,  20171128,  20171129, 20171130 
+   };
     for(int i = 0; i < sizeof(date)/sizeof(date[0]); ++i )
     {
         WinnerHisHq_GetHisFenbiData(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
@@ -140,24 +154,43 @@ void WinnerWin::DoStartBacktest(bool)
 void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
 {
     //static unsigned int num = 0; 
+    static auto show_result = [](std::shared_ptr<StrategyTask>& strategy_task, int date, double price)
+    {
+        double ori_assets = strategy_task->GetOriMockAssets();
+        double assets = strategy_task->GetMockAssets(price);
+
+        auto p_str = new std::string(TSystem::utility::FormatStr("back_test %s original assets:%.2f | %d ret assets:%.2f", strategy_task->stock_code(), ori_assets, date, assets));
+        strategy_task->app()->local_logger().LogLocal(cst_back_test_tag, *p_str);
+        strategy_task->app()->AppendLog2Ui(p_str->c_str());
+        strategy_task->app()->EmitSigShowUi(p_str);
+        qDebug() << "FenbiCallBackFunc assets: " << assets << "\n";
+    };
 
     T_FenbiCallBack *p_callback_obj = (T_FenbiCallBack*)para; 
-    qDebug() << p_callback_obj->serial++ << " " << quote_data->price << "\n"; 
-
-    auto quotes_data = std::make_shared<QuotesData>();
-    quotes_data->cur_price = quote_data->price;
-
+     
     std::shared_ptr<StrategyTask>& strategy_task = *((std::shared_ptr<StrategyTask>*)(p_callback_obj->para));
+    if( strategy_task->has_bktest_result_fetched() )
+        return;
+
     if( quote_data->date != p_callback_obj->date )
-    {
+    { 
         p_callback_obj->date = quote_data->date; 
         strategy_task->do_mock_date_change(quote_data->date);
     }
-    strategy_task->ObtainData(quotes_data);
-    if( is_end )
-    {
-        double assets = strategy_task->GetMockAssets(quotes_data->cur_price);
-        qDebug() << "assets: " << assets << "\n";
-    }
 
+    auto quotes_data = std::make_shared<QuotesData>();
+    quotes_data->cur_price = quote_data->price;
+    qDebug() << p_callback_obj->serial++ << " " << quote_data->price << "\n"; 
+
+    strategy_task->ObtainData(quotes_data);
+
+    if( strategy_task->is_waitting_removed() )
+    {
+        strategy_task->has_bktest_result_fetched(true);
+        show_result(strategy_task, p_callback_obj->date, quotes_data->cur_price);  
+
+    }else if( is_end ) 
+    {
+        show_result(strategy_task, p_callback_obj->date, quotes_data->cur_price);  
+    }
 }

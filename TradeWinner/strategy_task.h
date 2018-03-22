@@ -34,7 +34,7 @@ class StrategyTask
 {
 public: 
 
-    StrategyTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *mock_para=nullptr);
+    StrategyTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *bktest_para=nullptr);
 
     virtual ~StrategyTask()
     { 
@@ -78,6 +78,11 @@ public:
     // ---------for mock ------------ 
     void do_mock_date_change(int date);
     double GetMockAssets(double price);
+    double GetOriMockAssets();
+    bool is_waitting_removed() const { return is_waitting_removed_; }
+    
+    void has_bktest_result_fetched(bool val) { has_bktest_result_fetched_ = val; }
+    bool has_bktest_result_fetched() const { return has_bktest_result_fetched_; }
     //-------------------------------
 
     unsigned int life_count_; 
@@ -108,12 +113,16 @@ protected:
    TimedMutexWrapper  timed_mutex_wrapper_;
    
    // ---------for mock ------------
-   bool is_mock_;
-   T_MockStrategyPara ori_mock_para_;
-   T_MockStrategyPara mock_para_;
-   int mock_date_;
+   bool is_back_test_;
+   T_MockStrategyPara ori_bktest_para_;
+   T_MockStrategyPara bktest_para_;
+   int bktest_mock_date_;
    bool has_get_mock_assets_;
-   double mock_assets_;
+   double bktest_mock_assets_;
+   bool has_bktest_result_fetched_;
+   double ori_bktest_price_;
+   bool has_set_ori_bktest_price_;
+
 };
 
 #endif

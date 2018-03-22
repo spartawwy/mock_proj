@@ -23,6 +23,7 @@ BatchesBuyTask::BatchesBuyTask(T_TaskInformation &task_info, WinnerApp *app)
     , is_wait_trade_result_(false)
     , continue_trade_fail_count_(0)
     , trade_fail_ctr_count_(0)
+    , is_ok_(true)
 { 
     step_items_.resize(100);
 
@@ -37,12 +38,21 @@ BatchesBuyTask::BatchesBuyTask(T_TaskInformation &task_info, WinnerApp *app)
         buyed_field = task_info.assistant_field;
      
     auto array_ordered = utility::split(task_info.assistant_field, ";"); //  esction index which is buyed
-     
+    app_->local_logger().LogLocal(TagOfCurTask(), 
+        utility::FormatStr("task %d BatchesBuyTask assistant_field:%s", para_.id, task_info.assistant_field.c_str()));
+    
     for( int i = 0; i < array_ordered.size(); ++i )
     {
         try
         {
             auto index = std::stoi(array_ordered[i]);
+            if( index > step_items_.size() - 1 )
+            {
+                app_->local_logger().LogLocal(TagOfCurTask(), 
+                    utility::FormatStr("error: task %d BatchesBuyTask index:%d >= step_items_.size:%d", para_.id, index, step_items_.size()));
+                is_ok_ = false;
+                return;
+            }
             step_items_[index].has_buy = true;
         }catch(...)
         {
@@ -84,6 +94,12 @@ void BatchesBuyTask::HandleQuoteData()
 
     if( is_waitting_removed_ )
         return;
+    if( !is_ok_ )
+    {
+        is_waitting_removed_ = true;
+        this->app_->RemoveTask(this->task_id(), TypeTask::BATCHES_BUY);
+        return;
+    }
     if( is_wait_trade_result_ )
     {
         app_->local_logger().LogLocal(TagOfCurTask(), "BatchesBuyTask::HandleQuoteData wait trade result!");

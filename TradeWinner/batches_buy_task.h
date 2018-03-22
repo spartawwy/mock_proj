@@ -33,6 +33,7 @@ private:
 
     unsigned int continue_trade_fail_count_;
     unsigned int trade_fail_ctr_count_;
+    bool is_ok_;
 };
 
 #endif

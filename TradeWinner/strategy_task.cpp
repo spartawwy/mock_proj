@@ -9,7 +9,7 @@
 
 const unsigned int cst_max_data_count = 60 * 60 * 4;
  
-StrategyTask::StrategyTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *mock_para)
+StrategyTask::StrategyTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *bktest_para)
     : app_(app)
     , para_(task_info)
     , market_type_(GetStockMarketType(task_info.stock))
@@ -22,11 +22,15 @@ StrategyTask::StrategyTask(T_TaskInformation &task_info, WinnerApp *app, T_MockS
     , life_count_(0)
     , strand_(app->task_pool())
     , timed_mutex_wrapper_()
-    , is_mock_(mock_para != nullptr)
+    , is_back_test_(bktest_para != nullptr)
+    , bktest_mock_assets_(0.0)
+    , has_bktest_result_fetched_(false)
+    , ori_bktest_price_(0.0)
+    , has_set_ori_bktest_price_(false)
 {
-    if( is_mock_ )
+    if( is_back_test_ )
     {
-       mock_para_ = ori_mock_para_ = *mock_para;
+       bktest_para_ = ori_bktest_para_ = *bktest_para;
     }
 }
 
@@ -96,21 +100,21 @@ void StrategyTask::ObtainData(std::shared_ptr<QuotesData> &data)
 
 void StrategyTask::do_mock_date_change(int date)
 {
-    mock_date_ = date;
+    bktest_mock_date_ = date;
     strand_.PostTask([this]()
     {
-        mock_para_.avaliable_position += mock_para_.frozon_position;
-        mock_para_.frozon_position = 0;
+        bktest_para_.avaliable_position += bktest_para_.frozon_position;
+        bktest_para_.frozon_position = 0;
     });
 }
 
 double StrategyTask::GetMockAssets(double price)
 { 
     has_get_mock_assets_ = false;
-    mock_assets_ = 0.0;
+    bktest_mock_assets_ = 0.0;
     strand_.PostTask([price, this]()
     { 
-        this->mock_assets_ = (mock_para_.avaliable_position + mock_para_.frozon_position) * price + mock_para_.capital;
+        this->bktest_mock_assets_ = (bktest_para_.avaliable_position + bktest_para_.frozon_position) * price + bktest_para_.capital;
         this->has_get_mock_assets_ = true;
     });
     app()->local_logger().LogLocal("Waitfor mock assets");
@@ -123,8 +127,13 @@ double StrategyTask::GetMockAssets(double price)
     }else
         this->has_get_mock_assets_ = this->has_get_mock_assets_;
     app()->local_logger().LogLocal(" ret Waitfor mock assets");
-    return mock_assets_;
+    return bktest_mock_assets_;
 
+}
+
+double StrategyTask::GetOriMockAssets()
+{
+    return  (ori_bktest_para_.avaliable_position + ori_bktest_para_.frozon_position) * ori_bktest_price_ + ori_bktest_para_.capital;
 }
 
 // notice: called in trade_strand

@@ -455,7 +455,7 @@ bool IsNowTradeTime();
 
 QString IndexCode2IndexName(const QString& code);
 
-#define USE_TRADE_FLAG
+//#define USE_TRADE_FLAG
 
 
 #endif
