@@ -21,14 +21,17 @@ AdvanceSectionTask::Portion::Portion(int index,double bottom, double top, Portio
 	
 }
 
-AdvanceSectionTask::AdvanceSectionTask(T_TaskInformation &task_info, WinnerApp *app)
-	: StrategyTask(task_info, app)
+AdvanceSectionTask::AdvanceSectionTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *mock_para)
+    : StrategyTask(task_info, app, mock_para)
     , app_(app)
     , reb_bottom_price_(MAX_STOCK_PRICE)
     , reb_top_price_(MIN_STOCK_PRICE)
     , is_wait_trade_result_(false)
 {
 	// todo: setup portions_
+    auto str_porion_vector = utility::split(para_.advance_section_task.portion_sections, ";");
+    auto str_por_stat_vector = utility::split(para_.advance_section_task.portion_states, ";");
+
     // todo: is any portions is unknow set is_any_portion_unknow_ true
 	assert(portions_.size() > 0);
     assert(para_.rebounce > 0.0);
@@ -111,6 +114,14 @@ void AdvanceSectionTask::HandleQuoteData()
 		//app_->local_logger().LogLocal(cst_rebounce_debug, TSystem::utility::FormatStr("%d AdvanceSectionTask price jump %.2f to %.2f", para_.id, pre_price, iter->cur_price));
 		return;
 	};
+    if( is_back_test_ && !has_set_ori_bktest_price_)
+    {  
+        has_set_ori_bktest_price_ = true;
+        ori_bktest_price_ = iter->cur_price;
+    } 
+    /*int total_position = GetTototalPosition();
+    int avaliable_pos = GetAvaliablePosition();*/
+
     bool is_reb_base_price_need_change = false;
     if( reb_top_price_ < iter->cur_price ) 
     {
@@ -287,6 +298,26 @@ BEFORE_TRADE:
             , price, qty
             , result, error_info); 
 #endif 
+        //------------------do trade -------------
+        if( is_back_test_ )
+        {
+            if( order_type == TypeOrderCategory::BUY )
+            {
+                if( bktest_para_.capital < price * qty + CaculateFee(price*qty, order_type == TypeOrderCategory::BUY) )
+                    strcpy_s(error_info, "capital not enough!");
+                else
+                {
+                    bktest_para_.frozon_position += qty;
+                    bktest_para_.capital -= price * qty + CaculateFee(price*qty, order_type == TypeOrderCategory::BUY);
+                }
+            }else
+            { 
+                assert(bktest_para_.avaliable_position >= qty);
+                bktest_para_.avaliable_position -= qty;
+                bktest_para_.capital += price * qty - CaculateFee(price*qty, order_type == TypeOrderCategory::SELL);
+            }
+        }
+
         // judge result 
         if( strlen(error_info) == 0 ) // trade success
         {
@@ -315,12 +346,16 @@ BEFORE_TRADE:
 
             }else
             {
+                is_waitting_removed_ = true;
                 auto ret_str = new std::string(utility::FormatStr("贝塔任务:%d %s 已破底清仓! 将移除任务!", para_.id, para_.stock.c_str()));
                 this->app_->AppendLog2Ui(ret_str->c_str());
-                this->app_->EmitSigShowUi(ret_str);
-
-                is_waitting_removed_ = true;
-                this->app_->RemoveTask(this->task_id(), TypeTask::ADVANCE_SECTION); // invoker delete self
+                if( !is_back_test_ )
+                {
+                    this->app_->EmitSigShowUi(ret_str);
+                    this->app_->RemoveTask(this->task_id(), TypeTask::ADVANCE_SECTION); // invoker delete self
+                }else
+                    delete ret_str; ret_str = nullptr;
+                
             }
         }else // trade fail
         { 
@@ -328,7 +363,10 @@ BEFORE_TRADE:
                 , para_.id, cn_order_str.c_str(), para_.stock.c_str(), price, qty, error_info));
             this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str);
             this->app_->AppendLog2Ui(ret_str->c_str());
-            this->app_->EmitSigShowUi(ret_str, true);  
+            if( !is_back_test_ )
+                this->app_->EmitSigShowUi(ret_str, true);
+            else
+                delete ret_str; ret_str = nullptr;
         }
           
         is_wait_trade_result_ = false;

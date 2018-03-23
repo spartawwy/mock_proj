@@ -156,12 +156,24 @@ int StrategyTask::HandleSellByStockPosition(double price, bool remove_task)
 
 int StrategyTask::GetTototalPosition()
 {
-	auto p_pos = this->app_->QueryPosition_LazyMode(para_.stock);
-	return p_pos ? p_pos->total : 0;
+    if( is_back_test_ )
+    { 
+        return bktest_para_.avaliable_position + bktest_para_.frozon_position;
+    }else
+    {
+	    auto p_pos = this->app_->QueryPosition_LazyMode(para_.stock);
+	    return p_pos ? p_pos->total : 0;
+    }
 }
 
 int StrategyTask::GetAvaliablePosition()
 {
-    auto p_pos = this->app_->QueryPosition_LazyMode(para_.stock);
-    return p_pos ? p_pos->avaliable : 0;
+    if( is_back_test_ )
+    { 
+        return bktest_para_.avaliable_position;
+    }else
+    {
+        auto p_pos = this->app_->QueryPosition_LazyMode(para_.stock);
+        return p_pos ? p_pos->avaliable : 0;
+    }
 }

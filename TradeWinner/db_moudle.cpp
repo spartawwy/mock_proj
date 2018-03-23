@@ -80,7 +80,15 @@ CREATE TABLE EqualSectionTask(id INTEGER,
 								PRIMARY KEY(id));
 
 CREATE TABLE IndexRelateTask(id INTEGER, index_task_type INTEGER, relate_stock TEXT, is_down_trigger bool, is_buy bool,  PRIMARY KEY(id));
-     
+
+// portion_sections seperated by ';' , portion_states also 
+CREATE TABLE AdvanceSectionTask(id INTEGER,
+                                portion_sections TEXT,
+                                portion_states TEXT,
+                                pre_trade_price DOUBLE,
+                                is_original BOOL,
+                                PRIMARY KEY(id));
+
 CREATE TABLE CapitalMock(id INTEGER, avaliable DOUBLE);
 CREATE TABLE PositionMock(stock TEXT not null, avaiable INTEGER, frozen INTEGER, updata_date INTEGER, PRIMARY KEY(stock));
  */

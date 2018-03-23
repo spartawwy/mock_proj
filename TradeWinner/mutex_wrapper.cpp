@@ -21,7 +21,7 @@ bool TimedMutexWrapper::try_lock_for(unsigned int milli_sec)
         return true;
     }
   
-    auto start = std::chrono::system_clock::now();
+    auto start = std::chrono::steady_clock::now();
     int delay_autom_val = 50;
     if( milli_sec  > 10*1000 )
     {
@@ -41,12 +41,14 @@ bool TimedMutexWrapper::try_lock_for(unsigned int milli_sec)
         delay_autom_val = 2;
     }
 
-    auto dur = std::chrono::system_clock::now() - start;
-    while( is_locked_ && (unsigned int)int(dur.count()*1000) < milli_sec ) 
+    auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
+    auto milli_dur = static_cast<double>(dur.count() * std::chrono::milliseconds::period::num / std::chrono::milliseconds::period::den);
+
+    while( is_locked_ && milli_dur < milli_sec ) 
     {
-        unsigned int dis =  milli_sec - (unsigned int)int(dur.count()*1000);
-        Delay( dis > delay_autom_val ? delay_autom_val : dis );
-        dur = std::chrono::system_clock::now() - start;
+        milli_dur = static_cast<double>(dur.count() * std::chrono::milliseconds::period::num / std::chrono::milliseconds::period::den);
+        Delay( milli_dur > delay_autom_val ? delay_autom_val : milli_dur );
+        dur = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
     }
     if( !is_locked_ )
     {

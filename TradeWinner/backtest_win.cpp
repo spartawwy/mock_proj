@@ -92,17 +92,19 @@ void WinnerWin::DoStartBacktest(bool)
         return;
     }
 
-#if 0
-    task_taskinfo_vector.clear();
-#else
     task_vector.clear();
     taskinfo_vector.clear();
     callback_vector.clear();
     mock_strategy_para_vector.clear();
-#endif 
+ 
+    auto mock_para = std::make_shared<T_MockStrategyPara>();
+    mock_para->avaliable_position = 10000;
+    mock_para->capital = 200000.00;
+    mock_strategy_para_vector.push_back(std::move(mock_para));
+
     auto task_info = std::make_shared<T_TaskInformation>();
 
-
+#if 0 // test equal section task 
     task_info->id = 123;
     task_info->type = TypeTask::EQUAL_SECTION;
     task_info->stock = "600123";
@@ -121,14 +123,32 @@ void WinnerWin::DoStartBacktest(bool)
     task_info->secton_task.max_trig_price = 9.8;
     task_info->secton_task.min_trig_price = 8.0; 
     taskinfo_vector.push_back( std::move(task_info));
-
-    auto mock_para = std::make_shared<T_MockStrategyPara>();
-    mock_para->avaliable_position = 10000;
-    mock_para->capital = 200000.00;
-    mock_strategy_para_vector.push_back(std::move(mock_para));
-
     auto equal_sec_task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
     task_vector.push_back( std::move(equal_sec_task) );
+
+#else
+    task_info->id = 888;
+    task_info->type = TypeTask::ADVANCE_SECTION;
+    task_info->stock = "000789";
+    task_info->back_alert_trigger = false;
+    //task_in->o.rebounce = 0.3;
+    task_info->continue_second = 0;
+    //task_info->quantity = 400;
+    //task_info->alert_price = 12.2;
+    task_info->assistant_field = "";
+
+    /*task_info->secton_task.fall_percent = 0.7;
+    task_info->secton_task.raise_percent = 0.7;
+    task_info->secton_task.fall_infection = 0.2;
+    task_info->secton_task.raise_percent = 0.2;
+    task_info->secton_task.max_position = 3000*100;
+    task_info->secton_task.max_trig_price = 9.8;
+    task_info->secton_task.min_trig_price = 8.0; */
+    taskinfo_vector.push_back( std::move(task_info));
+    auto equal_sec_task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
+    task_vector.push_back( std::move(equal_sec_task) );
+#endif 
+      
     auto fenbi_callback_obj = std::make_shared<T_FenbiCallBack>();
     fenbi_callback_obj->call_back_func = FenbiCallBackFunc;
     fenbi_callback_obj->para = std::addressof(task_vector[0]);

@@ -30,7 +30,7 @@ public:
 
 	};
 
-	AdvanceSectionTask(T_TaskInformation &task_info, WinnerApp *app);
+	AdvanceSectionTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *mock_para=nullptr);
 	virtual ~AdvanceSectionTask(){}
 	virtual void HandleQuoteData() override;
 
@@ -55,7 +55,7 @@ private:
 
     unsigned int is_not_enough_capital_continue_;
 
-    bool  is_wait_trade_result_; 
+    volatile bool  is_wait_trade_result_; 
 
 };
 

@@ -260,6 +260,7 @@ void EqualSectionTask::HandleQuoteData()
 
     int ms_for_wait_lock = 1000;
     if( is_back_test_ ) ms_for_wait_lock = 5000;
+    app_->local_logger().LogLocal("mutex", "try lock");
     if( !timed_mutex_wrapper_.try_lock_for(ms_for_wait_lock) )  
     {
         DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
@@ -268,22 +269,13 @@ void EqualSectionTask::HandleQuoteData()
     };
     app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock ok");
 
-    int total_position = 0;
-    int avaliable_pos = 0;
-    if( is_back_test_ )
-    {
-        if( !has_set_ori_bktest_price_ )
-        {
-            has_set_ori_bktest_price_ = true;
-            ori_bktest_price_ = iter->cur_price;
-        }
-        total_position = bktest_para_.avaliable_position + bktest_para_.frozon_position;
-        avaliable_pos = bktest_para_.avaliable_position;
-    }else
-    {
-        total_position = GetTototalPosition();
-        avaliable_pos = this->app_->QueryPosAvaliable_LazyMode(para_.stock);
-    }
+    if( is_back_test_ && !has_set_ori_bktest_price_)
+    {  
+        has_set_ori_bktest_price_ = true;
+        ori_bktest_price_ = iter->cur_price;
+    } 
+    int total_position = GetTototalPosition();
+    int avaliable_pos = GetAvaliablePosition();
      
 	int index = 0;
 
@@ -523,19 +515,21 @@ BEFORE_TRADE:
         {
             if( order_type == TypeOrderCategory::BUY )
             {
-                bktest_para_.frozon_position += qty;
-                bktest_para_.capital -= price * qty + CaculateFee(price*qty, order_type == TypeOrderCategory::SELL);
-            }else
-            {
-               /* if( mock_para_.avaliable_position < qty )
+                if( bktest_para_.capital < price * qty + CaculateFee(price*qty, order_type == TypeOrderCategory::BUY) )
+                    strcpy_s(error_info, "capital not enough!");
+                else
                 {
-                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("error: avaliable:%d < sell qty:%d", mock_para_.avaliable_position, qty) );
-                }else*/
+                    bktest_para_.frozon_position += qty;
+                    bktest_para_.capital -= price * qty + CaculateFee(price*qty, order_type == TypeOrderCategory::BUY);
+                }
+            }else
+            { 
                 assert(bktest_para_.avaliable_position >= qty);
                 bktest_para_.avaliable_position -= qty;
                 bktest_para_.capital += price * qty - CaculateFee(price*qty, order_type == TypeOrderCategory::SELL);
             }
         }
+
 		cur_type_action_ = TypeAction::NOOP; // for rebounce
         // judge result 
         if( strlen(error_info) == 0 ) // trade ok
