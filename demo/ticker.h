@@ -8,7 +8,7 @@
 
 #include <Windows.h>
 
-#include "tdxhqapi.h"
+#include "TdxHqApi.h"
 
 
 class Buffer

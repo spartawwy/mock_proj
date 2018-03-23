@@ -565,7 +565,8 @@ BEFORE_TRADE:
 			    cond4_buy_backtrigger_price_ = cst_max_stock_price;
                 // save to db: save cur_price as start_price in assistant_field 
                 DO_LOG(TagOfCurTask(), utility::FormatStr("DB UpdateEqualSection %d price:%.2f", para_.id, iter->cur_price));
-                app_->db_moudle().UpdateEqualSection(para_.id, para_.secton_task.is_original, iter->cur_price);
+                if( !is_back_test_ )
+                    app_->db_moudle().UpdateEqualSection(para_.id, para_.secton_task.is_original, iter->cur_price);
                 app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ unlock");
                 this->timed_mutex_wrapper_.unlock();
             }else

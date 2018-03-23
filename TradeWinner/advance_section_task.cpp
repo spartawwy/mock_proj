@@ -28,13 +28,71 @@ AdvanceSectionTask::AdvanceSectionTask(T_TaskInformation &task_info, WinnerApp *
     , reb_top_price_(MIN_STOCK_PRICE)
     , is_wait_trade_result_(false)
 {
-	// todo: setup portions_
-    auto str_porion_vector = utility::split(para_.advance_section_task.portion_sections, ";");
-    auto str_por_stat_vector = utility::split(para_.advance_section_task.portion_states, ";");
-
     // todo: is any portions is unknow set is_any_portion_unknow_ true
-	assert(portions_.size() > 0);
+
+    assert(para_.advance_section_task.portion_sections.size() > 2 );
     assert(para_.rebounce > 0.0);
+     
+	// setup portions_  ------------------
+    auto str_portion_vector = utility::split(para_.advance_section_task.portion_sections, ";");
+    if( str_portion_vector.size() && str_portion_vector.at(str_portion_vector.size()-1) == "" )
+        str_portion_vector.pop_back();
+
+    std::vector<std::string> str_portion_stat_vector = utility::split(para_.advance_section_task.portion_states, ";");
+
+    if( str_portion_vector.size() < 2 )
+    {
+        ShowError(utility::FormatStr("error: AdvanceSectionTask %d str_portion_vector.size() < 2", para_.id));
+        is_waitting_removed_ = true;
+        return;
+    }
+    std::vector<double> price_vector;
+    for( int i = 0 ; i < str_portion_vector.size(); ++i ) 
+        price_vector.push_back(std::stod(str_portion_vector[i]));
+
+    int portion_num = 0;
+    if( !para_.advance_section_task.is_original )
+    {  
+        if( str_portion_stat_vector.size() != str_portion_vector.size() )
+        {
+            ShowError(utility::FormatStr("error: AdvanceSectionTask %d portion_states.size != portion_sections.size", para_.id));
+            is_waitting_removed_ = true;
+            return;
+        }
+        try
+        { 
+            for( portion_num = 0; portion_num < str_portion_vector.size() - 1; ++portion_num ) 
+            {  
+                portions_.emplace_back(portion_num, price_vector[portion_num]
+                         , price_vector[portion_num + 1]
+                         , (PortionState)std::stoi(str_portion_stat_vector[portion_num]));
+            }
+        }
+        catch (...)
+        {
+            ShowError(utility::FormatStr("error: AdvanceSectionTask %d illegal content in portion_sections or portion_states", para_.id));
+            is_waitting_removed_ = true;
+            return;
+        } 
+    }else // original
+    { 
+        try
+        { 
+            for( portion_num = 0; portion_num < str_portion_vector.size() - 1; ++portion_num ) 
+            {  
+                portions_.emplace_back(portion_num, price_vector[portion_num]
+                    , price_vector[portion_num + 1]
+                    , PortionState::UNKNOW);
+            }
+        }
+        catch (...)
+        {
+            ShowError(utility::FormatStr("error: AdvanceSectionTask %d illegal content in portion_sections or portion_states", para_.id));
+            is_waitting_removed_ = true;
+            return;
+        } 
+    }
+    
 }
 
 void AdvanceSectionTask::HandleQuoteData()
@@ -134,6 +192,7 @@ void AdvanceSectionTask::HandleQuoteData()
         reb_base_price_ = reb_bottom_price_;
     }
 
+    // todo: change to use try lock
     if( is_wait_trade_result_ )
     {
         DO_LOG("AdvanceSec", utility::FormatStr("task:%d %s wait trade result!", para_.id, para_.stock.c_str()));
@@ -193,8 +252,15 @@ void AdvanceSectionTask::HandleQuoteData()
         if( up_rebounce < para_.rebounce )
             goto NOT_TRADE;
         // create position --------------
-        const double capital = this->app_->QueryCapital().available;
+        double capital = 0.0;
+        if( is_back_test_ )
+            capital = bktest_para_.capital;
+        else
+            capital = this->app_->QueryCapital().available;
+          
         qty_can_buy = int(capital / iter->cur_price) / 100 * 100;
+        if( is_back_test_ && qty_can_buy > 0 && bktest_para_.capital < iter->cur_price * qty_can_buy + CaculateFee(iter->cur_price * qty_can_buy, order_type == TypeOrderCategory::BUY) )
+            qty_can_buy -= 100;
         if( qty_can_buy < 100 )
         {
             if( is_not_enough_capital_continue_++ % 100 == 0 )
@@ -223,6 +289,8 @@ void AdvanceSectionTask::HandleQuoteData()
          
         const double capital = this->app_->QueryCapital().available;
         qty_can_buy = int(capital / iter->cur_price) / 100 * 100;
+        if( is_back_test_ && qty_can_buy > 0 && bktest_para_.capital < iter->cur_price * qty_can_buy + CaculateFee(iter->cur_price * qty_can_buy, order_type == TypeOrderCategory::BUY) )
+            qty_can_buy -= 100;
         if( qty_can_buy < 100 )
         {
             if( is_not_enough_capital_continue_++ % 100 == 0 )
@@ -341,32 +409,22 @@ BEFORE_TRADE:
                 is_not_enough_capital_continue_ = 0;
 
                 reb_base_price_ = price; 
+                // todo: translate portions state into para.advancesection.portion_states 
                 // todo: save to db: save cur_price as start_price in assistant_field 
-                //app_->db_moudle().UpdateEqualSection(para_.id, para_.secton_task.is_original, iter->cur_price);
+                //if( !is_back_test_ )
+                //    app_->db_moudle().UpdateEqualSection(para_.id, para_.secton_task.is_original, iter->cur_price);
 
             }else
             {
                 is_waitting_removed_ = true;
-                auto ret_str = new std::string(utility::FormatStr("贝塔任务:%d %s 已破底清仓! 将移除任务!", para_.id, para_.stock.c_str()));
-                this->app_->AppendLog2Ui(ret_str->c_str());
+                ShowError(utility::FormatStr("贝塔任务:%d %s 已破底清仓! 将移除任务!", para_.id, para_.stock.c_str()));
                 if( !is_back_test_ )
-                {
-                    this->app_->EmitSigShowUi(ret_str);
                     this->app_->RemoveTask(this->task_id(), TypeTask::ADVANCE_SECTION); // invoker delete self
-                }else
-                    delete ret_str; ret_str = nullptr;
-                
             }
         }else // trade fail
-        { 
-            auto ret_str = new std::string(utility::FormatStr("error %d %s %s %.2f %d error:%s"
+        {  
+            ShowError(utility::FormatStr("error %d %s %s %.2f %d error:%s"
                 , para_.id, cn_order_str.c_str(), para_.stock.c_str(), price, qty, error_info));
-            this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str);
-            this->app_->AppendLog2Ui(ret_str->c_str());
-            if( !is_back_test_ )
-                this->app_->EmitSigShowUi(ret_str, true);
-            else
-                delete ret_str; ret_str = nullptr;
         }
           
         is_wait_trade_result_ = false;

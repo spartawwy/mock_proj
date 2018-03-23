@@ -44,7 +44,7 @@ private:
 
     WinnerApp *app_;
 	//unsigned int section_num_;
-	std::vector<Portion> portions_;
+	std::vector<Portion> portions_; // from bottom portion to up portion
      
 	bool is_any_portion_unknow_;
 

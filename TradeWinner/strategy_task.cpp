@@ -177,3 +177,17 @@ int StrategyTask::GetAvaliablePosition()
         return p_pos ? p_pos->avaliable : 0;
     }
 }
+
+void StrategyTask::ShowError(const std::string &msg)
+{
+    auto p_str = new std::string(msg);
+    this->app_->AppendLog2Ui(p_str->c_str()); 
+    if( is_back_test_ )
+    { 
+        this->app_->EmitSigShowUi(p_str);
+    }else
+    {
+        app_->local_logger().LogLocal(*p_str);
+        this->app_->EmitSigShowUi(p_str);
+    }
+}

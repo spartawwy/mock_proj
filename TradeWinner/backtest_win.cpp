@@ -7,6 +7,7 @@
 #include "MySpinBox.h"
 #include "HintList.h"
 #include "equal_section_task.h"
+#include "advance_section_task.h"
 
 #include "winner_hq_api.h"
 
@@ -137,6 +138,8 @@ void WinnerWin::DoStartBacktest(bool)
     //task_info->alert_price = 12.2;
     task_info->assistant_field = "";
 
+    task_info->advance_section_task.is_original = true;
+    task_info->advance_section_task.portion_sections = "";
     /*task_info->secton_task.fall_percent = 0.7;
     task_info->secton_task.raise_percent = 0.7;
     task_info->secton_task.fall_infection = 0.2;
@@ -145,7 +148,7 @@ void WinnerWin::DoStartBacktest(bool)
     task_info->secton_task.max_trig_price = 9.8;
     task_info->secton_task.min_trig_price = 8.0; */
     taskinfo_vector.push_back( std::move(task_info));
-    auto equal_sec_task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
+    auto equal_sec_task = std::make_shared<AdvanceSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
     task_vector.push_back( std::move(equal_sec_task) );
 #endif 
       
