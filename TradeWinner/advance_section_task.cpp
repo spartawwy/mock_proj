@@ -17,7 +17,7 @@ AdvanceSectionTask::Portion::Portion(int index,double bottom, double top, Portio
 	, top_price_(top)
 	, state_(state)  
 { 
-	mid_price_ = Round(bottom_price_ + top_price_ / 2, 2);
+	mid_price_ = Round((bottom_price_ + top_price_) / 2, 2);
 	
 }
 

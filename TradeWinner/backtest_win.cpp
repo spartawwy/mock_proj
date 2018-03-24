@@ -55,7 +55,7 @@ bool WinnerWin::InitBacktestWin()
     int port = 50010;
 
     app_->local_logger().LogLocal(utility::FormatStr("InitBacktestWin WinnerHisHq_Connect %s : %d waiting", server_ip, port));
-#if 0
+#if 1
     int ret_val = WinnerHisHq_Connect("192.168.1.5", 50010, result, error);
 #else
     int ret_val = WinnerHisHq_Connect("128.1.1.3", 50010, result, error);
@@ -98,32 +98,38 @@ void WinnerWin::DoStartBacktest(bool)
     callback_vector.clear();
     mock_strategy_para_vector.clear();
  
-    auto mock_para = std::make_shared<T_MockStrategyPara>();
-    mock_para->avaliable_position = 10000;
-    mock_para->capital = 200000.00;
-    mock_strategy_para_vector.push_back(std::move(mock_para));
-
+    const double capital = 200000.00;
+     
     auto task_info = std::make_shared<T_TaskInformation>();
 
-#if 0 // test equal section task 
+#if 1 // test equal section task 
     task_info->id = 123;
     task_info->type = TypeTask::EQUAL_SECTION;
-    task_info->stock = "600123";
+    //task_info->stock = "600123";
+    task_info->stock = "000789";
     task_info->back_alert_trigger = false;
     //task_in->o.rebounce = 0.3;
     task_info->continue_second = 0;
-    task_info->quantity = 400;
-    task_info->alert_price = 12.2;
+    //task_info->quantity = 400;
+    task_info->quantity = 5000;
+    const double alert_price = 8.2;
+    task_info->alert_price = alert_price;
     task_info->assistant_field = "";
 
     task_info->secton_task.fall_percent = 0.7;
     task_info->secton_task.raise_percent = 0.7;
     task_info->secton_task.fall_infection = 0.2;
     task_info->secton_task.raise_percent = 0.2;
-    task_info->secton_task.max_position = 3000*100;
-    task_info->secton_task.max_trig_price = 9.8;
-    task_info->secton_task.min_trig_price = 8.0; 
+    task_info->secton_task.max_position = 3000*10;
+    task_info->secton_task.max_trig_price = 9.1;
+    task_info->secton_task.min_trig_price = 7.95; 
     taskinfo_vector.push_back( std::move(task_info));
+
+    auto mock_para = std::make_shared<T_MockStrategyPara>();
+    mock_para->avaliable_position = (capital / alert_price ) / 2 / 100 * 100;
+    mock_para->capital = capital - mock_para->avaliable_position * alert_price;
+    mock_strategy_para_vector.push_back(std::move(mock_para));
+
     auto equal_sec_task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
     task_vector.push_back( std::move(equal_sec_task) );
 
@@ -131,22 +137,31 @@ void WinnerWin::DoStartBacktest(bool)
     task_info->id = 888;
     task_info->type = TypeTask::ADVANCE_SECTION;
     task_info->stock = "000789";
+    task_info->rebounce = 1;   
     task_info->back_alert_trigger = false;
-    //task_in->o.rebounce = 0.3;
-    task_info->continue_second = 0;
-    //task_info->quantity = 400;
-    //task_info->alert_price = 12.2;
-    task_info->assistant_field = "";
-
+    task_info->continue_second = 0; 
+    task_info->assistant_field = ""; 
     task_info->advance_section_task.is_original = true;
-    task_info->advance_section_task.portion_sections = "";
-    /*task_info->secton_task.fall_percent = 0.7;
-    task_info->secton_task.raise_percent = 0.7;
-    task_info->secton_task.fall_infection = 0.2;
-    task_info->secton_task.raise_percent = 0.2;
-    task_info->secton_task.max_position = 3000*100;
-    task_info->secton_task.max_trig_price = 9.8;
-    task_info->secton_task.min_trig_price = 8.0; */
+    
+    double top_price = 9.0;
+    double bottom_price = 8.0;
+    double mid_price = (top_price + bottom_price) / 2;
+    const int section_num = 5;
+    task_info->quantity = int(capital / mid_price / section_num);
+    assert(top_price > bottom_price && section_num > 1);
+
+    int i = 0;
+    for( ; i < section_num; ++i )
+    {
+        std::string temp_str = std::to_string(bottom_price + ((top_price - bottom_price) / section_num) * i);
+        task_info->advance_section_task.portion_sections += temp_str + ";";
+
+    }
+    if( i == section_num )
+        task_info->advance_section_task.portion_sections += std::to_string(bottom_price + ((top_price - bottom_price) / section_num) * i);
+
+    task_info->advance_section_task.portion_states = "";
+     
     taskinfo_vector.push_back( std::move(task_info));
     auto equal_sec_task = std::make_shared<AdvanceSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
     task_vector.push_back( std::move(equal_sec_task) );
@@ -159,11 +174,15 @@ void WinnerWin::DoStartBacktest(bool)
 
     char error[1024] = {0};
     //int date[] = { 20180212, 20180213, 20180214, 20180215, 20180216, 20180222 };
-    int date[] = { 20171020, 20171021, 20171022, 20171023, 20171024, 20171025, 20171026, 20171027, 20171028, 20171029, 20171030,20171031
-  , 20171101, 20171102,  20171103,  20171104,  20171105,  20171106,  20171107,  20171108,  20171109, 20171110 
-  , 20171111, 20171112,  20171113,  20171114,  20171115,  20171116,  20171117,  20171118,  20171119, 20171120 
-  , 20171121, 20171122,  20171123,  20171124,  20171125,  20171126,  20171127,  20171128,  20171129, 20171130 
-   };
+    /*int date[] = { 20171020, 20171021, 20171022, 20171023, 20171024, 20171025, 20171026, 20171027, 20171028, 20171029, 20171030,20171031
+    , 20171101, 20171102,  20171103,  20171104,  20171105,  20171106,  20171107,  20171108,  20171109, 20171110 
+    , 20171111, 20171112,  20171113,  20171114,  20171115,  20171116,  20171117,  20171118,  20171119, 20171120 
+    , 20171121, 20171122,  20171123,  20171124,  20171125,  20171126,  20171127,  20171128,  20171129, 20171130 
+    };*/
+    int date[] = { 20170914, 20170915, 20170916, 20170917, 20170918, 20170919, 20170920, 20170923, 20170924, 20170925
+                  , 20170926, 20170927, 20170928, 20170929, 20171009, 20171010, 20171011,  20171012, 20171013, 20171014
+                  , 20171015,  20171016,  20171017, 20171018, 20171019, 20171020, 20171021, 20171022, 20171023, 20171024
+                  , 20171025, 20171026, 20171027, 20171028, 20171029, 20171030};
     for(int i = 0; i < sizeof(date)/sizeof(date[0]); ++i )
     {
         WinnerHisHq_GetHisFenbiData(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
