@@ -1,4 +1,3 @@
-
 #include "winner_app.h"
 
 #include <qmessagebox.h>
@@ -8,6 +7,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
+#include <array>
 
 #include <TLib/core/tsystem_utility_functions.h>
 
@@ -115,6 +115,8 @@ bool WinnerApp::Init()
 	assert(p_user_account_info_ && p_user_broker_info_);
 
 #endif
+    db_moudle_.LoadTradeDate(trade_dates_);
+
 #ifdef USE_TRADE_FLAG
 
 	BrokerCfgWin  bcf_win(this);
@@ -940,3 +942,36 @@ bool SetCurrentEnvPath()
 
 	return bRet;  
 }  
+
+// ps: make sure date_end > date_begin
+std::vector<int> WinnerApp::GetSpanTradeDates(int date_begin, int date_end)
+{
+    std::vector<int> ret_days;
+
+    const int year_begin = date_begin / 10000;
+    int mon_begin = (date_begin % 10000) / 100;
+    int day_begin = (date_begin % 100);
+    const int year_end = date_end / 10000;
+    const int mon_end = (date_end % 10000) / 100;
+    const int day_end = (date_end % 100);
+     
+    std::array<int, 12> legal_mon = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    std::array<int, 31> legal_day = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+                                     , 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+                                     , 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
+ 
+    for( int y = year_begin; y <= year_end; ++y )
+    {
+        for(auto m : legal_mon)
+        {
+            for( auto d : legal_day )
+            {
+                int local_date = y * 10000 + m * 100 + d;
+                if( local_date >= date_begin && local_date <= date_end 
+                    && trade_dates_.find(local_date) != trade_dates_.end() )
+                    ret_days.push_back(local_date);
+            } 
+        }
+    }
+    return ret_days;
+}

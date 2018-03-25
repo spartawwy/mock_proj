@@ -115,6 +115,8 @@ public:
 
     WinnerWin& winner_win() { return  winner_win_; }
 
+    std::vector<int> GetSpanTradeDates(int date_begin, int date_end);
+
 signals:
 
     //(StrategyTask*, change kind)
@@ -194,6 +196,7 @@ private:
     T_UserAccountInfo *p_user_account_info_;
     T_BrokerInfo *p_user_broker_info_;
       
+    T_DateMapIsopen trade_dates_;
 
     friend class IndexTask;
 };

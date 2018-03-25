@@ -92,10 +92,15 @@ CREATE TABLE AdvanceSectionTask(id INTEGER,
 CREATE TABLE CapitalMock(id INTEGER, avaliable DOUBLE);
 CREATE TABLE PositionMock(stock TEXT not null, avaiable INTEGER, frozen INTEGER, updata_date INTEGER, PRIMARY KEY(stock));
  */
+
+static std::string db_file_path = "./pzwj.kd";
+static std::string exchane_db_file_path = "./exchbase.kd";
+
 using namespace  TSystem;
 DBMoudle::DBMoudle(WinnerApp *app)
     : app_(app)
     , db_conn_(nullptr)
+    , exchange_db_conn_(nullptr)
     , strand_(std::make_shared<TSystem::TaskStrand>(app->task_pool()))
     , max_accoun_id_(1) 
 {
@@ -110,7 +115,9 @@ DBMoudle::~DBMoudle()
 void DBMoudle::Init()
 {
     if( !db_conn_ )
-		Open(db_conn_);
+		Open(db_conn_, db_file_path);
+    if( !exchange_db_conn_ )
+        Open(exchange_db_conn_, exchane_db_file_path);
 
     if( !utility::ExistTable("accountInfo", *db_conn_) )
         ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
@@ -148,7 +155,11 @@ void DBMoudle::Init()
          }  
          return 0;
      });
-      
+     
+     if( !utility::ExistTable("ExchangeDate", *exchange_db_conn_) )
+         ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
+         , "DBMoudle::Init"
+         , "can't find table ExchangeDate");
 }
 
 void DBMoudle::LoadAllUserBrokerInfo()
@@ -156,7 +167,7 @@ void DBMoudle::LoadAllUserBrokerInfo()
     assert( user_account_info_map_.size() <= 0 );
      
     std::shared_ptr<SQLite::SQLiteConnection> db_conn = nullptr;
-    Open(db_conn);
+    Open(db_conn, db_file_path);
 
     if( !utility::ExistTable("UserInformation", *db_conn) || !utility::ExistTable("accountInfo", *db_conn) || !utility::ExistTable("brokerInfo", *db_conn) )
         ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
@@ -216,7 +227,7 @@ void DBMoudle::LoadAllUserBrokerInfo()
 void DBMoudle::LoadAllTaskInfo(std::unordered_map<int, std::shared_ptr<T_TaskInformation> > &taskinfos)
 {
     if( !db_conn_ )
-		Open(db_conn_);
+       Open(db_conn_, db_file_path);
 
     if( !utility::ExistTable("TaskInfo", *db_conn_) )
         ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
@@ -368,6 +379,33 @@ void DBMoudle::LoadAllTaskInfo(std::unordered_map<int, std::shared_ptr<T_TaskInf
         
 }
 
+void DBMoudle::LoadTradeDate(T_DateMapIsopen &trade_dates)
+{
+    if( !exchange_db_conn_ )
+       Open(exchange_db_conn_, exchane_db_file_path);
+
+    if( !utility::ExistTable("ExchangeDate", *exchange_db_conn_) )
+        ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
+                , "DBMoudle::LoadTradeDate"
+                , "can't find table ExchangeDate ");
+     
+    std::string sql = "SELECT date FROM ExchangeDate WHERE is_tradeday = 1 ORDER BY date";
+    int num = 0;
+    exchange_db_conn_->ExecuteSQL(sql.c_str(),[&num, &trade_dates, this](int num_cols, char** vals, char** names)->int
+    { 
+        try
+        { 
+            ++num;
+            int date =  boost::lexical_cast<int>(*(vals)); 
+            trade_dates.insert(std::make_pair(date, true));
+         }catch(boost::exception& )
+        {
+            return 0;
+        } 
+        return 0;
+    }); 
+}
+
 T_UserAccountInfo * DBMoudle::FindUserAccountInfo(int user_id)
 {
     auto iter = user_account_info_map_.find(user_id);
@@ -399,7 +437,7 @@ std::shared_ptr<T_UserAccountInfo> DBMoudle::FindAccountInfoByAccNoAndBrokerId(c
 {
     std::shared_ptr<T_UserAccountInfo>  p_info = nullptr;
    if( !db_conn_ )
-		Open(db_conn_);
+       Open(db_conn_, db_file_path);
     if( !utility::ExistTable("UserInformation", *db_conn_) || !utility::ExistTable("accountinfo", *db_conn_))
         ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
                 , "DBMoudle::FindUserAccountInfoByAccNoAndBrokerId"
@@ -455,7 +493,7 @@ bool DBMoudle::SaveUserinformation(T_UserInformation &info)
         , info.account_id
         , info.remark.c_str());
     std::shared_ptr<SQLite::SQLiteConnection> db_conn = nullptr;
-    Open(db_conn);
+    Open(db_conn, db_file_path);
     if( !utility::ExistTable("UserInformation", *db_conn) )
     {
         // throw exception
@@ -477,7 +515,7 @@ bool DBMoudle::AddAccountInfo(T_AccountInformation &info)
         , info.department_id.c_str()
         , info.remark.c_str());
     if( !db_conn_ )
-		Open(db_conn_);
+	     Open(db_conn_, db_file_path);
     if( !utility::ExistTable("AccountInfo", *db_conn_) )
     {
         // throw exception
@@ -507,8 +545,8 @@ bool DBMoudle::UpdateAccountInfo(T_AccountInformation &info)
                             , info.department_id.c_str()
                             , info.remark.c_str()
                             , info.id);
-   if( !db_conn_ )
-		Open(db_conn_);
+    if( !db_conn_ )
+	    Open(db_conn_, db_file_path);
     if( !utility::ExistTable("AccountInfo", *db_conn_) )
     {
         // throw exception
@@ -522,7 +560,7 @@ int DBMoudle::FindBorkerIdByAccountID(int account_id)
 {
     // assert all broker_id > 0
    if( !db_conn_ )
-		Open(db_conn_);
+		Open(db_conn_, db_file_path);
     if( !utility::ExistTable("AccountInfo", *db_conn_) )
     {
         // throw exception
@@ -563,7 +601,7 @@ bool DBMoudle::AddTaskInfo(std::shared_ptr<T_TaskInformation> &info)
         , info->bs_times
         , info->assistant_field.c_str());
    if( !db_conn_ )
-		Open(db_conn_);
+		Open(db_conn_, db_file_path);
     if( !utility::ExistTable("TaskInfo", *db_conn_) )
     {  // throw exception
         return false; 
@@ -626,7 +664,7 @@ bool DBMoudle::DelTaskInfo(int task_id, TypeTask type)
 {
     if( !db_conn_ )
     {
-        Open(db_conn_);
+        Open(db_conn_, db_file_path);
     }
 
     if( !utility::ExistTable("TaskInfo", *db_conn_) )
@@ -669,7 +707,7 @@ bool DBMoudle::UpdateTaskInfo(T_TaskInformation &info)
 {
     if( !db_conn_ )
     {
-        Open(db_conn_);
+        Open(db_conn_, db_file_path);
     }
 
     if( !utility::ExistTable("TaskInfo", *db_conn_) )
@@ -714,7 +752,7 @@ void DBMoudle::UpdateEqualSection(int taskid, bool is_original, double start_pri
 { 
 	if( !db_conn_ )
     {
-        Open(db_conn_);
+        Open(db_conn_, db_file_path);
     }
 
 	std::string sql = utility::FormatStr("UPDATE TaskInfo SET assistant_field='%.2f' WHERE id=%d ", start_price, taskid); 
@@ -762,7 +800,7 @@ bool DBMoudle::AddHisTask(std::shared_ptr<T_TaskInformation>& info)
 		, str_stock_py.c_str()
         , info->bs_times);
     std::shared_ptr<SQLite::SQLiteConnection> db_conn = nullptr;
-    Open(db_conn);
+    Open(db_conn, db_file_path);
     if( !utility::ExistTable("HisTask", *db_conn) )
     {
         // throw exception
@@ -776,7 +814,7 @@ bool DBMoudle::IsTaskExists(int user_id, TypeTask type, const std::string& stock
 {
     if( !db_conn_ )
     {
-        Open(db_conn_);
+        Open(db_conn_, db_file_path);
     }
 
     if( !utility::ExistTable("TaskInfo", *db_conn_) )
@@ -802,7 +840,7 @@ int DBMoudle::CheckLogin(const std::string& name, const std::string& pwd, T_User
     int ret = -1;
     if( !db_conn_ )
     {
-        Open(db_conn_);
+        Open(db_conn_, db_file_path);
     }
     if( name == "test" )
     {
@@ -851,7 +889,7 @@ void DBMoudle::GetStockCode(const std::string &code, std::vector<T_StockCodeName
 
     if( !db_conn_ )
     {
-        Open(db_conn_);
+        Open(db_conn_, db_file_path);
     }
    
     std::string sql;
@@ -887,7 +925,7 @@ std::string DBMoudle::GetStockName(const std::string &code_num)
 
     if( !db_conn_ )
     {
-        Open(db_conn_);
+        Open(db_conn_, db_file_path);
     }
    
     std::string name;
@@ -904,11 +942,11 @@ std::string DBMoudle::GetStockName(const std::string &code_num)
 
 }
 
-void DBMoudle::Open(std::shared_ptr<SQLite::SQLiteConnection>& db_conn)
+void DBMoudle::Open(std::shared_ptr<SQLite::SQLiteConnection>& db_conn, const std::string db_file)
 {
     db_conn = std::make_shared<SQLite::SQLiteConnection>();
 
-    std::string db_file = "./pzwj.kd";
+    //std::string db_file = "./pzwj.kd";
 
     if( db_conn->Open(db_file.c_str(), SQLite::SQLiteConnection::OpenMode::READ_WRITE) != SQLite::SQLiteCode::OK )
         ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
@@ -921,7 +959,7 @@ std::vector<T_PositionItem> DBMoudle::GetPosition(int user_id, std::string date_
 {  
     if( !db_conn_ )
     {
-        Open(db_conn_);
+        Open(db_conn_, db_file_path);
     }
    
     std::string name;

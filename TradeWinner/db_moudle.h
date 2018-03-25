@@ -34,6 +34,7 @@ public:
 
     void LoadAllUserBrokerInfo();
     void LoadAllTaskInfo(std::unordered_map<int, std::shared_ptr<T_TaskInformation> > &taskinfos);
+    void LoadTradeDate(T_DateMapIsopen &trade_dates);
 
     T_UserAccountInfo * FindUserAccountInfo(int user_id);
     T_BrokerInfo * FindUserBrokerByUser(int user_id);
@@ -70,11 +71,12 @@ private:
     DBMoudle(DBMoudle&);
     DBMoudle& operator = (DBMoudle&);
      
-    void Open(std::shared_ptr<SQLite::SQLiteConnection>& db_conn);
+    void Open(std::shared_ptr<SQLite::SQLiteConnection>& db_conn, const std::string db_file);
 
     //TSystem::LocalLogger *local_logger_;
     WinnerApp *app_;
     std::shared_ptr<SQLite::SQLiteConnection>  db_conn_;
+    std::shared_ptr<SQLite::SQLiteConnection>  exchange_db_conn_;
 
     std::shared_ptr<TSystem::TaskStrand> strand_;
 
