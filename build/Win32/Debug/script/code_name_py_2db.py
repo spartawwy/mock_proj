@@ -9,7 +9,7 @@ from pypinyin import pinyin, lazy_pinyin
 
 import tushare as ts
  
-DB_FILE_PATH = "C:/Users/wwang.ZDST/Desktop/TradeWinner_run/TradeWinner/pzwj.kd"
+DB_FILE_PATH = "../pzwj.kd"
  
 def is_ascii(s):
     return all(ord(c) < 128 for c in s)
@@ -59,7 +59,7 @@ def main():
     for i in range(0, len(stock_info.index)):
         #print( "%s %s" % (stock_info.index[i], stock_info.name[i]) )
         py_str = getpinyinhead(stock_info.name[i])
-        sql = "INSERT INTO Stock VALUES(?, ?, ?, '', '') "  
+        sql = "INSERT OR REPLACE INTO Stock VALUES(?, ?, ?, '', '') "  
         cur.execute(sql, (stock_info.index[i], stock_info.name[i], ''.join(py_str))) 
         print(sql)
       

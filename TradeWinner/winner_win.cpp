@@ -63,8 +63,9 @@ WinnerWin::WinnerWin(WinnerApp *app, QWidget *parent)
     , calc_win_(nullptr)
     , flash_win_timer_(nullptr)
 {
-    ui.setupUi(this);
+    app_->local_logger().SetDir(".//");
 
+    ui.setupUi(this);
     connect(ui.pbtn_query_capital, SIGNAL(clicked()), this, SLOT(DoQueryCapital()));
      
 #if 1

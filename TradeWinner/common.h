@@ -411,6 +411,7 @@ std::string TagOfOrderLog();
 
 std::tuple<int, std::string> CurrentDateTime();
 bool IsNowTradeTime();
+std::string DateTimeString(time_t t_val);
 
 QString IndexCode2IndexName(const QString& code);
 

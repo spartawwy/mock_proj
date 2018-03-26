@@ -35,7 +35,7 @@ static const int cst_normal_timer_interval = 2000;
 
 WinnerApp::WinnerApp(int argc, char* argv[])
 	: QApplication(argc, argv)
-	, ServerClientAppBase("client", "trade_winner", "0.1")
+	, ServerClientAppBase("client", "trade_mock", "0.1")
 	, tick_strand_(task_pool())
     , index_tick_strand_(task_pool())
 	, stock_ticker_(nullptr)

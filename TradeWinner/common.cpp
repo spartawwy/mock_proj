@@ -273,6 +273,16 @@ bool IsNowTradeTime()
         return false;
 }
 
+std::string DateTimeString(time_t t_val)
+{  //strftime(  
+	char szContent[128] = {0}; 
+    struct tm * timeinfo = localtime(&t_val);
+    sprintf_s( szContent, sizeof(szContent), "%04d%02d%02d %02d:%02d:%02d"
+                , (timeinfo->tm_year + 1900), (timeinfo->tm_mon + 1), timeinfo->tm_mday
+				, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec ); 
+    return szContent; 
+}
+
 QString IndexCode2IndexName(const QString& code)
 {
 	if( code == cst_sh_index ) return QString::fromLocal8Bit(cst_sh_index_name);

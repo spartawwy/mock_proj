@@ -534,14 +534,16 @@ BEFORE_TRADE:
         // judge result 
         if( strlen(error_info) == 0 ) // trade ok
         { 
-            auto ret_str = new std::string(utility::FormatStr("%d 区间任务:%d %s %s %.2f %d 成功!", bktest_mock_date_, para_.id, cn_order_str.c_str(), para_.stock.c_str(), price, qty));
+            auto ret_str = new std::string( (is_back_test_ ? DateTimeString(iter->time_stamp) : "")
+                + utility::FormatStr(" 区间任务:%d %s %s %.2f %d 成功!", para_.id, cn_order_str.c_str(), para_.stock.c_str(), price, qty));
             
             if( !is_back_test_ )
             {
                 this->app_->EmitSigShowUi(ret_str, true);
                 this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str);
             }else
-            {
+            { 
+                this->app_->AppendLog2Ui(ret_str->c_str());
                 this->app_->local_logger().LogLocal("bktest", *ret_str);
                 delete ret_str;
             }
@@ -563,15 +565,18 @@ BEFORE_TRADE:
 			    top_price_ = 0.0;
 			    cond4_sell_backtrigger_price_ = 0.0;
 			    cond4_buy_backtrigger_price_ = cst_max_stock_price;
-                // save to db: save cur_price as start_price in assistant_field 
-                DO_LOG(TagOfCurTask(), utility::FormatStr("DB UpdateEqualSection %d price:%.2f", para_.id, iter->cur_price));
+                // save to db: save cur_price as start_price in assistant_field -------
                 if( !is_back_test_ )
+                {
+                    DO_LOG(TagOfCurTask(), utility::FormatStr("DB UpdateEqualSection %d price:%.2f", para_.id, iter->cur_price));
                     app_->db_moudle().UpdateEqualSection(para_.id, para_.secton_task.is_original, iter->cur_price);
+                }
                 app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ unlock");
                 this->timed_mutex_wrapper_.unlock();
             }else
             {
-                auto ret_str = new std::string(utility::FormatStr("区间任务:%d %s 破底清仓!", para_.id, para_.stock.c_str()));
+                auto ret_str = new std::string((is_back_test_ ? DateTimeString(iter->time_stamp) : "")
+                                        + utility::FormatStr(" 区间任务:%d %s 破底清仓!", para_.id, para_.stock.c_str()));
                 this->app_->AppendLog2Ui(ret_str->c_str());
                 
                 is_waitting_removed_ = true;
@@ -587,8 +592,9 @@ BEFORE_TRADE:
             }
         }else  // trade fail
         {
-            auto ret_str = new std::string(utility::FormatStr("error %d %s %s %.2f %d error:%s"
-                , para_.id, cn_order_str.c_str(), para_.stock.c_str(), price, qty, error_info));
+            auto ret_str = new std::string( (is_back_test_ ? DateTimeString(iter->time_stamp) : "")
+                                    + utility::FormatStr(" error %d %s %s %.2f %d error:%s"
+                                         , para_.id, cn_order_str.c_str(), para_.stock.c_str(), price, qty, error_info));
             this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str);
             this->app_->AppendLog2Ui(ret_str->c_str());
             if( !is_back_test_ )

@@ -55,7 +55,7 @@ bool WinnerWin::InitBacktestWin()
     int port = 50010;
 
     app_->local_logger().LogLocal(utility::FormatStr("InitBacktestWin WinnerHisHq_Connect %s : %d waiting", server_ip, port));
-#if 1
+#if 0
     int ret_val = WinnerHisHq_Connect("192.168.1.5", 50010, result, error);
 #else
     int ret_val = WinnerHisHq_Connect("128.1.1.3", 50010, result, error);
@@ -215,25 +215,30 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
     if( strategy_task->has_bktest_result_fetched() )
         return;
 
-    if( quote_data->date != p_callback_obj->date )
+     struct tm * timeinfo = localtime(&quote_data->time);
+     int long_date = (timeinfo->tm_year + 1900) * 10000 + (timeinfo->tm_mon + 1) * 100 + timeinfo->tm_mday;
+
+    if( long_date != p_callback_obj->date )
     { 
-        p_callback_obj->date = quote_data->date; 
-        strategy_task->do_mock_date_change(quote_data->date);
+        p_callback_obj->date = long_date; 
+        strategy_task->do_mock_date_change(long_date);
     }
 
-    auto quotes_data = std::make_shared<QuotesData>();
-    quotes_data->cur_price = quote_data->price;
+    auto data = std::make_shared<QuotesData>();
+   
+    data->time_stamp= quote_data->time;
+    data->cur_price = quote_data->price;
     qDebug() << p_callback_obj->serial++ << " " << quote_data->price << "\n"; 
 
-    strategy_task->ObtainData(quotes_data);
+    strategy_task->ObtainData(data);
 
     if( strategy_task->is_waitting_removed() )
     {
         strategy_task->has_bktest_result_fetched(true);
-        show_result(strategy_task, p_callback_obj->date, quotes_data->cur_price);  
+        show_result(strategy_task, p_callback_obj->date, data->cur_price);  
 
     }else if( is_end ) 
     {
-        show_result(strategy_task, p_callback_obj->date, quotes_data->cur_price);  
+        show_result(strategy_task, p_callback_obj->date, data->cur_price);  
     }
 }
