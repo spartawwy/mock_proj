@@ -2642,8 +2642,8 @@ background-color: rgb(255, 255,255);</string>
      <widget class="QWidget" name="wid_bktest_eqsec" native="true">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>160</y>
+        <x>-10</x>
+        <y>150</y>
         <width>391</width>
         <height>271</height>
        </rect>
@@ -2651,8 +2651,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QLabel" name="label_bktest_raise_percent">
        <property name="geometry">
         <rect>
-         <x>-10</x>
-         <y>20</y>
+         <x>10</x>
+         <y>60</y>
          <width>71</width>
          <height>21</height>
         </rect>
@@ -2672,8 +2672,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QLabel" name="label_bktest_raise_percent_buy">
        <property name="geometry">
         <rect>
-         <x>180</x>
-         <y>60</y>
+         <x>200</x>
+         <y>100</y>
          <width>51</width>
          <height>21</height>
         </rect>
@@ -2693,8 +2693,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QCheckBox" name="cb_bktest_max_qty">
        <property name="geometry">
         <rect>
-         <x>180</x>
-         <y>190</y>
+         <x>200</x>
+         <y>230</y>
          <width>61</width>
          <height>21</height>
         </rect>
@@ -2706,8 +2706,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QDoubleSpinBox" name="dbspbox_bktest_raise_percent">
        <property name="geometry">
         <rect>
-         <x>70</x>
-         <y>20</y>
+         <x>90</x>
+         <y>60</y>
          <width>81</width>
          <height>31</height>
         </rect>
@@ -2722,8 +2722,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QLabel" name="label_bktest_raise_percent_sell">
        <property name="geometry">
         <rect>
-         <x>180</x>
-         <y>20</y>
+         <x>200</x>
+         <y>60</y>
          <width>51</width>
          <height>21</height>
         </rect>
@@ -2743,8 +2743,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QSpinBox" name="spinBox_bktest_quantity">
        <property name="geometry">
         <rect>
-         <x>70</x>
-         <y>141</y>
+         <x>90</x>
+         <y>181</y>
          <width>101</width>
          <height>31</height>
         </rect>
@@ -2753,8 +2753,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QLabel" name="label_bktest_fall_percent">
        <property name="geometry">
         <rect>
-         <x>-10</x>
-         <y>60</y>
+         <x>10</x>
+         <y>100</y>
          <width>71</width>
          <height>21</height>
         </rect>
@@ -2774,8 +2774,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QSpinBox" name="spinBox_bktest_max_qty">
        <property name="geometry">
         <rect>
-         <x>70</x>
-         <y>181</y>
+         <x>90</x>
+         <y>221</y>
          <width>101</width>
          <height>31</height>
         </rect>
@@ -2787,8 +2787,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QDoubleSpinBox" name="dbspbox_bktest_fall_percent">
        <property name="geometry">
         <rect>
-         <x>70</x>
-         <y>60</y>
+         <x>90</x>
+         <y>100</y>
          <width>81</width>
          <height>31</height>
         </rect>
@@ -2803,8 +2803,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QLabel" name="label_raise_percent_bfh_3">
        <property name="geometry">
         <rect>
-         <x>150</x>
-         <y>20</y>
+         <x>170</x>
+         <y>60</y>
          <width>31</width>
          <height>21</height>
         </rect>
@@ -2824,8 +2824,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QLabel" name="lab_bktest_eqsec_quantity">
        <property name="geometry">
         <rect>
-         <x>-30</x>
-         <y>140</y>
+         <x>-10</x>
+         <y>180</y>
          <width>91</width>
          <height>21</height>
         </rect>
@@ -2845,8 +2845,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QLabel" name="label_raise_percent_bfh_4">
        <property name="geometry">
         <rect>
-         <x>150</x>
-         <y>60</y>
+         <x>170</x>
+         <y>100</y>
          <width>31</width>
          <height>21</height>
         </rect>
@@ -2866,8 +2866,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QLabel" name="lab_bktest_max_quantity">
        <property name="geometry">
         <rect>
-         <x>-30</x>
-         <y>180</y>
+         <x>-10</x>
+         <y>220</y>
          <width>91</width>
          <height>21</height>
         </rect>
@@ -2887,8 +2887,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QDoubleSpinBox" name="spinBox_bktest_rebounce">
        <property name="geometry">
         <rect>
-         <x>70</x>
-         <y>100</y>
+         <x>90</x>
+         <y>140</y>
          <width>101</width>
          <height>31</height>
         </rect>
@@ -2903,8 +2903,8 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QLabel" name="label_bktest_rebounce">
        <property name="geometry">
         <rect>
-         <x>-10</x>
-         <y>100</y>
+         <x>10</x>
+         <y>140</y>
          <width>71</width>
          <height>21</height>
         </rect>
@@ -2924,14 +2924,51 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QCheckBox" name="cb_bktest_rebounce">
        <property name="geometry">
         <rect>
-         <x>230</x>
-         <y>60</y>
+         <x>250</x>
+         <y>100</y>
          <width>92</width>
          <height>21</height>
         </rect>
        </property>
        <property name="text">
         <string>启用拐点</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_bktest_start_price">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>71</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>起始价格:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="dbspbox_bktest_start_price">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>20</y>
+         <width>161</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="decimals">
+        <number>2</number>
+       </property>
+       <property name="maximum">
+        <double>999.990000000000009</double>
        </property>
       </widget>
      </widget>

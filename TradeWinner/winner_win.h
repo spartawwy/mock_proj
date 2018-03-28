@@ -10,6 +10,8 @@
 
 #include "common.h"
 
+#include "timer_container.h"
+
 //class MyThread;
 //class StockTicker;
 class StrategyTask;
@@ -100,7 +102,7 @@ public slots:
 
     //---------------back test related ---
     void DoStartBacktest(bool);
-
+    void DoEnableBtnBackTest();
     //------------------
 	
     void ChangeTabBuyAssistantImg(TypeTask type);
@@ -169,14 +171,20 @@ private:
 	// index trade task related
     HintList *m_indtrd_list_hint_; 
 
+    // back test related 
+    HintList *m_backtest_list_hint_;
+
     QLabel  *status_label_;
     std::shared_ptr<CalcWin> calc_win_;
 
     double cur_price_;
     double buytask_cur_price_;
     double eqsec_task_cur_price_;
+    double backtest_cur_price_;
 
     QTimer *flash_win_timer_;
+
+    std::shared_ptr<TimerContainner>  oneceshot_timer_contain_;
 };
 
 #endif // TRADE_WINNER_H

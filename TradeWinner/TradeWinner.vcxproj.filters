@@ -191,6 +191,18 @@
     <ClCompile Include="backtest_win.cpp">
       <Filter>win</Filter>
     </ClCompile>
+    <ClCompile Include="timer_container.cpp">
+      <Filter>moudle</Filter>
+    </ClCompile>
+    <ClCompile Include="timer_wrapper.cpp">
+      <Filter>moudle</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_timer_wrapper.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_timer_wrapper.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="trade_winner.ui">
@@ -234,6 +246,9 @@
     </CustomBuild>
     <CustomBuild Include="about_soft.ui">
       <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="timer_wrapper.h">
+      <Filter>moudle</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -332,6 +347,9 @@
     </ClInclude>
     <ClInclude Include="..\include\common_base.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="timer_container.h">
+      <Filter>moudle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

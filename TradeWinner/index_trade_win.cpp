@@ -55,7 +55,7 @@ void WinnerWin::InitIndexTradeWin()
     ui.indtrd_trd_price_level->addItem(QString::fromLocal8Bit("买三和卖三"), QVariant(static_cast<int>(TypeQuoteLevel::PRICE_BUYSELL_3)));
     ui.indtrd_trd_price_level->addItem(QString::fromLocal8Bit("买四和卖四"), QVariant(static_cast<int>(TypeQuoteLevel::PRICE_BUYSELL_4)));
     ui.indtrd_trd_price_level->addItem(QString::fromLocal8Bit("买五和卖五"), QVariant(static_cast<int>(TypeQuoteLevel::PRICE_BUYSELL_5)));
-	  
+
     ui.indtrd_timeEdit_begin->setTime(QTime(9, 30, 0));
     ui.indtrd_timeEdit_end->setTime(QTime(15, 00, 0));
 

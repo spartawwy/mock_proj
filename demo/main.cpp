@@ -1,6 +1,10 @@
 #include "demo.h"
-#include <QtWidgets/QApplication>
 
+#include <functional>
+#include <iostream>
+
+#include <QtWidgets/QApplication>
+ 
 #include <TLib/core/tsystem_utility_functions.h>
 
 #include "ticker.h"
@@ -8,8 +12,8 @@
 void test();
 
 int main(int argc, char *argv[])
-{
-    test();
+{ 
+    // test();
 
     QApplication a(argc, argv);
 #if 1

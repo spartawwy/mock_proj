@@ -19,6 +19,8 @@
 #include "HintList.h"
 #include "calc_win.h"
 
+#include "timer_container.h"
+
 //static const QString cst_str_breakout_buy = QString::fromLocal8Bit("Í»ÆÆÂòÈë");
 //static const QString cst_str_Inflection_buy = QString::fromLocal8Bit("¹ÕµãÂòÈë");
 
@@ -56,12 +58,15 @@ WinnerWin::WinnerWin(WinnerApp *app, QWidget *parent)
     , m_bt_list_hint_(nullptr)
 	, m_eqsec_list_hint_(nullptr)
 	, m_indtrd_list_hint_(nullptr)
+    , m_backtest_list_hint_(nullptr)
     , cur_price_(0.0)
     , buytask_cur_price_(0.0)
 	, eqsec_task_cur_price_(0.0)
+    , backtest_cur_price_(0.0)
     , status_label_(nullptr)
     , calc_win_(nullptr)
     , flash_win_timer_(nullptr)
+    , oneceshot_timer_contain_(nullptr)
 {
     app_->local_logger().SetDir(".//");
 
@@ -131,7 +136,8 @@ WinnerWin::WinnerWin(WinnerApp *app, QWidget *parent)
     statusBar()->addWidget(status_label_, 1);
 	statusBar()->update();
 
-
+    //------------------------
+    oneceshot_timer_contain_ = std::make_shared<TimerContainner>(true);
 }
 
 WinnerWin::~WinnerWin()
@@ -303,6 +309,10 @@ void WinnerWin::keyPressEvent(QKeyEvent *event)
 		{
 			m_eqsec_list_hint_->close();
 		}
+        else if( ui.le_bktest_stock->hasFocus() )
+		{
+			m_backtest_list_hint_->close();
+		}
     }else
     {
         if( ui.le_stock->hasFocus() )
@@ -314,6 +324,9 @@ void WinnerWin::keyPressEvent(QKeyEvent *event)
         }else if( ui.le_eqsec_stock->hasFocus() )
 		{
 			m_eqsec_list_hint_->setFocus();
+		}else if( ui.le_bktest_stock->hasFocus() )
+		{
+			m_backtest_list_hint_->setFocus();
 		}
     }
 }
@@ -355,6 +368,8 @@ void WinnerWin::SlotTabChanged(int /*index*/)
 	m_list_hint_->hide();
     m_bt_list_hint_->hide();
     m_eqsec_list_hint_->hide();
+    m_indtrd_list_hint_->hide();
+    m_backtest_list_hint_->hide();
 }
 
 void WinnerWin::SlotTbvTasksContextMenu(QPoint p)
@@ -803,7 +818,9 @@ void WinnerWin::ChangeFromStationText(QString text)
             cur_price_ = p_info->cur_price;
         else if( ui.tabwid_holder->currentIndex() == cst_tab_index_buy_task )
             buytask_cur_price_ = p_info->cur_price;
-		 
+		else if( ui.tabwid_holder->currentIndex() == cst_tab_index_backtest )
+            backtest_cur_price_ = p_info->cur_price;
+
     }else
     {
         if( ui.tabwid_holder->currentIndex() == cst_tab_index_sell_task )
@@ -812,6 +829,8 @@ void WinnerWin::ChangeFromStationText(QString text)
             buytask_cur_price_ = 0.0;
 		else if( ui.tabwid_holder->currentIndex() == cst_tab_index_eqsec_task )
 			eqsec_task_cur_price_ = 0.0;
+        else if( ui.tabwid_holder->currentIndex() == cst_tab_index_backtest )
+            backtest_cur_price_ = 0.0;
     }
 }
 
@@ -840,6 +859,11 @@ void WinnerWin::AssignHintListAndLineEdit(HintList *& p_list, QLineEdit *&p_edit
         p_list = m_indtrd_list_hint_;
         p_edit = ui.le_indtrd_stock;
         
+    }else if( ui.tabwid_holder->currentIndex() == cst_tab_index_backtest )
+    {   
+        p_list = m_backtest_list_hint_;
+        p_edit = ui.le_bktest_stock;
+        p_dbspb_alert_price = ui.dbspbox_bktest_start_price;
     }else 
         assert(false);
 }

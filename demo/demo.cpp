@@ -1,16 +1,54 @@
+
+#include <qdebug.h>
+
+//#include <qt_Windows.h>
+
 #include "demo.h"
+#include "qtimer_container.h"
 
-#include <Windows.h>
+//#include "stk_quoter_api.h"
 
-#include "stk_quoter_api.h"
-
+ 
 #define TEST_URL_METHOD   
+
+void funcOfTimer(int *para)
+{
+    qDebug () << *para << "  \n";
+}
 
 demo::demo(QWidget *parent)
     : QDialog(parent)
+    , one_shot_timers_(std::make_shared<QTimerContainner>(true))
+    , serial_shot_timers_(std::make_shared<QTimerContainner>(false))
 {
     ui.setupUi(this);
+    
+    
 
+/*
+    auto one_shot_timers_ = std::make_shared<QTimerContainner>(true);
+    auto serial_shot_timers_ = std::make_shared<QTimerContainner>(false);
+*/
+#if 0 
+    QTimerWapper* p_time_obj = new QTimerWapper(nullptr, false, std::bind(funcOfTimer, p_i));
+
+    p_time_obj->Start(3*1000);
+    
+   /* bool ret = connect(
+    DoMyTimer()*/
+#endif 
+     
+    /*p_time_obj_ = new QTimerWapper(nullptr, true, [this]()
+     {
+         this->ui.pbt_test->setEnabled(true);
+     });*/
+
+    bool ret = connect(ui.pbt_test, SIGNAL(clicked()), this, SLOT(DoTest()));
+
+    
+
+    //-----------------------------------------------------
+#if 0 
     auto stk_handle = LoadLibrary("StkQuoter.dll");
     if( stk_handle )
     {
@@ -48,6 +86,23 @@ demo::demo(QWidget *parent)
     release_his_data(his_data);
 #endif
     }
+
+#endif
+}
+
+void demo::DoTest()
+{
+    ui.pbt_test->setDisabled(true);
+     
+    one_shot_timers_->InsertTimer(2000, [this]()
+    {
+        this->ui.pbt_test->setEnabled(true);
+    });
+
+    serial_shot_timers_->InsertTimer(5000, [this]()
+    {
+        qDebug() << " in timer\n";
+    });
 }
 
 demo::~demo()

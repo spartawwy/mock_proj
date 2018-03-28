@@ -117,6 +117,9 @@ public:
 
     std::vector<int> GetSpanTradeDates(int date_begin, int date_end);
 
+    // back test related 
+    void Emit_SigEnableBtnBackTest() { emit SigEnableBtnBackTest(); } 
+
 signals:
 
     //(StrategyTask*, change kind)
@@ -126,6 +129,9 @@ signals:
     //void SigShowUi(std::shared_ptr<std::string>); //cause can't invoke so use raw point
     void SigShowUi(std::string*, bool);
     void SigShowLongUi(std::string*, bool);
+
+    // back test related 
+    void SigEnableBtnBackTest();
 
 public slots:
 
@@ -198,6 +204,7 @@ private:
       
     T_DateMapIsopen trade_dates_;
 
+    //QTimerWrapper *
     friend class IndexTask;
 };
 #endif

@@ -22,9 +22,24 @@ static WinnerHisHq_GetHisFenbiDataDelegate WinnerHisHq_GetHisFenbiData  = nullpt
 
 static const std::string cst_back_test_tag = "bktest";
 
+static const QString cst_str_eqsec_bktest = QString::fromLocal8Bit("区间交易回测");
+static const QString cst_str_advancesec_bktest = QString::fromLocal8Bit("贝塔交易回测");
+
 bool WinnerWin::InitBacktestWin()
 {
-    bool ret = connect(ui.pbtn_start_backtest, SIGNAL(clicked(bool)), this, SLOT(DoStartBacktest(bool)));
+    bool ret = true;
+    ui.cb_bktest_type->addItem(cst_str_eqsec_bktest);
+    ui.cb_bktest_type->addItem(cst_str_advancesec_bktest);
+    
+    m_backtest_list_hint_ = new HintList(this, ui.le_bktest_stock);
+    m_backtest_list_hint_->hide();
+    ret = QObject::connect(ui.le_bktest_stock, SIGNAL(textChanged(QString)), this, SLOT(FlushFromStationListWidget(QString)));
+    ret = QObject::connect(m_backtest_list_hint_, SIGNAL(clicked(QModelIndex)), this, SLOT(OnClickedListWidget(QModelIndex)));
+    ret = QObject::connect(m_backtest_list_hint_, SIGNAL(choiceStr(QString)), this, SLOT(ChangeFromStationText(QString)));
+     
+
+    ret = connect(ui.pbtn_start_backtest, SIGNAL(clicked(bool)), this, SLOT(DoStartBacktest(bool)));
+    ret = connect(this->app_, SIGNAL(SigEnableBtnBackTest()), this, SLOT(DoEnableBtnBackTest()));
 
     /*HMODULE*/ st_api_handle = LoadLibrary("winner_api.dll");
     if( !st_api_handle )
@@ -32,14 +47,15 @@ bool WinnerWin::InitBacktestWin()
         std::cout << "LoadLibrary winner_api.dll fail" << std::endl;
         return false;
     }
-    //void *p_tchk = GetProcAddress(st_api_handle, "WinnerHisHq_Connect");
+    ui.pbtn_start_backtest->setDisabled(true);
+   
     WinnerHisHq_Connect = (WinnerHisHq_ConnectDelegate)GetProcAddress(st_api_handle, "WinnerHisHq_Connect"); 
     if ( !WinnerHisHq_Connect )
     {
         std::cout << " GetProcAddress WinnerHisHq_Connect fail " << std::endl;
         return false;
     }
-
+     
     WinnerHisHq_DisConnect =  (WinnerHisHq_DisconnectDelegate)GetProcAddress(st_api_handle, "WinnerHisHq_Disconnect"); 
 
     WinnerHisHq_GetHisFenbiData 
@@ -62,6 +78,9 @@ bool WinnerWin::InitBacktestWin()
 #endif 
     app_->local_logger().LogLocal("InitBacktestWin WinnerHisHq_Connect ret");
 
+
+    if( ret_val == 0 ) 
+        ui.pbtn_start_backtest->setEnabled(true);
     return ret_val == 0;
 
 }
@@ -92,6 +111,12 @@ void WinnerWin::DoStartBacktest(bool)
         app_->winner_win().DoStatusBar("回测接口未安装!");
         return;
     }
+
+    this->ui.pbtn_start_backtest->setDisabled(true);
+    oneceshot_timer_contain_->InsertTimer(60 * 1000, [this]()
+    {
+        //this->ui.pbtn_start_backtest->setEnabled(true);
+    });
 
     task_vector.clear();
     taskinfo_vector.clear();
@@ -172,17 +197,7 @@ void WinnerWin::DoStartBacktest(bool)
     fenbi_callback_obj->para = std::addressof(task_vector[0]);
     callback_vector.push_back(std::move(fenbi_callback_obj));
 
-    char error[1024] = {0};
-    //int date[] = { 20180212, 20180213, 20180214, 20180215, 20180216, 20180222 };
-    /*int date[] = { 20171020, 20171021, 20171022, 20171023, 20171024, 20171025, 20171026, 20171027, 20171028, 20171029, 20171030,20171031
-    , 20171101, 20171102,  20171103,  20171104,  20171105,  20171106,  20171107,  20171108,  20171109, 20171110 
-    , 20171111, 20171112,  20171113,  20171114,  20171115,  20171116,  20171117,  20171118,  20171119, 20171120 
-    , 20171121, 20171122,  20171123,  20171124,  20171125,  20171126,  20171127,  20171128,  20171129, 20171130 
-    };*/
-    /*int date[] = { 20170914, 20170915, 20170916, 20170917, 20170918, 20170919, 20170920, 20170923, 20170924, 20170925
-                  , 20170926, 20170927, 20170928, 20170929, 20171009, 20171010, 20171011,  20171012, 20171013, 20171014
-                  , 20171015,  20171016,  20171017, 20171018, 20171019, 20171020, 20171021, 20171022, 20171023, 20171024
-                  , 20171025, 20171026, 20171027, 20171028, 20171029, 20171030};*/
+    char error[1024] = {0}; 
     auto date_vector = app_->GetSpanTradeDates(20170914, 20171031);
     for(int i = 0; i < date_vector.size(); ++i )
     {
@@ -192,6 +207,11 @@ void WinnerWin::DoStartBacktest(bool)
             , error);
     }
 
+}
+
+void WinnerWin::DoEnableBtnBackTest()
+{
+    ui.pbtn_start_backtest->setEnabled(true);
 }
 
 void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
@@ -240,5 +260,6 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
     }else if( is_end ) 
     {
         show_result(strategy_task, p_callback_obj->date, data->cur_price);  
+        strategy_task->app()->Emit_SigEnableBtnBackTest();
     }
 }

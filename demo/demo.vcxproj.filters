@@ -53,16 +53,31 @@
     <ClCompile Include="ticker.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="qtimer_container.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="qtimer_wrapper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qtimer_wrapper.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qtimer_wrapper.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="demo.h">
-      <Filter>header</Filter>
-    </CustomBuild>
     <CustomBuild Include="demo.ui">
       <Filter>Form Files</Filter>
     </CustomBuild>
     <CustomBuild Include="demo.qrc">
       <Filter>resource</Filter>
+    </CustomBuild>
+    <CustomBuild Include="demo.h">
+      <Filter>src</Filter>
+    </CustomBuild>
+    <CustomBuild Include="qtimer_wrapper.h">
+      <Filter>src</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +85,9 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="ticker.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="qtimer_container.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
