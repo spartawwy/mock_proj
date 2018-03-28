@@ -110,6 +110,20 @@ std::string ToString(TypeEqSection val)
     return "";
 }
 
+std::string ToString(TypeAction val)
+{
+    switch(val)
+    {
+    case TypeAction::NOOP: return  "NOOP";
+    case TypeAction::PREPARE_BUY: return  "PREPARE_BUY";
+    case TypeAction::PREPARE_SELL: return  "PREPARE_SELL";
+    case TypeAction::CLEAR: return  "CLEAR";
+
+    default: assert(0);
+    }
+    return "";
+}
+
 void Delay(unsigned short mseconds)
 {
     //TSystem::WaitFor([]()->bool { return false;}, mseconds); // only make effect to timer

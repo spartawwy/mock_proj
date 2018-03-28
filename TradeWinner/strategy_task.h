@@ -11,8 +11,7 @@
 
 #include "common.h"
 
-enum class TypeAction : char { NOOP = 0, PREPARE_BUY, PREPARE_SELL, CLEAR};
-
+ 
 struct T_MockStrategyPara 
 {
     int  avaliable_position;

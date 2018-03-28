@@ -385,6 +385,8 @@ typedef std::unordered_map<int, bool> T_DateMapIsopen ;
 //    unsigned int position;
 //};
 
+enum class TypeAction : char { NOOP = 0, PREPARE_BUY, PREPARE_SELL, CLEAR};
+
 TypeMarket GetStockMarketType(const std::string &stock_code);
 
 QString ToQString(TypeTask val);
@@ -392,6 +394,7 @@ QString ToQString(TypeQuoteLevel val);
 QString ToQString(TaskCurrentState val);
 QString ToQString(TindexTaskType val);
 std::string ToString(TypeEqSection val);
+std::string ToString(TypeAction val);
 
 void Delay(unsigned short mseconds);
 

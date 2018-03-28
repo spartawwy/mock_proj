@@ -71,7 +71,7 @@ bool WinnerWin::InitBacktestWin()
     int port = 50010;
 
     app_->local_logger().LogLocal(utility::FormatStr("InitBacktestWin WinnerHisHq_Connect %s : %d waiting", server_ip, port));
-#if 0
+#if 1
     int ret_val = WinnerHisHq_Connect("192.168.1.5", 50010, result, error);
 #else
     int ret_val = WinnerHisHq_Connect("128.1.1.3", 50010, result, error);
@@ -127,7 +127,36 @@ void WinnerWin::DoStartBacktest(bool)
      
     auto task_info = std::make_shared<T_TaskInformation>();
 
-#if 1 // test equal section task 
+#if 1
+    task_info->id = 123;
+    task_info->type = TypeTask::EQUAL_SECTION; 
+    task_info->stock = "601069";
+    task_info->back_alert_trigger = false;
+    task_info->rebounce = 0.3;
+    task_info->continue_second = 0; 
+    task_info->quantity = 500;
+    const double alert_price = 20.3;
+    task_info->alert_price = alert_price;
+    task_info->assistant_field = "";
+
+    task_info->secton_task.fall_percent = 1;
+    //task_info->secton_task.fall_infection = 0.2;
+    task_info->secton_task.raise_percent = 1;
+    //task_info->secton_task.raise_infection = 0.2;
+    task_info->secton_task.max_position = 3000*10;
+    task_info->secton_task.max_trig_price = 23.0;
+    task_info->secton_task.min_trig_price = 15.0; 
+    taskinfo_vector.push_back( std::move(task_info));
+
+    auto mock_para = std::make_shared<T_MockStrategyPara>();
+    mock_para->avaliable_position = (capital / alert_price ) / 2 / 100 * 100;
+    mock_para->capital = capital - mock_para->avaliable_position * alert_price;
+    mock_strategy_para_vector.push_back(std::move(mock_para));
+
+    auto equal_sec_task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
+    task_vector.push_back( std::move(equal_sec_task) );
+
+#elif 0 // test equal section task 
     task_info->id = 123;
     task_info->type = TypeTask::EQUAL_SECTION;
     //task_info->stock = "600123";
@@ -198,7 +227,8 @@ void WinnerWin::DoStartBacktest(bool)
     callback_vector.push_back(std::move(fenbi_callback_obj));
 
     char error[1024] = {0}; 
-    auto date_vector = app_->GetSpanTradeDates(20170914, 20171031);
+    //auto date_vector = app_->GetSpanTradeDates(20170914, 20171031);
+    auto date_vector = app_->GetSpanTradeDates(20180328, 20180328);
     for(int i = 0; i < date_vector.size(); ++i )
     {
         WinnerHisHq_GetHisFenbiData(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
