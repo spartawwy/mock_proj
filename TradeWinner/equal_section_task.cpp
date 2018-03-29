@@ -141,7 +141,7 @@ EqualSectionTask::EqualSectionTask(T_TaskInformation &task_info, WinnerApp *app,
 }
 
  
-TypeAction EqualSectionTask::JudgeTypeAction(std::shared_ptr<QuotesData> & iter)
+TypeAction EqualSectionTask::JudgeTypeAction(std::shared_ptr<QuotesData> & iter, int *qty_op)
 {
 	TypeAction  action = TypeAction::NOOP;
 	int total_position = 0;
@@ -155,7 +155,7 @@ TypeAction EqualSectionTask::JudgeTypeAction(std::shared_ptr<QuotesData> & iter)
 	    total_position = GetTototalPosition();
 	    valide_position = this->app_->QueryPosAvaliable_LazyMode(para_.stock);
     }
-	int qty = para_.quantity;
+	if( qty_op ) *qty_op = para_.quantity;
 
 	unsigned short index = 0;
 	for( ; index < sections_.size(); ++index )
@@ -186,8 +186,11 @@ TypeAction EqualSectionTask::JudgeTypeAction(std::shared_ptr<QuotesData> & iter)
 					return TypeAction::NOOP;
 				} 
 				 
-				if( valide_position < para_.quantity ) qty = valide_position;
-				if( qty == 0 )
+				if( valide_position < para_.quantity )
+                {
+                    if( qty_op ) *qty_op = valide_position;
+                }
+				if( valide_position == 0 )
 				{
                     DO_LOG_BKTST(TagOfCurTask(), TSystem::utility::FormatStr("warning: %d EqualSectionTask %s sell curprice:%.2f, but no available position ret TypeAction::NOOP", para_.id, para_.stock.c_str(), iter->cur_price));
 					return TypeAction::NOOP;
@@ -278,7 +281,7 @@ void EqualSectionTask::HandleQuoteData()
     } 
     int total_position = GetTototalPosition();
     int avaliable_pos = GetAvaliablePosition();
-     
+    DO_LOG_BKTST(TagOfCurTask(), TSystem::utility::FormatStr("avaliablepos: %d", avaliable_pos));
 	int index = 0;
 
 	if( para_.rebounce > 0.0 ) // use rebounce 
@@ -299,7 +302,7 @@ void EqualSectionTask::HandleQuoteData()
 			cond4_buy_backtrigger_price_ = cst_max_stock_price;			 
 			cond4_sell_backtrigger_price_ = 0.0;			 
 
-			cur_type_action_ = JudgeTypeAction(iter); 
+			cur_type_action_ = JudgeTypeAction(iter, &qty); 
 			 
 			if( cur_type_action_ != TypeAction::CLEAR )
 			{
@@ -316,13 +319,13 @@ void EqualSectionTask::HandleQuoteData()
 				return do_prepare_clear_but_noposition(iter->cur_price, timed_mutex_wrapper_);
 			else 
 			{
-				qty = avaliable_pos; 
+                app_->local_logger().LogLocal("mutex", TSystem::utility::FormatStr("line 319 :%d  %d", bktest_para_.avaliable_position, avaliable_pos));
 				goto BEFORE_TRADE; 
 			}
 
 		}else if( cur_type_action_ == TypeAction::PREPARE_BUY ) 
 		{
-			cur_type_action_ = JudgeTypeAction(iter);
+			cur_type_action_ = JudgeTypeAction(iter, &qty);
 			if( cur_type_action_ != TypeAction::PREPARE_BUY)
 			{
                 DO_LOG_BKTST(TagOfCurTask(), TSystem::utility::FormatStr("eqsec task %d Type change from PREPARE_BUY to %d; cur_price:%.2f", para_.id, cur_type_action_, iter->cur_price));
@@ -338,7 +341,7 @@ void EqualSectionTask::HandleQuoteData()
 					return do_prepare_clear_but_noposition(iter->cur_price, timed_mutex_wrapper_);
 				else 
 				{
-					qty = avaliable_pos; 
+                    app_->local_logger().LogLocal("mutex", TSystem::utility::FormatStr("line 342 :%d  %d", bktest_para_.avaliable_position, avaliable_pos));
 					goto BEFORE_TRADE; 
 				}
 			}else
@@ -364,7 +367,7 @@ void EqualSectionTask::HandleQuoteData()
 			
 		}else if( cur_type_action_ == TypeAction::PREPARE_SELL )
 		{
-			cur_type_action_ = JudgeTypeAction(iter);
+			cur_type_action_ = JudgeTypeAction(iter, &qty);
 			if( cur_type_action_ != TypeAction::PREPARE_SELL)
 			{
                 DO_LOG_BKTST(TagOfCurTask(), TSystem::utility::FormatStr("eqsec task %d Type change from PREPARE_SELL to %d; cur_price:%.2f", para_.id, cur_type_action_, iter->cur_price));
@@ -380,7 +383,7 @@ void EqualSectionTask::HandleQuoteData()
 					return do_prepare_clear_but_noposition(iter->cur_price, timed_mutex_wrapper_);
 				else 
 				{
-					qty = avaliable_pos; 
+                    app_->local_logger().LogLocal("mutex", TSystem::utility::FormatStr("line 385 :%d  %d", bktest_para_.avaliable_position, avaliable_pos));
 					goto BEFORE_TRADE; 
 				}
 			}else
@@ -527,6 +530,7 @@ BEFORE_TRADE:
                 }
             }else
             { 
+                app_->local_logger().LogLocal("mutex", TSystem::utility::FormatStr("bktest_para_.avaliable_position:%d", bktest_para_.avaliable_position));
                 assert(bktest_para_.avaliable_position >= qty);
                 bktest_para_.avaliable_position -= qty;
                 bktest_para_.capital += price * qty - CaculateFee(price*qty, order_type == TypeOrderCategory::SELL);
@@ -542,8 +546,8 @@ BEFORE_TRADE:
             
             if( !is_back_test_ )
             {
-                this->app_->EmitSigShowUi(ret_str, true);
                 this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str);
+                this->app_->EmitSigShowUi(ret_str, true);
             }else
             { 
                 this->app_->AppendLog2Ui(ret_str->c_str());

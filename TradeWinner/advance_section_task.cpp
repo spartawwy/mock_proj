@@ -18,7 +18,6 @@ AdvanceSectionTask::Portion::Portion(int index,double bottom, double top, Portio
 	, state_(state)  
 { 
 	mid_price_ = Round((bottom_price_ + top_price_) / 2, 2);
-	
 }
 
 AdvanceSectionTask::AdvanceSectionTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *mock_para)

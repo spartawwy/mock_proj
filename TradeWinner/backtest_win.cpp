@@ -71,11 +71,14 @@ bool WinnerWin::InitBacktestWin()
     int port = 50010;
 
     app_->local_logger().LogLocal(utility::FormatStr("InitBacktestWin WinnerHisHq_Connect %s : %d waiting", server_ip, port));
-#if 1
-    int ret_val = WinnerHisHq_Connect("192.168.1.5", 50010, result, error);
-#else
-    int ret_val = WinnerHisHq_Connect("128.1.1.3", 50010, result, error);
-#endif 
+    
+    int ret_val = -1;
+    //ret_val = WinnerHisHq_Connect("192.168.11.5", 50010, result, error);
+    if( !stricmp(TSystem::utility::host().c_str(), "hzdev103") )
+        ret_val = WinnerHisHq_Connect("128.1.1.3", 50010, result, error);
+    else
+        ret_val = WinnerHisHq_Connect("192.168.1.5", 50010, result, error);
+
     app_->local_logger().LogLocal("InitBacktestWin WinnerHisHq_Connect ret");
 
 
@@ -113,9 +116,9 @@ void WinnerWin::DoStartBacktest(bool)
     }
 
     this->ui.pbtn_start_backtest->setDisabled(true);
-    oneceshot_timer_contain_->InsertTimer(60 * 1000, [this]()
+    oneceshot_timer_contain_->InsertTimer(60 * 2 * 1000, [this]()
     {
-        //this->ui.pbtn_start_backtest->setEnabled(true);
+        this->ui.pbtn_start_backtest->setEnabled(true);
     });
 
     task_vector.clear();
@@ -133,6 +136,7 @@ void WinnerWin::DoStartBacktest(bool)
     task_info->stock = "601069";
     task_info->back_alert_trigger = false;
     task_info->rebounce = 0.3;
+    //task_info->rebounce = 0;
     task_info->continue_second = 0; 
     task_info->quantity = 500;
     const double alert_price = 20.3;

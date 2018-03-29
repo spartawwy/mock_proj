@@ -20,7 +20,7 @@ public:
 
 private:
 
-	TypeAction JudgeTypeAction(std::shared_ptr<QuotesData> & quote_data);
+	TypeAction JudgeTypeAction(std::shared_ptr<QuotesData> & quote_data, int *qty_op=nullptr);
     void PrintSections();
 
     std::string TagOfCurTask();
@@ -36,7 +36,7 @@ private:
 	double cond4_buy_backtrigger_price_;
 
 	TypeAction cur_type_action_; 
-	
+	 
 };
 
 #endif

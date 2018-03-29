@@ -337,8 +337,8 @@ void WinnerWin::DoQueryCapital()
     ui.pte_capital->clear();
     T_CodeMapPosition pos_map = app_->QueryPosition();
     T_Capital captital = app_->QueryCapital();
+    ui.pte_capital->appendPlainText(QString::fromLocal8Bit(utility::FormatStr("总资产:\t%.2f\n", captital.total).c_str())); 
     ui.pte_capital->appendPlainText(QString::fromLocal8Bit("资金:\n"));
-    ui.pte_capital->appendPlainText(QString::fromLocal8Bit(utility::FormatStr("总资金:\t%.2f\n", captital.total).c_str())); 
     ui.pte_capital->appendPlainText(QString::fromLocal8Bit(utility::FormatStr("可用:\t%.2f\n", captital.available).c_str()));
     ui.pte_capital->appendPlainText(QString::fromLocal8Bit(utility::FormatStr("余额:\t%.2f\n\n", captital.remain).c_str()));
 
@@ -802,8 +802,7 @@ void WinnerWin::ChangeFromStationText(QString text)
     p_list->hide();
 
     //qDebug() << "ChangeFromStationText " << tgt_tag << "\n";
-	if( ui.tabwid_holder->currentIndex() == cst_tab_index_eqsec_task )
-		return;
+
     QString::SectionFlag flag = QString::SectionSkipEmpty;
     QString tgt_tag = text.section('/', 0, 0, flag);
 	T_StockPriceInfo *p_info = app_->GetStockPriceInfo(tgt_tag.toLocal8Bit().data(), false);
