@@ -100,6 +100,76 @@ void WinnerWin::UnInstallBacktest()
 
 void WinnerWin::DoStartBacktest(bool)
 {
+    static auto check_le_stock = [this]() ->bool
+    {
+       // check stock codes
+		QString::SectionFlag flag = QString::SectionSkipEmpty;
+		QString text_str = ui.le_bktest_stock->text().trimmed();
+		QString stock_str = text_str.section('/', 0, 0, flag);
+        if( stock_str.length() != 6 )
+        {
+			// todo: show erro info
+            ui.le_bktest_stock->setFocus();
+            this->DoStatusBar("股票代码有误!");
+            return false;
+        } 
+        
+        if( ui.dbspbox_bktest_start_price->value() < 0.01 )
+        {
+            ui.dbspbox_bktest_start_price->setFocus();
+            this->DoStatusBar("起始价格不能为0!");
+            return false;
+        }
+        if( ui.dbspbox_bktest_start_capital->value() < 0.01 )
+        {
+            ui.dbspbox_bktest_start_capital->setFocus();
+            this->DoStatusBar("起始资金不能为0!");
+            return false;
+        }
+
+        if( ui.dbspbox_bktest_raise_percent->value() < 0.1 )
+        {
+            ui.dbspbox_bktest_raise_percent->setFocus();
+            this->DoStatusBar("上升百分比不能为0!");
+            return false;
+        }
+        if( ui.dbspbox_bktest_fall_percent->value() < 0.1 )
+        {
+            ui.dbspbox_bktest_fall_percent->setFocus();
+            this->DoStatusBar("下降百分比不能为0!");
+            return false;
+        }
+        if( ui.cb_bktest_rebounce->isChecked() && ui.spinBox_bktest_rebounce->value() < 0.1 )
+        { 
+            ui.spinBox_bktest_rebounce->setFocus();
+            this->DoStatusBar("拐点值不能为0!");
+            return false;
+        }  
+        if( ui.spinBox_bktest_quantity->value() < 100 )
+        {
+            ui.spinBox_bktest_quantity->setFocus();
+            this->DoStatusBar("买卖数量不能为0!");
+            return false;
+        }
+        
+        if( ui.cb_bktest_max_qty->isChecked() && ui.spinBox_bktest_max_qty->value() < 100 )
+        {
+            ui.cb_bktest_max_qty->setFocus();
+            this->DoStatusBar("最大仓位不能为0!");
+            return false;
+        } 
+
+        auto start_date = ui.de_bktest_begin->time().toString("yyyyMMdd").toInt();
+        auto end_date = ui.de_bktest_end->time().toString("yyyyMMdd").toInt();
+
+        if( end_date >= start_date )
+        {
+            ui.de_bktest_begin->setFocus();
+            return false;
+        }
+        return true;
+    };
+
     //BreakUpBuyTask>(*iter->second, app)
 #if 0
     static std::vector<T_Task_Inf_Pair> task_taskinfo_vector;
@@ -114,6 +184,9 @@ void WinnerWin::DoStartBacktest(bool)
         app_->winner_win().DoStatusBar("回测接口未安装!");
         return;
     }
+
+    if( !check_le_stock() ) return;
+
 
     this->ui.pbtn_start_backtest->setDisabled(true);
     oneceshot_timer_contain_->InsertTimer(60 * 2 * 1000, [this]()
