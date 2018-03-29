@@ -14,7 +14,7 @@ void TimerContainner::InsertTimer(unsigned int ms, TimerTask&&task)
 {
     std::shared_ptr<TimerWapper> timer = nullptr;
     {
-     std::lock_guard<std::mutex>  locker(timers_mutex_);  
+     std::lock_guard<std::recursive_mutex>  locker(timers_mutex_);  
      auto id = AllocId();
      timer = id_timers_.insert(std::make_pair(id, std::make_shared<TimerWapper>(this, id, is_remove_, std::move(task)))).first->second;
     }
@@ -24,7 +24,7 @@ void TimerContainner::InsertTimer(unsigned int ms, TimerTask&&task)
  
 void TimerContainner::RemoveTimer(int id)
 {
-    std::lock_guard<std::mutex>  locker(timers_mutex_);  
+    std::lock_guard<std::recursive_mutex>  locker(timers_mutex_);  
     auto iter = id_timers_.find(id);
     if( iter != id_timers_.end() )
         id_timers_.erase(iter);

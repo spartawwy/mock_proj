@@ -32,7 +32,7 @@ private:
     std::atomic_uint32_t cur_id;
     bool is_remove_;
 
-    std::mutex timers_mutex_;
+    std::recursive_mutex timers_mutex_;
     std::unordered_map<int, std::shared_ptr<TimerWapper> > id_timers_;
 
     friend class TimerWapper;

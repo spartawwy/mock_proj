@@ -28,8 +28,8 @@ static const QString cst_str_advancesec_bktest = QString::fromLocal8Bit("±´Ëþ½»Ò
 bool WinnerWin::InitBacktestWin()
 {
     bool ret = true;
-    ui.cb_bktest_type->addItem(cst_str_eqsec_bktest);
-    ui.cb_bktest_type->addItem(cst_str_advancesec_bktest);
+    ui.cb_bktest_type->addItem(cst_str_eqsec_bktest, QVariant(static_cast<int>(TypeTask::EQUAL_SECTION)));
+    ui.cb_bktest_type->addItem(cst_str_advancesec_bktest, QVariant(static_cast<int>(TypeTask::ADVANCE_SECTION)));
     
     m_backtest_list_hint_ = new HintList(this, ui.le_bktest_stock);
     m_backtest_list_hint_->hide();
@@ -159,50 +159,79 @@ void WinnerWin::DoStartBacktest(bool)
             return false;
         } 
 
-        auto start_date = ui.de_bktest_begin->time().toString("yyyyMMdd").toInt();
-        auto end_date = ui.de_bktest_end->time().toString("yyyyMMdd").toInt();
+        auto start_date = ui.de_bktest_begin->date().toString("yyyyMMdd").toInt();
+        auto end_date = ui.de_bktest_end->date().toString("yyyyMMdd").toInt();
 
-        if( end_date >= start_date )
+        if( end_date < start_date )
         {
             ui.de_bktest_begin->setFocus();
+            this->DoStatusBar("¿ªÊ¼ÈÕÆÚ²»ÄÜ´óÓÚ½áÊøÈÕÆÚ!");
             return false;
         }
         return true;
     };
-
-    //BreakUpBuyTask>(*iter->second, app)
-#if 0
-    static std::vector<T_Task_Inf_Pair> task_taskinfo_vector;
-#else
-    static std::vector<std::shared_ptr<StrategyTask> > task_vector;
-    static std::vector<std::shared_ptr<T_TaskInformation> > taskinfo_vector;
-    static std::vector<std::shared_ptr<T_FenbiCallBack> > callback_vector;
-    static std::vector<std::shared_ptr<T_MockStrategyPara> > mock_strategy_para_vector;
-#endif 
+  
     if( !WinnerHisHq_GetHisFenbiData )
     {
         app_->winner_win().DoStatusBar("»Ø²â½Ó¿ÚÎ´°²×°!");
         return;
     }
-
-    if( !check_le_stock() ) return;
-
-
-    this->ui.pbtn_start_backtest->setDisabled(true);
-    oneceshot_timer_contain_->InsertTimer(60 * 2 * 1000, [this]()
-    {
-        this->ui.pbtn_start_backtest->setEnabled(true);
-    });
-
+    if( !check_le_stock() ) 
+        return;
+    //-----------------
+    static std::vector<std::shared_ptr<StrategyTask> > task_vector;
+    static std::vector<std::shared_ptr<T_TaskInformation> > taskinfo_vector;
+    static std::vector<std::shared_ptr<T_FenbiCallBack> > callback_vector;
+    static std::vector<std::shared_ptr<T_MockStrategyPara> > mock_strategy_para_vector;
+    //--------------------
     task_vector.clear();
     taskinfo_vector.clear();
     callback_vector.clear();
     mock_strategy_para_vector.clear();
- 
-    const double capital = 200000.00;
-     
+
     auto task_info = std::make_shared<T_TaskInformation>();
 
+    QString::SectionFlag flag = QString::SectionSkipEmpty;
+    QString stock_str = ui.le_bktest_stock->text().trimmed();
+    QString stock_pinyin = stock_str.section('/', 1, 1, flag);
+    task_info->stock = stock_str.section('/', 0, 0, flag).toLocal8Bit();
+ 
+    task_info->id = 123; // ndedt:
+    task_info->type = (TypeTask)ui.cb_bktest_type->currentData().toInt();
+     
+    task_info->back_alert_trigger = false;
+    task_info->rebounce = ui.cb_bktest_rebounce->isChecked() ? ui.spinBox_bktest_rebounce->value() : 0.0;
+    task_info->continue_second = 0; 
+    task_info->quantity = ui.spinBox_bktest_quantity->value();
+    const double alert_price = 20.3;
+    task_info->alert_price = ui.dbspbox_bktest_start_price->value();
+    task_info->assistant_field = ""; 
+    task_info->secton_task.fall_percent = 1;
+    //task_info->secton_task.fall_infection = 0.2;
+    task_info->secton_task.raise_percent = 1;
+    //task_info->secton_task.raise_infection = 0.2;
+    task_info->secton_task.max_position = ui.cb_bktest_max_qty->isChecked() ? ui.spinBox_bktest_max_qty->value() : EQSEC_MAX_POSITION;
+    task_info->secton_task.min_position = ui.cb_bktest_min_qty->isChecked() ? ui.spinBox_bktest_min_qty->value() : EQSEC_MIN_POSITION;
+    task_info->secton_task.max_trig_price = ui.cb_bktest_max_stop_trigger->isChecked() ? ui.dbspbox_bktest_max_price->value() : MAX_STOCK_PRICE;
+    task_info->secton_task.min_trig_price = ui.cb_bktest_min_clear_trigger->isChecked() ? ui.dbspbox_bktest_min_price->value() : MIN_STOCK_PRICE;
+
+    auto mock_para = std::make_shared<T_MockStrategyPara>();
+#if 1
+    auto tmp_price = app_->GetStockPriceInfo(task_info->stock.c_str(), false);
+    double cur_stock_price = tmp_price ? tmp_price->cur_price : 2.0;
+    mock_para->avaliable_position = ui.spinBox_bktest_start_pos->value();
+    mock_para->capital = ui.dbspbox_bktest_start_capital->value() + cur_stock_price * mock_para->avaliable_position;
+#endif
+    mock_strategy_para_vector.push_back(std::move(mock_para));
+    taskinfo_vector.push_back( std::move(task_info));
+ 
+    auto equal_sec_task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
+    task_vector.push_back( std::move(equal_sec_task) );
+     
+#ifdef TMP_TEST     
+    const double capital = 200000.00;
+
+    auto task_info = std::make_shared<T_TaskInformation>();
 #if 1
     task_info->id = 123;
     task_info->type = TypeTask::EQUAL_SECTION; 
@@ -297,15 +326,32 @@ void WinnerWin::DoStartBacktest(bool)
     auto equal_sec_task = std::make_shared<AdvanceSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
     task_vector.push_back( std::move(equal_sec_task) );
 #endif 
-      
+       
+#endif
+
     auto fenbi_callback_obj = std::make_shared<T_FenbiCallBack>();
     fenbi_callback_obj->call_back_func = FenbiCallBackFunc;
     fenbi_callback_obj->para = std::addressof(task_vector[0]);
     callback_vector.push_back(std::move(fenbi_callback_obj));
 
+    assert(callback_vector.size());
     char error[1024] = {0}; 
     //auto date_vector = app_->GetSpanTradeDates(20170914, 20171031);
-    auto date_vector = app_->GetSpanTradeDates(20180328, 20180328);
+    auto start_date = ui.de_bktest_begin->date().toString("yyyyMMdd").toInt();
+    auto end_date = ui.de_bktest_end->date().toString("yyyyMMdd").toInt();
+    auto date_vector = app_->GetSpanTradeDates(start_date, end_date);
+    if( date_vector.size() < 1 )
+    {
+        app_->winner_win().DoStatusBar("ÎÞ¿ÉÓÃ½»Ò×ÈÕ!");
+        return;
+    }
+#if 1 
+    this->ui.pbtn_start_backtest->setDisabled(true);
+    oneceshot_timer_contain_->InsertTimer(60 * 2 * 1000, [this]()
+    {
+        this->ui.pbtn_start_backtest->setEnabled(true);
+    }); 
+#endif
     for(int i = 0; i < date_vector.size(); ++i )
     {
         WinnerHisHq_GetHisFenbiData(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
