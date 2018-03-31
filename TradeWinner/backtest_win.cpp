@@ -19,6 +19,7 @@ static HMODULE st_api_handle = nullptr;
 static WinnerHisHq_ConnectDelegate WinnerHisHq_Connect = nullptr;
 static WinnerHisHq_DisconnectDelegate WinnerHisHq_DisConnect = nullptr;
 static WinnerHisHq_GetHisFenbiDataDelegate WinnerHisHq_GetHisFenbiData  = nullptr;
+static WinnerHisHq_GetHisFenbiDataBatchDelegate WinnerHisHq_GetHisFenbiDataBatch  = nullptr;
 
 static const std::string cst_back_test_tag = "bktest";
 
@@ -47,7 +48,7 @@ bool WinnerWin::InitBacktestWin()
         std::cout << "LoadLibrary winner_api.dll fail" << std::endl;
         return false;
     }
-    ui.pbtn_start_backtest->setDisabled(true);
+    //ui.pbtn_start_backtest->setDisabled(true);
    
     WinnerHisHq_Connect = (WinnerHisHq_ConnectDelegate)GetProcAddress(st_api_handle, "WinnerHisHq_Connect"); 
     if ( !WinnerHisHq_Connect )
@@ -65,6 +66,13 @@ bool WinnerWin::InitBacktestWin()
         std::cout << " GetProcAddress WinnerHisHq_GetHisFenbiData fail " << std::endl;
         return false;
     }
+    WinnerHisHq_GetHisFenbiDataBatch 
+        = (WinnerHisHq_GetHisFenbiDataBatchDelegate)GetProcAddress(st_api_handle, "WinnerHisHq_GetHisFenbiDataBatch"); 
+    if( !WinnerHisHq_GetHisFenbiDataBatch )
+    {
+        std::cout << " GetProcAddress WinnerHisHq_GetHisFenbiDataBatch fail " << std::endl;
+        return false;
+    }
     char result[1024] = {0};
     char error[1024] = {0};
     char server_ip[] = "192.168.1.5";
@@ -72,19 +80,19 @@ bool WinnerWin::InitBacktestWin()
 
     app_->local_logger().LogLocal(utility::FormatStr("InitBacktestWin WinnerHisHq_Connect %s : %d waiting", server_ip, port));
     
-    int ret_val = -1;
-    //ret_val = WinnerHisHq_Connect("192.168.11.5", 50010, result, error);
-    if( !stricmp(TSystem::utility::host().c_str(), "hzdev103") )
-        ret_val = WinnerHisHq_Connect("128.1.1.3", 50010, result, error);
-    else
-        ret_val = WinnerHisHq_Connect("192.168.1.5", 50010, result, error);
+    //int ret_val = -1;
+    ////ret_val = WinnerHisHq_Connect("192.168.11.5", 50010, result, error);
+    //if( !stricmp(TSystem::utility::host().c_str(), "hzdev103") )
+    //    ret_val = WinnerHisHq_Connect("128.1.1.3", 50010, result, error);
+    //else
+    //    ret_val = WinnerHisHq_Connect("192.168.1.5", 50010, result, error);
 
-    app_->local_logger().LogLocal("InitBacktestWin WinnerHisHq_Connect ret");
+    //app_->local_logger().LogLocal("InitBacktestWin WinnerHisHq_Connect ret");
 
 
-    if( ret_val == 0 ) 
-        ui.pbtn_start_backtest->setEnabled(true);
-    return ret_val == 0;
+    //if( ret_val == 0 ) 
+    //    ui.pbtn_start_backtest->setEnabled(true);
+    //return ret_val == 0;
 
 }
 
@@ -176,6 +184,24 @@ void WinnerWin::DoStartBacktest(bool)
         app_->winner_win().DoStatusBar("回测接口未安装!");
         return;
     }
+
+    int ret_val = -1;
+    //ret_val = WinnerHisHq_Connect("192.168.11.5", 50010, result, error);
+    char result[1024] = {0};
+    char error[1024] = {0};
+    if( !stricmp(TSystem::utility::host().c_str(), "hzdev103") )
+        ret_val = WinnerHisHq_Connect("128.1.1.3", 50010, result, error);
+    else
+        ret_val = WinnerHisHq_Connect("192.168.1.5", 50010, result, error);
+
+    if( ret_val != 0 ) 
+    {
+        //ui.pbtn_start_backtest->setEnabled(true);
+        this->DoStatusBar("服务器未连接!");
+        return;
+    }
+
+    
     if( !check_le_stock() ) 
         return;
     //-----------------
@@ -335,7 +361,7 @@ void WinnerWin::DoStartBacktest(bool)
     callback_vector.push_back(std::move(fenbi_callback_obj));
 
     assert(callback_vector.size());
-    char error[1024] = {0}; 
+    memset(error, 0, sizeof(error)); 
     //auto date_vector = app_->GetSpanTradeDates(20170914, 20171031);
     auto start_date = ui.de_bktest_begin->date().toString("yyyyMMdd").toInt();
     auto end_date = ui.de_bktest_end->date().toString("yyyyMMdd").toInt();
@@ -347,18 +373,26 @@ void WinnerWin::DoStartBacktest(bool)
     }
 #if 1 
     this->ui.pbtn_start_backtest->setDisabled(true);
-    oneceshot_timer_contain_->InsertTimer(60 * 2 * 1000, [this]()
+    oneceshot_timer_contain_->InsertTimer(2 * 2 * 1000, [this]()
     {
         this->ui.pbtn_start_backtest->setEnabled(true);
     }); 
 #endif
+#if 0 
     for(int i = 0; i < date_vector.size(); ++i )
     {
         WinnerHisHq_GetHisFenbiData(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
             , date_vector[i]
-        , callback_vector[0].get()
+            , callback_vector[0].get()
             , error);
     }
+#else
+    WinnerHisHq_GetHisFenbiDataBatch(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
+            , start_date
+            , end_date
+            , callback_vector[0].get()
+            , error);
+#endif
 
 }
 
