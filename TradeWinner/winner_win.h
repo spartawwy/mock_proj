@@ -101,6 +101,7 @@ public slots:
 	void DoTrdIndexClearBtnChecked(bool);
 
     //---------------back test related ---
+    void DoBktestTypeChanged(const QString&);
     void DoStartBacktest(bool);
     void DoEnableBtnBackTest();
     //------------------

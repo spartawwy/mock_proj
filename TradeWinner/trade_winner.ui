@@ -2652,7 +2652,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>91</y>
+         <y>86</y>
          <width>71</width>
          <height>21</height>
         </rect>
@@ -2673,7 +2673,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>200</x>
-         <y>130</y>
+         <y>125</y>
          <width>51</width>
          <height>21</height>
         </rect>
@@ -2694,7 +2694,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>200</x>
-         <y>261</y>
+         <y>245</y>
          <width>61</width>
          <height>21</height>
         </rect>
@@ -2707,7 +2707,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>91</y>
+         <y>86</y>
          <width>81</width>
          <height>31</height>
         </rect>
@@ -2726,7 +2726,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>200</x>
-         <y>95</y>
+         <y>90</y>
          <width>51</width>
          <height>21</height>
         </rect>
@@ -2747,7 +2747,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>212</y>
+         <y>200</y>
          <width>101</width>
          <height>31</height>
         </rect>
@@ -2763,7 +2763,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>131</y>
+         <y>126</y>
          <width>71</width>
          <height>21</height>
         </rect>
@@ -2784,7 +2784,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>252</y>
+         <y>235</y>
          <width>101</width>
          <height>31</height>
         </rect>
@@ -2800,7 +2800,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>131</y>
+         <y>126</y>
          <width>81</width>
          <height>31</height>
         </rect>
@@ -2840,7 +2840,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>-10</x>
-         <y>211</y>
+         <y>205</y>
          <width>91</width>
          <height>21</height>
         </rect>
@@ -2882,7 +2882,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>-10</x>
-         <y>251</y>
+         <y>240</y>
          <width>91</width>
          <height>21</height>
         </rect>
@@ -2903,8 +2903,8 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>171</y>
-         <width>101</width>
+         <y>165</y>
+         <width>81</width>
          <height>31</height>
         </rect>
        </property>
@@ -2922,7 +2922,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>171</y>
+         <y>165</y>
          <width>71</width>
          <height>21</height>
         </rect>
@@ -2943,7 +2943,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>210</x>
-         <y>175</y>
+         <y>165</y>
          <width>92</width>
          <height>21</height>
         </rect>
@@ -2996,7 +2996,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>200</x>
-         <y>300</y>
+         <y>280</y>
          <width>61</width>
          <height>21</height>
         </rect>
@@ -3009,7 +3009,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>-10</x>
-         <y>290</y>
+         <y>275</y>
          <width>91</width>
          <height>21</height>
         </rect>
@@ -3030,7 +3030,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>291</y>
+         <y>275</y>
          <width>101</width>
          <height>31</height>
         </rect>
@@ -3153,7 +3153,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>320</y>
+         <y>310</y>
          <width>101</width>
          <height>31</height>
         </rect>
@@ -3172,7 +3172,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>350</y>
+         <y>345</y>
          <width>101</width>
          <height>31</height>
         </rect>
@@ -3191,7 +3191,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>320</y>
+         <y>310</y>
          <width>61</width>
          <height>21</height>
         </rect>
@@ -3212,7 +3212,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>200</x>
-         <y>360</y>
+         <y>355</y>
          <width>61</width>
          <height>21</height>
         </rect>
@@ -3225,7 +3225,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>200</x>
-         <y>330</y>
+         <y>320</y>
          <width>61</width>
          <height>21</height>
         </rect>
@@ -3234,7 +3234,7 @@ background-color: rgb(255, 255,255);</string>
         <string/>
        </property>
       </widget>
-      <widget class="QLabel" name="label_bktest_maxprice_4">
+      <widget class="QLabel" name="label_bktest_minprice">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -3253,6 +3253,27 @@ background-color: rgb(255, 255,255);</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_raise_percent_rebounce">
+       <property name="geometry">
+        <rect>
+         <x>170</x>
+         <y>170</y>
+         <width>31</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>%</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </widget>
@@ -3381,6 +3402,277 @@ background-color: rgb(255, 255,255);</string>
       <property name="text">
        <string>开始回测</string>
       </property>
+     </widget>
+     <widget class="QWidget" name="wid_bktest_adv_sec" native="true">
+      <property name="geometry">
+       <rect>
+        <x>419</x>
+        <y>89</y>
+        <width>361</width>
+        <height>381</height>
+       </rect>
+      </property>
+      <widget class="QLabel" name="label_bktest_maxprice_5">
+       <property name="geometry">
+        <rect>
+         <x>40</x>
+         <y>50</y>
+         <width>61</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>清仓价格:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="dbspb_bktest_adv_max_price">
+       <property name="geometry">
+        <rect>
+         <x>110</x>
+         <y>10</y>
+         <width>101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="decimals">
+        <number>2</number>
+       </property>
+       <property name="maximum">
+        <double>999.990000000000009</double>
+       </property>
+       <property name="singleStep">
+        <double>0.100000000000000</double>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_bktest_maxprice_adv">
+       <property name="geometry">
+        <rect>
+         <x>40</x>
+         <y>10</y>
+         <width>61</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>顶部价格:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="dbspb_bktest_adv_min_price">
+       <property name="geometry">
+        <rect>
+         <x>110</x>
+         <y>50</y>
+         <width>101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="decimals">
+        <number>2</number>
+       </property>
+       <property name="maximum">
+        <double>999.990000000000009</double>
+       </property>
+       <property name="singleStep">
+        <double>0.100000000000000</double>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_bktest_adv_reb">
+       <property name="geometry">
+        <rect>
+         <x>40</x>
+         <y>130</y>
+         <width>61</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>拐点:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="spb_bktest_adv_rebounce">
+       <property name="geometry">
+        <rect>
+         <x>110</x>
+         <y>130</y>
+         <width>101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <double>100.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.100000000000000</double>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_bktest_advsec_qty">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>170</y>
+         <width>81</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>单区间股数:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBox_bktest_adv_qty">
+       <property name="geometry">
+        <rect>
+         <x>110</x>
+         <y>170</y>
+         <width>101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>100000</number>
+       </property>
+       <property name="singleStep">
+        <number>100</number>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="dbspb_bktest_adv_start_capital">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>110</x>
+         <y>210</y>
+         <width>111</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="decimals">
+        <number>2</number>
+       </property>
+       <property name="maximum">
+        <double>99999999.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>1000.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>1000.000000000000000</double>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_bktest_start_capital_2">
+       <property name="geometry">
+        <rect>
+         <x>40</x>
+         <y>210</y>
+         <width>61</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>所需资金:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spb_bktest_adv_section_count">
+       <property name="geometry">
+        <rect>
+         <x>110</x>
+         <y>90</y>
+         <width>101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>100000</number>
+       </property>
+       <property name="singleStep">
+        <number>100</number>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_bktest_adv_secnums">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>90</y>
+         <width>81</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>区间数:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_raise_percent_rebounce_2">
+       <property name="geometry">
+        <rect>
+         <x>210</x>
+         <y>180</y>
+         <width>31</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>%</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </widget>
     </widget>
    </widget>

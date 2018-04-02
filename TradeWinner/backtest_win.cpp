@@ -32,6 +32,8 @@ bool WinnerWin::InitBacktestWin()
     ui.cb_bktest_type->addItem(cst_str_eqsec_bktest, QVariant(static_cast<int>(TypeTask::EQUAL_SECTION)));
     ui.cb_bktest_type->addItem(cst_str_advancesec_bktest, QVariant(static_cast<int>(TypeTask::ADVANCE_SECTION)));
     
+    ret = QObject::connect(ui.cb_bktest_type, SIGNAL(currentTextChanged(const QString&)), this, SLOT(DoBktestTypeChanged(const QString&)));
+
     m_backtest_list_hint_ = new HintList(this, ui.le_bktest_stock);
     m_backtest_list_hint_->hide();
     ret = QObject::connect(ui.le_bktest_stock, SIGNAL(textChanged(QString)), this, SLOT(FlushFromStationListWidget(QString)));
@@ -104,6 +106,24 @@ void WinnerWin::UnInstallBacktest()
     {
         FreeLibrary(st_api_handle);
     }
+}
+
+void WinnerWin::DoBktestTypeChanged(const QString&)
+{
+    int val = ui.cb_bktest_type->currentData().toInt();
+    switch (val)
+    {
+    case (int)TypeTask::EQUAL_SECTION: 
+        ui.wid_bktest_eqsec->show();
+        ui.wid_bktest_adv_sec->hide();
+        break;
+    case (int)TypeTask::ADVANCE_SECTION: 
+        ui.wid_bktest_eqsec->hide();
+        ui.wid_bktest_adv_sec->show();
+        break;
+    default: break;
+    }
+
 }
 
 void WinnerWin::DoStartBacktest(bool)
