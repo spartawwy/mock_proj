@@ -31,7 +31,10 @@ bool WinnerWin::InitBacktestWin()
     bool ret = true;
     ui.cb_bktest_type->addItem(cst_str_eqsec_bktest, QVariant(static_cast<int>(TypeTask::EQUAL_SECTION)));
     ui.cb_bktest_type->addItem(cst_str_advancesec_bktest, QVariant(static_cast<int>(TypeTask::ADVANCE_SECTION)));
-    
+    //ui.wid_bktest_eqsec->show();
+    ui.wid_bktest_adv_sec->setGeometry(ui.wid_bktest_eqsec->geometry().x(), ui.wid_bktest_eqsec->geometry().y()
+                                       , ui.wid_bktest_adv_sec->geometry().width(), ui.wid_bktest_adv_sec->geometry().height());
+    ui.wid_bktest_adv_sec->hide();
     ret = QObject::connect(ui.cb_bktest_type, SIGNAL(currentTextChanged(const QString&)), this, SLOT(DoBktestTypeChanged(const QString&)));
 
     m_backtest_list_hint_ = new HintList(this, ui.le_bktest_stock);
@@ -95,7 +98,7 @@ bool WinnerWin::InitBacktestWin()
     //if( ret_val == 0 ) 
     //    ui.pbtn_start_backtest->setEnabled(true);
     //return ret_val == 0;
-
+    return true;
 }
 
 void WinnerWin::UnInstallBacktest()
