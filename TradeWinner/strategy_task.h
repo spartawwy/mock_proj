@@ -11,7 +11,8 @@
 
 #include "common.h"
 
- 
+#define DO_LOG_BKTST(tag, b)  do{ app_->local_logger().LogLocal((tag), (is_back_test_ ? DateTimeString(iter->time_stamp) : "") + " " + b); }while(0);
+
 struct T_MockStrategyPara 
 {
     int  avaliable_position;

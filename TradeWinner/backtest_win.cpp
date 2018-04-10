@@ -78,26 +78,7 @@ bool WinnerWin::InitBacktestWin()
         std::cout << " GetProcAddress WinnerHisHq_GetHisFenbiDataBatch fail " << std::endl;
         return false;
     }
-    char result[1024] = {0};
-    char error[1024] = {0};
-    char server_ip[] = "192.168.1.5";
-    int port = 50010;
-
-    app_->local_logger().LogLocal(utility::FormatStr("InitBacktestWin WinnerHisHq_Connect %s : %d waiting", server_ip, port));
     
-    //int ret_val = -1;
-    ////ret_val = WinnerHisHq_Connect("192.168.11.5", 50010, result, error);
-    //if( !stricmp(TSystem::utility::host().c_str(), "hzdev103") )
-    //    ret_val = WinnerHisHq_Connect("128.1.1.3", 50010, result, error);
-    //else
-    //    ret_val = WinnerHisHq_Connect("192.168.1.5", 50010, result, error);
-
-    //app_->local_logger().LogLocal("InitBacktestWin WinnerHisHq_Connect ret");
-
-
-    //if( ret_val == 0 ) 
-    //    ui.pbtn_start_backtest->setEnabled(true);
-    //return ret_val == 0;
     return true;
 }
 

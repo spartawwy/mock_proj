@@ -203,6 +203,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_timer_wrapper.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="back_tester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="trade_winner.ui">
@@ -350,6 +353,9 @@
     </ClInclude>
     <ClInclude Include="timer_container.h">
       <Filter>moudle</Filter>
+    </ClInclude>
+    <ClInclude Include="back_tester.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

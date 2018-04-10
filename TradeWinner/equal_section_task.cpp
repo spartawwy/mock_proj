@@ -36,7 +36,6 @@ static const int cst_max_sec = 5;
 static const double cst_max_stock_price = MAX_STOCK_PRICE;
 const std::string cst_rebounce_debug = "EqualSec";
 
-#define DO_LOG_BKTST(tag, b)  do{ app_->local_logger().LogLocal((tag), (is_back_test_ ? DateTimeString(iter->time_stamp) : "") + " " + b); }while(0);
 
 void EqualSectionTask::CalculateSections(double price, IN T_TaskInformation &task_info, OUT std::vector<T_SectionAutom> &sections)
 {

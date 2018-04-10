@@ -8,7 +8,7 @@ class BatchesBuyTask : public StrategyTask
 {
 public:
      
-    BatchesBuyTask(T_TaskInformation &task_info, WinnerApp *app);
+    BatchesBuyTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *mock_para=nullptr);
 
     virtual ~BatchesBuyTask(){}
     virtual void HandleQuoteData() override;
@@ -29,7 +29,7 @@ private:
 
     std::string TagOfCurTask(); 
 
-    bool  is_wait_trade_result_; 
+    //bool  is_wait_trade_result_; 
 
     unsigned int continue_trade_fail_count_;
     unsigned int trade_fail_ctr_count_;
