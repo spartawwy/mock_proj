@@ -1213,6 +1213,7 @@ public:
         spb_bktest_adv_rebounce->setDecimals(1);
         spb_bktest_adv_rebounce->setMaximum(100);
         spb_bktest_adv_rebounce->setSingleStep(0.1);
+        spb_bktest_adv_rebounce->setValue(0.1);
         lab_bktest_advsec_qty = new QLabel(wid_bktest_adv_sec);
         lab_bktest_advsec_qty->setObjectName(QStringLiteral("lab_bktest_advsec_qty"));
         lab_bktest_advsec_qty->setGeometry(QRect(20, 170, 81, 21));
@@ -1223,6 +1224,7 @@ public:
         spinBox_bktest_adv_qty->setGeometry(QRect(110, 170, 101, 31));
         spinBox_bktest_adv_qty->setMaximum(100000);
         spinBox_bktest_adv_qty->setSingleStep(100);
+        spinBox_bktest_adv_qty->setValue(100);
         dbspb_bktest_adv_start_capital = new QDoubleSpinBox(wid_bktest_adv_sec);
         dbspb_bktest_adv_start_capital->setObjectName(QStringLiteral("dbspb_bktest_adv_start_capital"));
         dbspb_bktest_adv_start_capital->setEnabled(false);

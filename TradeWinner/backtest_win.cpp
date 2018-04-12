@@ -264,7 +264,7 @@ void WinnerWin::DoStartBacktest(bool)
         mock_para->capital = ui.dbspbox_bktest_start_capital->value() + cur_stock_price * mock_para->avaliable_position;
     }else if( task_info->type == TypeTask::ADVANCE_SECTION )
     {
-        
+        task_info->advance_section_task.is_original = true;   
         double top_price = ui.dbspb_bktest_adv_max_price->value();
         double bottom_price = ui.dbspb_bktest_adv_min_price->value();
         if( top_price < bottom_price + 0.05 )
@@ -297,6 +297,8 @@ void WinnerWin::DoStartBacktest(bool)
         sprintf_s(buf, "%.2f\0", top_price);
         task_info->advance_section_task.portion_sections.append(buf);
         task_info->advance_section_task.portion_states.append(std::to_string(int(AdvanceSectionTask::PortionState::UNKNOW)));
+
+        task_info->rebounce = ui.spb_bktest_adv_rebounce->value();
 
         mock_para->avaliable_position = 0;
         mock_para->capital = (top_price + bottom_price) * task_info->quantity * ui.spb_bktest_adv_section_count->value() / 2;
