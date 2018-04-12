@@ -1240,7 +1240,8 @@ public:
         spb_bktest_adv_section_count->setObjectName(QStringLiteral("spb_bktest_adv_section_count"));
         spb_bktest_adv_section_count->setGeometry(QRect(110, 90, 101, 31));
         spb_bktest_adv_section_count->setMaximum(100000);
-        spb_bktest_adv_section_count->setSingleStep(100);
+        spb_bktest_adv_section_count->setSingleStep(1);
+        spb_bktest_adv_section_count->setValue(2);
         lab_bktest_adv_secnums = new QLabel(wid_bktest_adv_sec);
         lab_bktest_adv_secnums->setObjectName(QStringLiteral("lab_bktest_adv_secnums"));
         lab_bktest_adv_secnums->setGeometry(QRect(20, 90, 81, 21));

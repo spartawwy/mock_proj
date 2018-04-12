@@ -207,10 +207,7 @@ void WinnerWin::DoStartBacktest(bool)
         this->DoStatusBar("服务器未连接!");
         return;
     }
-
-    
-    if( !check_le_stock() ) 
-        return;
+     
     //-----------------
     static std::vector<std::shared_ptr<StrategyTask> > task_vector;
     static std::vector<std::shared_ptr<T_TaskInformation> > taskinfo_vector;
@@ -221,7 +218,7 @@ void WinnerWin::DoStartBacktest(bool)
     taskinfo_vector.clear();
     callback_vector.clear();
     mock_strategy_para_vector.clear();
-     //--------------------
+    //--------------------
 
     auto task_info = std::make_shared<T_TaskInformation>();
 
@@ -234,38 +231,81 @@ void WinnerWin::DoStartBacktest(bool)
     task_info->type = (TypeTask)ui.cb_bktest_type->currentData().toInt();
      
     task_info->back_alert_trigger = false;
-    task_info->rebounce = ui.cb_bktest_rebounce->isChecked() ? ui.spinBox_bktest_rebounce->value() : 0.0;
-    task_info->continue_second = 0; 
-    task_info->quantity = ui.spinBox_bktest_quantity->value();
-    //const double alert_price = 20.3;
-    task_info->alert_price = ui.dbspbox_bktest_start_price->value();
     task_info->assistant_field = ""; 
-    task_info->secton_task.fall_percent = 1;
-    //task_info->secton_task.fall_infection = 0.2;
-    task_info->secton_task.raise_percent = 1;
-    //task_info->secton_task.raise_infection = 0.2;
-    task_info->secton_task.max_position = ui.cb_bktest_max_qty->isChecked() ? ui.spinBox_bktest_max_qty->value() : EQSEC_MAX_POSITION;
-    task_info->secton_task.min_position = ui.cb_bktest_min_qty->isChecked() ? ui.spinBox_bktest_min_qty->value() : EQSEC_MIN_POSITION;
-    task_info->secton_task.max_trig_price = ui.cb_bktest_max_stop_trigger->isChecked() ? ui.dbspbox_bktest_max_price->value() : MAX_STOCK_PRICE;
-    task_info->secton_task.min_trig_price = ui.cb_bktest_min_clear_trigger->isChecked() ? ui.dbspbox_bktest_min_price->value() : MIN_STOCK_PRICE;
+    task_info->continue_second = 0; 
 
-    if( task_info->type == TypeTask::BATCHES_BUY )
-    {
-        task_info->step = 1;
-        task_info->bs_times = 1;
-    }
     auto mock_para = std::make_shared<T_MockStrategyPara>();
- 
-    auto tmp_price = app_->GetStockPriceInfo(task_info->stock.c_str(), false);
-    double cur_stock_price = tmp_price ? tmp_price->cur_price : 2.0;
-    mock_para->avaliable_position = ui.spinBox_bktest_start_pos->value();
-    mock_para->capital = ui.dbspbox_bktest_start_capital->value() + cur_stock_price * mock_para->avaliable_position;
- 
+     
+    if( task_info->type == TypeTask::BATCHES_BUY || task_info->type == TypeTask::EQUAL_SECTION )
+    {
+        if( !check_le_stock() ) 
+            return;
+        task_info->rebounce = ui.cb_bktest_rebounce->isChecked() ? ui.spinBox_bktest_rebounce->value() : 0.0;
+        task_info->quantity = ui.spinBox_bktest_quantity->value();
+        //const double alert_price = 20.3;
+        task_info->alert_price = ui.dbspbox_bktest_start_price->value();
+
+        task_info->secton_task.fall_percent = 1;
+        //task_info->secton_task.fall_infection = 0.2;
+        task_info->secton_task.raise_percent = 1;
+        //task_info->secton_task.raise_infection = 0.2;
+        task_info->secton_task.max_position = ui.cb_bktest_max_qty->isChecked() ? ui.spinBox_bktest_max_qty->value() : EQSEC_MAX_POSITION;
+        task_info->secton_task.min_position = ui.cb_bktest_min_qty->isChecked() ? ui.spinBox_bktest_min_qty->value() : EQSEC_MIN_POSITION;
+        task_info->secton_task.max_trig_price = ui.cb_bktest_max_stop_trigger->isChecked() ? ui.dbspbox_bktest_max_price->value() : MAX_STOCK_PRICE;
+        task_info->secton_task.min_trig_price = ui.cb_bktest_min_clear_trigger->isChecked() ? ui.dbspbox_bktest_min_price->value() : MIN_STOCK_PRICE;
+        if( task_info->type == TypeTask::BATCHES_BUY )
+        {
+            task_info->step = 1;
+            task_info->bs_times = 1;
+        }
+        auto tmp_price = app_->GetStockPriceInfo(task_info->stock.c_str(), false);
+        double cur_stock_price = tmp_price ? tmp_price->cur_price : 2.0;
+        mock_para->avaliable_position = ui.spinBox_bktest_start_pos->value();
+        mock_para->capital = ui.dbspbox_bktest_start_capital->value() + cur_stock_price * mock_para->avaliable_position;
+    }else if( task_info->type == TypeTask::ADVANCE_SECTION )
+    {
+        
+        double top_price = ui.dbspb_bktest_adv_max_price->value();
+        double bottom_price = ui.dbspb_bktest_adv_min_price->value();
+        if( top_price < bottom_price + 0.05 )
+        {
+            app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("顶部价格必须大于底部价格一定值!"));
+            return;
+        }
+        int section_count = ui.spb_bktest_adv_section_count->value();
+        if( section_count < 2 )
+        {
+            app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("区间数必须大于1!"));
+            return;
+        }
+        task_info->quantity = ui.spinBox_bktest_adv_qty->value();
+        double atom_h = (top_price - bottom_price ) / section_count;
+        if( atom_h < 0.1 )
+        {
+            app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("单区间价格过小,请调整顶底价格或区间数目!"));
+            return;
+        }
+        char buf[16] = {0}; 
+        for( int i = 0; i < section_count; ++i )
+        {
+            sprintf_s(buf, sizeof(buf), "%.2f\0", bottom_price + atom_h * i);
+            task_info->advance_section_task.portion_sections.append(buf);
+            task_info->advance_section_task.portion_sections.append(";");
+            task_info->advance_section_task.portion_states.append(std::to_string(int(AdvanceSectionTask::PortionState::UNKNOW)));
+            task_info->advance_section_task.portion_states.append(";");
+        }
+        sprintf_s(buf, "%.2f\0", top_price);
+        task_info->advance_section_task.portion_sections.append(buf);
+        task_info->advance_section_task.portion_states.append(std::to_string(int(AdvanceSectionTask::PortionState::UNKNOW)));
+
+        mock_para->avaliable_position = 0;
+        mock_para->capital = (top_price + bottom_price) * task_info->quantity * ui.spb_bktest_adv_section_count->value() / 2;
+    }
+    
+     
     mock_strategy_para_vector.push_back(std::move(mock_para));
     taskinfo_vector.push_back( task_info );
-
-    //task_info->type;
-
+      
     switch (task_info->type)
     {
     case TypeTask::EQUAL_SECTION:

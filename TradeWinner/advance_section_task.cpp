@@ -7,6 +7,7 @@
 #include "advance_section_task.h"
 
 #include <TLib/core/tsystem_utility_functions.h>
+#include <TLib/core/tsystem_time.h>
 
 #include "winner_app.h"
 //#include <cmath>
@@ -25,7 +26,7 @@ AdvanceSectionTask::AdvanceSectionTask(T_TaskInformation &task_info, WinnerApp *
     , app_(app)
     , reb_bottom_price_(MAX_STOCK_PRICE)
     , reb_top_price_(MIN_STOCK_PRICE)
-    , is_wait_trade_result_(false)
+    //, is_wait_trade_result_(false)
 {
     // todo: is any portions is unknow set is_any_portion_unknow_ true
 
@@ -197,7 +198,7 @@ void AdvanceSectionTask::HandleQuoteData()
         DO_LOG("AdvanceSec", utility::FormatStr("task:%d %s wait trade result!", para_.id, para_.stock.c_str()));
         return;
     }*/
-     int ms_for_wait_lock = 1000;
+    int ms_for_wait_lock = 1000;
     if( is_back_test_ ) ms_for_wait_lock = 5000;
     if( !timed_mutex_wrapper_.try_lock_for(ms_for_wait_lock) )  
     {
@@ -249,7 +250,7 @@ void AdvanceSectionTask::HandleQuoteData()
     {
         assert(false);
         app_->local_logger().LogLocal(utility::FormatStr("error: task %d AdvanceSectionTask::HandleQuoteData can't find portions!", para_.id));
-        return;
+        goto NOT_TRADE;
     }  
 	cur_index = cur_portion_iter->index();
      
@@ -338,11 +339,10 @@ void AdvanceSectionTask::HandleQuoteData()
      
 NOT_TRADE:
    
+    timed_mutex_wrapper_.unlock();
     return;
 
-BEFORE_TRADE:  
-
-    is_wait_trade_result_ = true;
+BEFORE_TRADE:   
 
     reb_top_price_ = iter->cur_price;
     reb_bottom_price_ = iter->cur_price;
@@ -433,14 +433,14 @@ BEFORE_TRADE:
             ShowError(utility::FormatStr("error %d %s %s %.2f %d error:%s"
                 , para_.id, cn_order_str.c_str(), para_.stock.c_str(), price, qty, error_info));
         }
-          
-        is_wait_trade_result_ = false;
+        timed_mutex_wrapper_.unlock();
     });
+
     return;
 
 }
 
-std::string EqualSectionTask::TagOfCurTask()
+std::string AdvanceSectionTask::TagOfCurTask()
 { 
     return TSystem::utility::FormatStr("EqSec_%s_%d", para_.stock.c_str(), TSystem::Today());
 }
