@@ -192,11 +192,19 @@ void AdvanceSectionTask::HandleQuoteData()
     }
 
     // todo: change to use try lock
-    if( is_wait_trade_result_ )
+    /*if( is_wait_trade_result_ )
     {
         DO_LOG("AdvanceSec", utility::FormatStr("task:%d %s wait trade result!", para_.id, para_.stock.c_str()));
         return;
-    }
+    }*/
+     int ms_for_wait_lock = 1000;
+    if( is_back_test_ ) ms_for_wait_lock = 5000;
+    if( !timed_mutex_wrapper_.try_lock_for(ms_for_wait_lock) )  
+    {
+        DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
+        app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock fail"); 
+        return;
+    };
 
     TypeAction action = TypeAction::NOOP;
     TypeOrderCategory order_type = TypeOrderCategory::SELL;
@@ -432,3 +440,7 @@ BEFORE_TRADE:
 
 }
 
+std::string EqualSectionTask::TagOfCurTask()
+{ 
+    return TSystem::utility::FormatStr("EqSec_%s_%d", para_.stock.c_str(), TSystem::Today());
+}

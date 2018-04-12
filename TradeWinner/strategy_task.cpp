@@ -34,6 +34,31 @@ StrategyTask::StrategyTask(T_TaskInformation &task_info, WinnerApp *app, T_MockS
     }
 }
 
+StrategyTask::StrategyTask(const std::string &stock, WinnerApp *app, T_MockStrategyPara *bktest_para)
+     : app_(app)
+    , para_()
+    , market_type_(GetStockMarketType(stock))
+    , quote_data_queue_()
+    //, tp_start_(Int2Qtime(task_info.start_time))
+    //, tp_end_(Int2Qtime(task_info.end_time))
+    , cur_price_(0.0)
+    , cur_state_(TaskCurrentState::WAITTING)
+    , is_waitting_removed_(false)
+    , life_count_(0)
+    , strand_(app->task_pool())
+    , timed_mutex_wrapper_()
+    , is_back_test_(bktest_para != nullptr)
+    , bktest_mock_assets_(0.0)
+    , has_bktest_result_fetched_(false)
+    , ori_bktest_price_(0.0)
+    , has_set_ori_bktest_price_(false)
+{
+   if( is_back_test_ )
+    {
+       bktest_para_ = ori_bktest_para_ = *bktest_para;
+    }
+}
+
 bool StrategyTask::IsPriceJumpUp(double pre_price, double cur_price)
 {
     if( cur_price < 0.01 || pre_price < 0.01 || cur_price < pre_price || Equal(cur_price, pre_price) ) 

@@ -35,6 +35,7 @@ class StrategyTask
 public: 
 
     StrategyTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *bktest_para=nullptr);
+    StrategyTask(const std::string &stock, WinnerApp *app, T_MockStrategyPara *bktest_para);
 
     virtual ~StrategyTask()
     { 
@@ -125,5 +126,8 @@ protected:
    bool has_set_ori_bktest_price_;
 
 };
+
+// <task id, task>
+typedef std::unordered_map<unsigned int, std::shared_ptr<StrategyTask> > TTaskIdMapStrategyTask;
 
 #endif

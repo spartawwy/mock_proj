@@ -15,8 +15,7 @@
 
 class StrategyTask; 
 
-// <task id, task>
-typedef std::unordered_map<unsigned int, std::shared_ptr<StrategyTask> > TTaskIdMapStrategyTask;
+
 // <stock code, task_id>
 typedef std::unordered_map<std::string, std::list<unsigned int> > TCodeMapTasks;
 

@@ -278,8 +278,8 @@ BEFORE_TRADE:
         auto info_str = utility::FormatStr("分批买入任务:%d %s 已买 %d 次,任务结束!", para_.id, para_.stock.c_str(), times_has_buy_);
         this->app_->local_logger().LogLocal(info_str);
         this->app_->AppendLog2Ui(info_str.c_str());
-
-        this->app_->RemoveTask(this->task_id(), TypeTask::BATCHES_BUY);
+        if( !is_back_test_ )
+            this->app_->RemoveTask(this->task_id(), TypeTask::BATCHES_BUY);
     }
     timed_mutex_wrapper_.unlock();
     });

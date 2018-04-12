@@ -2,9 +2,11 @@
 #define BACK_TESTER_SDF7ERETR_H_
 
 #include <memory>
-#include "strategy_task.h"
+#include <unordered_map>
 
-class StrategyTask;
+#include "strategy_task.h"
+ 
+typedef std::unordered_map<int, std::shared_ptr<T_MockStrategyPara> >  TTaskIdMapMockPara;
 
 class BackTester
 {
@@ -14,11 +16,11 @@ public:
     ~BackTester(){}
 
 private:
-
-    std::shared_ptr<StrategyTask> task_vector;
-    std::shared_ptr<T_TaskInformation> taskinfo_vector;
+      
+    //std::shared_ptr<T_TaskInformation>
+    TTaskIdMapStrategyTask id_tasks_;
     //static std::vector<std::shared_ptr<T_FenbiCallBack> > callback_vector;
-    std::shared_ptr<T_MockStrategyPara>  mock_strategy_para_vector;
+    TTaskIdMapMockPara  id_mock_strategy_para_;
 };
 
 #endif // BACK_TESTER_SDF7ERETR_H_

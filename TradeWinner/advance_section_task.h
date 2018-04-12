@@ -37,7 +37,7 @@ public:
 protected:
 
 private:
-
+    std::string TagOfCurTask();
     //void ResetRebBottomPrice(){ reb_bottom_price_ = MAX_STOCK_PRICE;};
 
 private:
@@ -55,8 +55,9 @@ private:
 
     unsigned int is_not_enough_capital_continue_;
 
-    volatile bool  is_wait_trade_result_; 
+    //volatile bool  is_wait_trade_result_; 
 
 };
+
 
 #endif // ADVANCE_SECTION_TASK_SSDFS3DFDS_H_

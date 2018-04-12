@@ -8,6 +8,7 @@
 #include "HintList.h"
 #include "equal_section_task.h"
 #include "advance_section_task.h"
+#include "batches_buy_task.h"
 
 #include "winner_hq_api.h"
 
@@ -23,14 +24,16 @@ static WinnerHisHq_GetHisFenbiDataBatchDelegate WinnerHisHq_GetHisFenbiDataBatch
 
 static const std::string cst_back_test_tag = "bktest";
 
-static const QString cst_str_eqsec_bktest = QString::fromLocal8Bit("区间交易回测");
-static const QString cst_str_advancesec_bktest = QString::fromLocal8Bit("贝塔交易回测");
+static const char cst_str_eqsec_bktest[] = {"区间交易回测"};
+static const char cst_str_advancesec_bktest[] = {"贝塔交易回测"};
+static const char cst_str_batchbuy_bktest[] = {"分批买入回测"};
 
 bool WinnerWin::InitBacktestWin()
 {
     bool ret = true;
-    ui.cb_bktest_type->addItem(cst_str_eqsec_bktest, QVariant(static_cast<int>(TypeTask::EQUAL_SECTION)));
-    ui.cb_bktest_type->addItem(cst_str_advancesec_bktest, QVariant(static_cast<int>(TypeTask::ADVANCE_SECTION)));
+    ui.cb_bktest_type->addItem(QString::fromLocal8Bit(cst_str_eqsec_bktest), QVariant(static_cast<int>(TypeTask::EQUAL_SECTION)));
+    ui.cb_bktest_type->addItem(QString::fromLocal8Bit(cst_str_advancesec_bktest), QVariant(static_cast<int>(TypeTask::ADVANCE_SECTION)));
+    ui.cb_bktest_type->addItem(QString::fromLocal8Bit(cst_str_batchbuy_bktest), QVariant(static_cast<int>(TypeTask::BATCHES_BUY)));
     //ui.wid_bktest_eqsec->show();
     ui.wid_bktest_adv_sec->setGeometry(ui.wid_bktest_eqsec->geometry().x(), ui.wid_bktest_eqsec->geometry().y()
                                        , ui.wid_bktest_adv_sec->geometry().width(), ui.wid_bktest_adv_sec->geometry().height());
@@ -213,11 +216,12 @@ void WinnerWin::DoStartBacktest(bool)
     static std::vector<std::shared_ptr<T_TaskInformation> > taskinfo_vector;
     static std::vector<std::shared_ptr<T_FenbiCallBack> > callback_vector;
     static std::vector<std::shared_ptr<T_MockStrategyPara> > mock_strategy_para_vector;
-    //--------------------
+   
     task_vector.clear();
     taskinfo_vector.clear();
     callback_vector.clear();
     mock_strategy_para_vector.clear();
+     //--------------------
 
     auto task_info = std::make_shared<T_TaskInformation>();
 
@@ -233,7 +237,7 @@ void WinnerWin::DoStartBacktest(bool)
     task_info->rebounce = ui.cb_bktest_rebounce->isChecked() ? ui.spinBox_bktest_rebounce->value() : 0.0;
     task_info->continue_second = 0; 
     task_info->quantity = ui.spinBox_bktest_quantity->value();
-    const double alert_price = 20.3;
+    //const double alert_price = 20.3;
     task_info->alert_price = ui.dbspbox_bktest_start_price->value();
     task_info->assistant_field = ""; 
     task_info->secton_task.fall_percent = 1;
@@ -245,18 +249,45 @@ void WinnerWin::DoStartBacktest(bool)
     task_info->secton_task.max_trig_price = ui.cb_bktest_max_stop_trigger->isChecked() ? ui.dbspbox_bktest_max_price->value() : MAX_STOCK_PRICE;
     task_info->secton_task.min_trig_price = ui.cb_bktest_min_clear_trigger->isChecked() ? ui.dbspbox_bktest_min_price->value() : MIN_STOCK_PRICE;
 
+    if( task_info->type == TypeTask::BATCHES_BUY )
+    {
+        task_info->step = 1;
+        task_info->bs_times = 1;
+    }
     auto mock_para = std::make_shared<T_MockStrategyPara>();
-#if 1
+ 
     auto tmp_price = app_->GetStockPriceInfo(task_info->stock.c_str(), false);
     double cur_stock_price = tmp_price ? tmp_price->cur_price : 2.0;
     mock_para->avaliable_position = ui.spinBox_bktest_start_pos->value();
     mock_para->capital = ui.dbspbox_bktest_start_capital->value() + cur_stock_price * mock_para->avaliable_position;
-#endif
-    mock_strategy_para_vector.push_back(std::move(mock_para));
-    taskinfo_vector.push_back( std::move(task_info));
  
-    auto equal_sec_task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
-    task_vector.push_back( std::move(equal_sec_task) );
+    mock_strategy_para_vector.push_back(std::move(mock_para));
+    taskinfo_vector.push_back( task_info );
+
+    //task_info->type;
+
+    switch (task_info->type)
+    {
+    case TypeTask::EQUAL_SECTION:
+        {
+            auto task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
+            task_vector.push_back( std::move(task) );
+            break;
+        }
+    case TypeTask::ADVANCE_SECTION:
+        {
+            auto task = std::make_shared<AdvanceSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
+            task_vector.push_back( std::move(task) );
+            break;
+        }
+    case TypeTask::BATCHES_BUY:
+        {
+            auto task = std::make_shared<BatchesBuyTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
+            task_vector.push_back( std::move(task) );
+            break;
+        }
+    }
+    
      
 #ifdef TMP_TEST     
     const double capital = 200000.00;
@@ -375,6 +406,7 @@ void WinnerWin::DoStartBacktest(bool)
         app_->winner_win().DoStatusBar("无可用交易日!");
         return;
     }
+
 #if 1 
     this->ui.pbtn_start_backtest->setDisabled(true);
     oneceshot_timer_contain_->InsertTimer(2 * 2 * 1000, [this]()
@@ -382,23 +414,15 @@ void WinnerWin::DoStartBacktest(bool)
         this->ui.pbtn_start_backtest->setEnabled(true);
     }); 
 #endif
-#if 0 
-    for(int i = 0; i < date_vector.size(); ++i )
-    {
-        WinnerHisHq_GetHisFenbiData(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
-            , date_vector[i]
-            , callback_vector[0].get()
-            , error);
-    }
-#else
+
     WinnerHisHq_GetHisFenbiDataBatch(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
             , start_date
             , end_date
             , callback_vector[0].get()
             , error);
-#endif
-
+  
 }
+
 
 void WinnerWin::DoEnableBtnBackTest()
 {
