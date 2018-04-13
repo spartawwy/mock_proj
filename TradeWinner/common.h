@@ -428,4 +428,6 @@ double Get2DownRebouncePercent(double base, double top, double cur);
 
 double CaculateFee(double total, bool is_buy);
 
+int DaysOneMonth(int year, int month);   //返回一个月的天数 
+
 #endif

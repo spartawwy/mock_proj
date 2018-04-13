@@ -202,7 +202,8 @@ void AdvanceSectionTask::HandleQuoteData()
     if( is_back_test_ ) ms_for_wait_lock = 5000;
     if( !timed_mutex_wrapper_.try_lock_for(ms_for_wait_lock) )  
     {
-        DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
+        //DO_LOG_BKTST(TagOfCurTask(), *ret_str);
+        DO_LOG_BKTST(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
         app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock fail"); 
         return;
     };
@@ -224,7 +225,7 @@ void AdvanceSectionTask::HandleQuoteData()
         order_type = TypeOrderCategory::SELL;
         cur_index = -1;
         qty = GetAvaliablePosition();
-        DO_LOG("AdvanceSec", utility::FormatStr("task:%d %s price:%.2f trigger clearing position ", para_.id, para_.stock.c_str(), iter->cur_price));
+        DO_LOG_BKTST("AdvanceSec", utility::FormatStr("task:%d %s price:%.2f trigger clearing position ", para_.id, para_.stock.c_str(), iter->cur_price));
         goto BEFORE_TRADE;
 	}
 	else if( iter->cur_price >= portions_.rbegin()->top_price() )
@@ -272,7 +273,7 @@ void AdvanceSectionTask::HandleQuoteData()
         if( qty_can_buy < 100 )
         {
             if( is_not_enough_capital_continue_++ % 100 == 0 )
-                DO_LOG("AdvanceSec", utility::FormatStr("warning:task:%d %s  to create position but capital:%.2f not enough! | %.2f %.2f %.2f", para_.id, para_.stock.c_str(), capital, reb_base_price_, reb_bottom_price_, iter->cur_price));
+                DO_LOG_BKTST("AdvanceSec", utility::FormatStr("warning:task:%d %s  to create position but capital:%.2f not enough! | %.2f %.2f %.2f", para_.id, para_.stock.c_str(), capital, reb_base_price_, reb_bottom_price_, iter->cur_price));
             goto NOT_TRADE;
         }else
             is_not_enough_capital_continue_ = 0;
@@ -293,7 +294,7 @@ void AdvanceSectionTask::HandleQuoteData()
     {
         if( up_rebounce < para_.rebounce )
             goto NOT_TRADE;
-        DO_LOG("AdvanceSec", utility::FormatStr("task:%d %s downward, up rebounce trigger judge buy :%.2f | %.2f %.2f %.2f", para_.id, para_.stock.c_str(), up_rebounce, reb_base_price_, reb_top_price_, iter->cur_price));
+        DO_LOG_BKTST("AdvanceSec", utility::FormatStr("task:%d %s downward, up rebounce trigger judge buy :%.2f | %.2f %.2f %.2f", para_.id, para_.stock.c_str(), up_rebounce, reb_base_price_, reb_top_price_, iter->cur_price));
          
         const double capital = this->app_->QueryCapital().available;
         qty_can_buy = int(capital / iter->cur_price) / 100 * 100;
@@ -302,7 +303,7 @@ void AdvanceSectionTask::HandleQuoteData()
         if( qty_can_buy < 100 )
         {
             if( is_not_enough_capital_continue_++ % 100 == 0 )
-                DO_LOG("AdvanceSec", utility::FormatStr("warning:task:%d %s  to buy but capital:%.2f not enough! | %.2f %.2f %.2f", para_.id, para_.stock.c_str(), capital, reb_base_price_, reb_bottom_price_, iter->cur_price));
+                DO_LOG_BKTST("AdvanceSec", utility::FormatStr("warning:task:%d %s  to buy but capital:%.2f not enough! | %.2f %.2f %.2f", para_.id, para_.stock.c_str(), capital, reb_base_price_, reb_bottom_price_, iter->cur_price));
             goto NOT_TRADE;
         }else
             is_not_enough_capital_continue_ = 0;
@@ -320,14 +321,14 @@ void AdvanceSectionTask::HandleQuoteData()
         if(  down_rebounce < para_.rebounce )
             goto NOT_TRADE;
          
-        DO_LOG("AdvanceSec", utility::FormatStr("task:%d %s upward, down rebounce trigger judge sell :%.2f | %.2f %.2f %.2f", para_.id, para_.stock.c_str(), down_rebounce, reb_base_price_, reb_top_price_, iter->cur_price));
+        DO_LOG_BKTST("AdvanceSec", utility::FormatStr("task:%d %s upward, down rebounce trigger judge sell :%.2f | %.2f %.2f %.2f", para_.id, para_.stock.c_str(), down_rebounce, reb_base_price_, reb_top_price_, iter->cur_price));
 
         order_type = TypeOrderCategory::SELL;
         //int qty_sell = 0;
         avaliable_pos = GetAvaliablePosition();
         if( avaliable_pos <= 0 )
         {
-            DO_LOG("AdvanceSec", utility::FormatStr("warning: task:%d %s to sell but avaliable pos is 0 ", para_.id, para_.stock.c_str()));
+            DO_LOG_BKTST("AdvanceSec", utility::FormatStr("warning: task:%d %s to sell but avaliable pos is 0 ", para_.id, para_.stock.c_str()));
             goto NOT_TRADE;
         } 
  

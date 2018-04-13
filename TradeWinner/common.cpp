@@ -371,3 +371,53 @@ double CaculateFee(double total, bool is_sell)
     
     return ((total * 0.0003 > 5.0 ) ? total * 0.0003 : 5.0) + (is_sell ? total * 0.001 : 0);
 }
+
+int is_leapyear(int year)   //如果润年,返回1,否则返回0 
+{
+    if((year&4==0 && year%100!=0) || year%400==0)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+ 
+int DaysOneMonth(int year, int month)   //返回一个月的天数 
+{
+    int leap,re=0;
+    leap = is_leapyear(year);    //是否是润年
+    switch(month)
+    {
+        case 1:     //1,3,5,7,8,10,12月每月都是31天
+        case 3:
+        case 5:
+        case 7:
+        case 8:
+        case 10:
+        case 12:
+            re=31;
+            break;
+        case 4:      //4,6,9,11月每月都是30天
+        case 6:
+        case 9:
+        case 11:
+            re=30;
+            break;
+        case 2:
+            if(leap==1)  //2月判断是否是润年
+            {
+                re=29;  //是润年,则是29天
+            }
+            else
+            {
+                re=28;  //不是润年,则是28天
+            }
+            break;
+        default:
+            //printf("\nmonth is error!");
+            break;
+    }
+    return re;
+}

@@ -9,6 +9,7 @@
 #ifndef UI_TRADE_WINNER_H
 #define UI_TRADE_WINNER_H
 
+#include <QtCore/QDate>
 #include <QtCore/QVariant>
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
@@ -1164,7 +1165,8 @@ public:
         de_bktest_begin = new QDateEdit(tab_back_test);
         de_bktest_begin->setObjectName(QStringLiteral("de_bktest_begin"));
         de_bktest_begin->setGeometry(QRect(80, 480, 118, 31));
-        de_bktest_begin->setDateTime(QDateTime(QDate(2018, 1, 1), QTime(0, 0, 0)));
+        de_bktest_begin->setDateTime(QDateTime(QDate(2018, 1, 16), QTime(0, 0, 0)));
+        de_bktest_begin->setDate(QDate(2018, 1, 16));
         label_buytask_monitor_time_4 = new QLabel(tab_back_test);
         label_buytask_monitor_time_4->setObjectName(QStringLiteral("label_buytask_monitor_time_4"));
         label_buytask_monitor_time_4->setGeometry(QRect(200, 480, 71, 21));
@@ -1173,7 +1175,8 @@ public:
         de_bktest_end = new QDateEdit(tab_back_test);
         de_bktest_end->setObjectName(QStringLiteral("de_bktest_end"));
         de_bktest_end->setGeometry(QRect(270, 480, 118, 31));
-        de_bktest_end->setDateTime(QDateTime(QDate(2018, 1, 1), QTime(0, 0, 0)));
+        de_bktest_end->setDateTime(QDateTime(QDate(2018, 3, 14), QTime(0, 0, 0)));
+        de_bktest_end->setDate(QDate(2018, 3, 14));
         pbtn_start_backtest = new QPushButton(tab_back_test);
         pbtn_start_backtest->setObjectName(QStringLiteral("pbtn_start_backtest"));
         pbtn_start_backtest->setGeometry(QRect(410, 480, 141, 23));
@@ -1258,7 +1261,7 @@ public:
         TradeWinnerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(TradeWinnerClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 917, 23));
+        menuBar->setGeometry(QRect(0, 0, 917, 18));
         menu_system = new QMenu(menuBar);
         menu_system->setObjectName(QStringLiteral("menu_system"));
         menu_help = new QMenu(menuBar);
