@@ -357,9 +357,16 @@ void EqualSectionTask::HandleQuoteData()
                 DO_LOG_BKTST(TagOfCurTask(), utility::FormatStr("eqsec task %d rebounce:%.2f para: %.2f ", para_.id, rebounce, para_.rebounce)); 
 				if( rebounce > para_.rebounce - 0.0001 )
 				{ 
-                    DO_LOG_BKTST(TagOfCurTask(), utility::FormatStr("eqsec task %d rebounce:%.2f to buy", para_.id, rebounce)); 
-					order_type = TypeOrderCategory::BUY; 
-					goto BEFORE_TRADE; 
+                    if( EQSEC_MAX_POSITION != para_.secton_task.max_position && total_position >= para_.secton_task.max_position )
+					{
+						DO_LOG(TagOfCurTask(), utility::FormatStr("warning: %d EqualSectionTask %s cur:%.2f rebounce:%.2f buy, but pos enough", para_.id, para_.stock.c_str(), iter->cur_price, rebounce));
+						goto NOT_TRADE;
+					}else
+                    {
+                        DO_LOG_BKTST(TagOfCurTask(), utility::FormatStr("eqsec task %d rebounce:%.2f to buy", para_.id, rebounce)); 
+					    order_type = TypeOrderCategory::BUY; 
+					    goto BEFORE_TRADE; 
+                    }
 				}else
 					goto NOT_TRADE;
 			}

@@ -54,6 +54,7 @@ private:
     double reb_base_price_;
 
     unsigned int is_not_enough_capital_continue_;
+    unsigned int is_not_position_continue_;
 
     //volatile bool  is_wait_trade_result_; 
 
