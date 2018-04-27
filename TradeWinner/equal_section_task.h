@@ -23,6 +23,7 @@ private:
 	TypeAction JudgeTypeAction(std::shared_ptr<QuotesData> & quote_data, int *qty_op=nullptr);
     void PrintSections();
 
+    void do_prepare_clear_but_noposition(double cur_price, TimedMutexWrapper &timed_mutex_wrapper);
     std::string TagOfCurTask();
 
 	std::vector<T_SectionAutom> sections_;

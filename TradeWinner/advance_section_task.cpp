@@ -96,122 +96,7 @@ AdvanceSectionTask::AdvanceSectionTask(T_TaskInformation &task_info, WinnerApp *
 }
 
 void AdvanceSectionTask::HandleQuoteData()
-{
-    static auto reset_flag_price = [this](double cur_price)
-    {
-        reb_bottom_price_ = MAX_STOCK_PRICE;
-        reb_top_price_ = MIN_STOCK_PRICE;  
-        reb_base_price_ = cur_price; 
-    };
-
-    static auto judge_any_pos2buy = [this](double cur_price, int cur_index, int para_qty_can_buy,  bool is_do_change)->int
-    {
-        int local_qty_buy = 0;
-        if( cur_price < portions_[cur_index].mid_price()
-            && (portions_[cur_index].state() == PortionState::UNKNOW || portions_[cur_index].state() == PortionState::WAIT_BUY) )
-        {
-            if( local_qty_buy + para_.quantity <= para_qty_can_buy)
-            {
-                if( is_do_change ) 
-                {
-                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_SELL", cur_index));
-                    portions_[cur_index].state(PortionState::WAIT_SELL);
-                }
-                local_qty_buy += para_.quantity;
-            }
-        }
-        for( int i = cur_index + 1; i < portions_.size(); ++i )
-        { 
-            assert(cur_price < portions_[i].mid_price());
-            if( local_qty_buy + para_.quantity <= para_qty_can_buy )
-            {
-                if( portions_[i].state() == PortionState::UNKNOW || portions_[i].state() == PortionState::WAIT_BUY )
-                {
-                    if( is_do_change ) 
-                    {
-                        DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_SELL", i));
-                        portions_[i].state(PortionState::WAIT_SELL);
-                    }
-                    local_qty_buy += para_.quantity;
-                }
-            }
-            else
-                break;
-        }
-        return local_qty_buy;
-    };  
-
-    static auto judge_any_pos2sell = [this](double cur_price, int cur_index, int para_avaliable_pos,  bool is_do_change)->int
-    {
-        int local_qty_sell = 0;
-#if 0
-        for( int i = 0; i < cur_index - 1; ++i )
-        { 
-            assert(cur_price > portions_[i].mid_price());
-            if( local_qty_sell + para_.quantity <= para_avaliable_pos )
-            {
-                if( portions_[i].state() == PortionState::WAIT_SELL )
-                {
-                    if( is_do_change )
-                    {
-                        DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", i));
-                        portions_[i].state(PortionState::WAIT_BUY);
-                    }
-                    local_qty_sell += para_.quantity;
-                }
-            }else
-                break;
-        }
-        if( cur_price > portions_[cur_index].mid_price() )
-        {
-            if( cur_index - 1 >= 0 && local_qty_sell + para_.quantity <= para_avaliable_pos )
-            { 
-                if( portions_[cur_index-1].state() == PortionState::WAIT_SELL )
-                {
-                    if( is_do_change )
-                    {
-                        DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", cur_index-1));
-                        portions_[cur_index-1].state(PortionState::WAIT_BUY);
-                    }
-                    local_qty_sell += para_.quantity;
-                }
-            }
-        }
-#else
-        if( cur_price > portions_[cur_index].mid_price() )
-        {
-            if( cur_index - 1 >= 0 && local_qty_sell + para_.quantity <= para_avaliable_pos )
-            { 
-                if( portions_[cur_index-1].state() == PortionState::WAIT_SELL )
-                {
-                    if( is_do_change )
-                    {
-                        DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", cur_index-1));
-                        portions_[cur_index-1].state(PortionState::WAIT_BUY);
-                    }
-                    local_qty_sell += para_.quantity;
-                }
-            }
-        }
-        for( int i = cur_index-1; i >= 1; --i )
-        {
-            assert(cur_price > portions_[i].mid_price());
-            if( local_qty_sell + para_.quantity > para_avaliable_pos )
-                break;
-            if( portions_[i-1].state() == PortionState::WAIT_SELL )
-            {
-                if( is_do_change )
-                {
-                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", i));
-                    portions_[i].state(PortionState::WAIT_BUY);
-                }
-                local_qty_sell += para_.quantity; 
-            }
-        }
-#endif
-        return local_qty_sell;
-    };
-
+{  
 	if( is_waitting_removed_ )
 		return;
     
@@ -328,7 +213,8 @@ void AdvanceSectionTask::HandleQuoteData()
 
         // judge if any portion need buy  
         order_type = TypeOrderCategory::BUY; 
-        qty = judge_any_pos2buy(iter->cur_price, cur_index, qty_can_buy, false) ;
+        auto tup_val = judge_any_pos2buy(iter->cur_price, cur_index, qty_can_buy, false);
+        qty = std::get<0>(tup_val);
         if( qty > 100 )
             goto BEFORE_TRADE;
         else
@@ -367,7 +253,7 @@ void AdvanceSectionTask::HandleQuoteData()
         
         // judge if any portion need buy  
         order_type = TypeOrderCategory::BUY; 
-        qty = judge_any_pos2buy(iter->cur_price, cur_index, qty_can_buy, false);
+        qty = std::get<0>(judge_any_pos2buy(iter->cur_price, cur_index, qty_can_buy, false));
         if( qty > 100 )
             goto BEFORE_TRADE;
         else
@@ -399,7 +285,7 @@ void AdvanceSectionTask::HandleQuoteData()
         }
  
         // judge if any portion need sell 
-        qty = judge_any_pos2sell(iter->cur_price, cur_index, avaliable_pos, false);
+        qty = std::get<0>(judge_any_pos2sell(iter->cur_price, cur_index, avaliable_pos, false));
         if( qty > 0 )
             goto BEFORE_TRADE;
         else
@@ -513,6 +399,128 @@ BEFORE_TRADE:
     return;
 
 }
+
+void AdvanceSectionTask::reset_flag_price(double cur_price)
+{
+    reb_bottom_price_ = MAX_STOCK_PRICE;
+    reb_top_price_ = MIN_STOCK_PRICE;  
+    reb_base_price_ = cur_price; 
+}
+
+std::tuple<int, double, bool> AdvanceSectionTask::judge_any_pos2buy(double cur_price, int cur_index, int para_qty_can_buy,  bool is_do_change) 
+{
+    bool is_on_border = true;
+    int local_qty_buy = 0;
+    if( cur_price < portions_[cur_index].mid_price()
+        && (portions_[cur_index].state() == PortionState::UNKNOW || portions_[cur_index].state() == PortionState::WAIT_BUY) )
+    {
+        if( local_qty_buy + para_.quantity <= para_qty_can_buy)
+        {
+            if( is_do_change ) 
+            {
+                DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_SELL", cur_index));
+                portions_[cur_index].state(PortionState::WAIT_SELL);
+            }
+            local_qty_buy += para_.quantity;
+        }
+    }
+    for( int i = cur_index + 1; i < portions_.size(); ++i )
+    { 
+        assert(cur_price < portions_[i].mid_price());
+        if( local_qty_buy + para_.quantity <= para_qty_can_buy )
+        {
+            if( portions_[i].state() == PortionState::UNKNOW || portions_[i].state() == PortionState::WAIT_BUY )
+            {
+                if( is_do_change ) 
+                {
+                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_SELL", i));
+                    portions_[i].state(PortionState::WAIT_SELL);
+                }
+                local_qty_buy += para_.quantity;
+                is_on_border = false;
+            }
+        }
+        else
+            break;
+    }
+    return std::make_tuple(local_qty_buy, portions_[cur_index].mid_price(), is_on_border);
+}
+
+
+std::tuple<int, double, bool> AdvanceSectionTask::judge_any_pos2sell(double cur_price, int cur_index, int para_avaliable_pos,  bool is_do_change)
+{
+    bool is_on_border = true;
+    int local_qty_sell = 0;
+#if 0 
+    for( int i = 0; i < cur_index - 1; ++i )
+    { 
+        assert(cur_price > portions_[i].mid_price());
+        if( local_qty_sell + para_.quantity <= para_avaliable_pos )
+        {
+            if( portions_[i].state() == PortionState::WAIT_SELL )
+            {
+                if( is_do_change )
+                {
+                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", i));
+                    portions_[i].state(PortionState::WAIT_BUY);
+                }
+                local_qty_sell += para_.quantity;
+                is_on_border = false;
+            }
+        }else
+            break;
+    }
+    if( cur_price > portions_[cur_index].mid_price() )
+    {
+        if( cur_index - 1 >= 0 && local_qty_sell + para_.quantity <= para_avaliable_pos )
+        { 
+            if( portions_[cur_index-1].state() == PortionState::WAIT_SELL )
+            {
+                if( is_do_change )
+                {
+                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", cur_index-1));
+                    portions_[cur_index-1].state(PortionState::WAIT_BUY);
+                }
+                local_qty_sell += para_.quantity;
+            }
+        }
+    }
+#else
+    if( cur_price > portions_[cur_index].mid_price() )
+    {
+        if( cur_index - 1 >= 0 && local_qty_sell + para_.quantity <= para_avaliable_pos )
+        { 
+            if( portions_[cur_index-1].state() == PortionState::WAIT_SELL )
+            {
+                if( is_do_change )
+                {
+                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", cur_index-1));
+                    portions_[cur_index-1].state(PortionState::WAIT_BUY);
+                }
+                local_qty_sell += para_.quantity;
+            }
+        }
+    }
+    for( int i = cur_index-1; i >= 1; --i )
+    {
+        assert(cur_price > portions_[i].mid_price());
+        if( local_qty_sell + para_.quantity > para_avaliable_pos )
+            break;
+        if( portions_[i-1].state() == PortionState::WAIT_SELL )
+        {
+            if( is_do_change )
+            {
+                DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", i));
+                portions_[i].state(PortionState::WAIT_BUY);
+            }
+            local_qty_sell += para_.quantity;
+            is_on_border = false;
+        }
+    }
+#endif 
+    return std::make_tuple(local_qty_sell, portions_[cur_index].mid_price(), is_on_border);
+}
+ 
 
 std::string AdvanceSectionTask::TagOfCurTask()
 { 

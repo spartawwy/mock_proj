@@ -78,14 +78,16 @@ BatchesBuyTask::BatchesBuyTask(T_TaskInformation &task_info, WinnerApp *app, T_M
 
 void BatchesBuyTask::HandleQuoteData()
 {
-    static auto in_which_part = [this](double price) ->int
-    {
-        for( int i = 0; i < step_items_.size(); ++i )
+    static auto in_which_part = [](BatchesBuyTask* tsk, double price) ->int
+    { 
+        if( price < tsk->step_items_[tsk->step_items_.size()-1].bottom_price )
+            return tsk->step_items_.size()-1;
+        for( int i = 0; i < tsk->step_items_.size(); ++i )
         { 
-            if( 100 - (i + 1) * para_.step < 0 )
+            if( 100 - (i + 1) * tsk->para_.step < 0 )
                 break;
-            if( (price > step_items_[i].bottom_price || Equal(price, step_items_[i].bottom_price))
-                && price < step_items_[i].up_price
+            if( (price > tsk->step_items_[i].bottom_price || Equal(price, tsk->step_items_[i].bottom_price))
+                && price < tsk->step_items_[i].up_price
               )
                 return i;
         }
@@ -138,10 +140,10 @@ void BatchesBuyTask::HandleQuoteData()
         //DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
         app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock fail"); 
         return;
-    };
+    }
      
 
-    int index = in_which_part(iter->cur_price);
+    int index = in_which_part(this, iter->cur_price);
     if( index < 0 )
         goto NO_TRADE;
     if( step_items_[index].has_buy )

@@ -226,22 +226,11 @@ void EqualSectionTask::PrintSections()
 }
 
 void EqualSectionTask::HandleQuoteData()
-{ 
-	static auto do_prepare_clear_but_noposition = [this](double cur_price, TimedMutexWrapper &timed_mutex_wrapper)->void
-	{
-		/*order_type = TypeOrderCategory::SELL; */ 
-		auto ret_str = new std::string(TSystem::utility::FormatStr("警告:触发任务:%d 区间破位卖出 %s 价格:%f 实际可用数量:0 ", para_.id, this->code_data(), cur_price));
-		this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str); 
-		this->app_->AppendLog2Ui(ret_str->c_str()); 
-		this->app_->EmitSigShowUi(ret_str, true);
-		app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ unlock");
-		timed_mutex_wrapper.unlock(); 
-		this->app_->RemoveTask(this->task_id(), TypeTask::EQUAL_SECTION); // invoke self destroy
-	};
+{  
     // tmp for debug ---------
-    static unsigned int num = 0;
-    qDebug() << ++num << " EqualSectionTask::HandleQuoteData" << "\n"; 
-    //return;
+    //static unsigned int num = 0;
+    //qDebug() << ++num << " EqualSectionTask::HandleQuoteData" << "\n"; 
+    ////return;
     //-------------end debug --------
 
     if( is_waitting_removed_ )
@@ -619,7 +608,19 @@ BEFORE_TRADE:
             this->timed_mutex_wrapper_.unlock();
         }
     });
+}
 
+
+void EqualSectionTask::do_prepare_clear_but_noposition(double cur_price, TimedMutexWrapper &timed_mutex_wrapper)
+{
+	/*order_type = TypeOrderCategory::SELL; */ 
+	auto ret_str = new std::string(TSystem::utility::FormatStr("警告:触发任务:%d 区间破位卖出 %s 价格:%f 实际可用数量:0 ", para_.id, this->code_data(), cur_price));
+	this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str); 
+	this->app_->AppendLog2Ui(ret_str->c_str()); 
+	this->app_->EmitSigShowUi(ret_str, true);
+	app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ unlock");
+	timed_mutex_wrapper.unlock(); 
+	this->app_->RemoveTask(this->task_id(), TypeTask::EQUAL_SECTION); // invoke self destroy
 }
 
 std::string EqualSectionTask::TagOfCurTask()
