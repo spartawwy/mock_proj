@@ -396,7 +396,7 @@ QString ToQString(TindexTaskType val);
 std::string ToString(TypeEqSection val);
 std::string ToString(TypeAction val);
 
-void Delay(unsigned short mseconds);
+void Delay(__int64 mseconds);
 
 bool Equal(double lh, double rh);
 

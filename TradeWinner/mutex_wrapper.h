@@ -10,7 +10,7 @@ public:
     TimedMutexWrapper();
     ~TimedMutexWrapper();
 
-    bool try_lock_for(unsigned int milli_sec);
+    bool try_lock_for(__int64 milli_sec);
     void unlock();
 
 private:

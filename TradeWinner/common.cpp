@@ -124,7 +124,7 @@ std::string ToString(TypeAction val)
     return "";
 }
 
-void Delay(unsigned short mseconds)
+void Delay(__int64 mseconds)
 {
     //TSystem::WaitFor([]()->bool { return false;}, mseconds); // only make effect to timer
     std::this_thread::sleep_for(std::chrono::system_clock::duration(std::chrono::milliseconds(mseconds)));
