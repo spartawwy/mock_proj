@@ -29,6 +29,7 @@ class StockTicker;
 class IndexTicker;
 class StrategyTask; 
 class IndexTask;
+class PositionMocker;
 
 class WinnerApp : public QApplication, public TSystem::ServerClientAppBase
 {
@@ -107,17 +108,17 @@ public:
     void AddPosition(const std::string& code, int pos);
     void SubAvaliablePosition(const std::string& code, int pos);
 
-	T_StockPriceInfo * GetStockPriceInfo(const std::string& code, bool is_lazy=true);
+	
      
     void AppendLog2Ui(const char *fmt, ...);
  
     bool SellAllPosition(IndexTask * task);   
 
     WinnerWin& winner_win() { return  winner_win_; }
-
+     
+    // back test related ----------
+    T_StockPriceInfo * GetStockPriceInfo(const std::string& code, bool is_lazy=true);
     std::vector<int> GetSpanTradeDates(int date_begin, int date_end);
-
-    // back test related 
     void Emit_SigEnableBtnBackTest() { emit SigEnableBtnBackTest(); } 
 
 signals:
@@ -141,7 +142,7 @@ private slots:
 
     void DoStrategyTasksTimeout();
     void DoNormalTimer();
-    //void DoShowUi(std::shared_ptr<std::string>);
+     
     void DoShowUi(std::string*, bool flash_taskbar = false);
     void DoShowLongUi(std::string*, bool flash_taskbar = false);
       
@@ -149,11 +150,9 @@ private:
 	 
     void StopAllStockTasks(); 
     void StopAllIndexRelTypeTasks(TindexTaskType type); 
-
-    //QApplication  *qt_app_;
+     
     TaskStrand  tick_strand_;
-    TaskStrand  index_tick_strand_;
-   
+    TaskStrand  index_tick_strand_; 
     TaskStrand  trade_strand_;
    
     std::shared_ptr<StockTicker>  stock_ticker_;
@@ -171,10 +170,10 @@ private:
     typedef boost::shared_mutex            WRMutex;  
 	typedef boost::unique_lock<WRMutex>    WriteLock;  
 	typedef boost::shared_lock<WRMutex>    ReadLock;  
-	WRMutex  strategy_tasks_mutex_;  
-
+	WRMutex  strategy_tasks_mutex_;   
     WRMutex  task_infos_mutex_;  
-    // (task_id, task_info)   // just insert but never erase
+
+    // (task_id, task_info)   ps: just insert but never erase
     T_IdMapTaskInfo task_infos_;
 	 
     MessageWin  *msg_win_;
@@ -196,15 +195,16 @@ private:
 
     T_CodeMapPosition stocks_position_;
     std::mutex  stocks_position_mutex_;
-	  
-	std::unordered_map<std::string, T_StockPriceInfo> stocks_price_info_;
-     
+	   
     T_UserAccountInfo *p_user_account_info_;
     T_BrokerInfo *p_user_broker_info_;
-      
+    
+    // back test relate 
+    std::unordered_map<std::string, T_StockPriceInfo> stocks_price_info_;
     T_DateMapIsopen trade_dates_;
-
-    //QTimerWrapper *
+     
+    std::shared_ptr<PositionMocker>  position_mocker_;
+     
     friend class IndexTask;
 };
 #endif

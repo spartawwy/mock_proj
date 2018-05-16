@@ -144,18 +144,7 @@ bool WinnerApp::Init()
 	trade_agent_.SetupAccountInfo(result.data());
 #endif
 	//------------------------ create tasks ------------------
-#if 0
-	std::shared_ptr<StrategyTask> task0 = std::make_shared<BreakDownTask>(0, "000001", TypeMarket::SZ, this);
-
-	std::shared_ptr<StrategyTask> task1 = std::make_shared<BreakDownTask>(1, "600030", TypeMarket::SH, this);
-	std::shared_ptr<StrategyTask> task2 = std::make_shared<BreakDownTask>(2, "000959", TypeMarket::SZ, this);
-	 
-
-	strategy_tasks_.push_back(std::move(task0));
-	strategy_tasks_.push_back(std::move(task1));
-	strategy_tasks_.push_back(std::move(task2));
-#else
-
+ 
 	db_moudle_.LoadAllTaskInfo(task_infos_);
 
 	winner_win_.Init(); // inner use task_info
@@ -167,8 +156,7 @@ bool WinnerApp::Init()
 	//ret1 = QObject::connect(this, SIGNAL(SigShowUi(std::string *)), this, SLOT(DoShowUi(std::string *)));
 	ret1 = QObject::connect(this, SIGNAL(SigShowUi(std::string *, bool)), this, SLOT(DoShowUi(std::string *, bool)));
     ret1 = QObject::connect(this, SIGNAL(SigShowLongUi(std::string *, bool)), this, SLOT(DoShowLongUi(std::string *, bool)));
-#endif
-
+ 
 #if 1 
 
 	stock_ticker_ = std::make_shared<StockTicker>(this->local_logger());

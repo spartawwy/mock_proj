@@ -206,6 +206,9 @@
     <ClCompile Include="back_tester.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="positon_mocker.cpp">
+      <Filter>moudle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="trade_winner.ui">
@@ -356,6 +359,9 @@
     </ClInclude>
     <ClInclude Include="back_tester.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="position_mocker.h">
+      <Filter>moudle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

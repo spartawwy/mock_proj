@@ -260,6 +260,7 @@
     <ClCompile Include="message_win.cpp" />
     <ClCompile Include="mutex_wrapper.cpp" />
     <ClCompile Include="MySpinBox.cpp" />
+    <ClCompile Include="positon_mocker.cpp" />
     <ClCompile Include="timer_container.cpp" />
     <ClCompile Include="timer_wrapper.cpp" />
     <ClCompile Include="rwini.cpp" />
@@ -432,6 +433,7 @@
     </CustomBuild>
     <ClInclude Include="mutex_wrapper.h" />
     <ClInclude Include="MySpinBox.h" />
+    <ClInclude Include="position_mocker.h" />
     <ClInclude Include="timer_container.h" />
     <CustomBuild Include="timer_wrapper.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
