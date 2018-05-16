@@ -65,7 +65,9 @@ void BatchesSellTask::HandleQuoteData()
         return;
     }
      
-    if( iter->cur_price > para_.alert_price )
+    if( iter->cur_price < para_.alert_price - 0.0001 )
+        goto NO_TRADE;
+
     { 
         bool is_to_clear = false;
         int index = in_which_part(this, iter->cur_price);
