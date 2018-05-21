@@ -21,6 +21,7 @@ namespace TSystem
     class TaskStrand;
 }
 
+class PositionMocker;
 class WinnerApp;
 
 class DBMoudle
@@ -65,6 +66,8 @@ public:
     std::string GetStockName(const std::string &code);
      
     std::vector<T_PositionItem> GetPosition(int user_id, std::string date_str);
+
+    void LoadPositionMock(PositionMocker * position_mock);
 
 private:
 

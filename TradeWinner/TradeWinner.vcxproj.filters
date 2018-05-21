@@ -206,7 +206,7 @@
     <ClCompile Include="back_tester.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="positon_mocker.cpp">
+    <ClCompile Include="position_mocker.cpp">
       <Filter>moudle</Filter>
     </ClCompile>
   </ItemGroup>
@@ -362,6 +362,9 @@
     </ClInclude>
     <ClInclude Include="position_mocker.h">
       <Filter>moudle</Filter>
+    </ClInclude>
+    <ClInclude Include="exchange_calendar.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

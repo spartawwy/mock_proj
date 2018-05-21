@@ -61,6 +61,7 @@ WinnerApp::WinnerApp(int argc, char* argv[])
 	, stocks_price_info_(256)
 	, p_user_account_info_(nullptr)
 	, p_user_broker_info_(nullptr)
+    , position_mocker_(nullptr)
 {   
 	connect(strategy_tasks_timer_.get(), SIGNAL(timeout()), this, SLOT(DoStrategyTasksTimeout()));
 	connect(normal_timer_.get(), SIGNAL(timeout()), this, SLOT(DoNormalTimer()));
@@ -143,6 +144,9 @@ bool WinnerApp::Init()
 
 	trade_agent_.SetupAccountInfo(result.data());
 #endif
+
+    position_mocker_ = std::make_shared<PositionMocker>();
+
 	//------------------------ create tasks ------------------
  
 	db_moudle_.LoadAllTaskInfo(task_infos_);

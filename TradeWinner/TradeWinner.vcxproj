@@ -260,7 +260,7 @@
     <ClCompile Include="message_win.cpp" />
     <ClCompile Include="mutex_wrapper.cpp" />
     <ClCompile Include="MySpinBox.cpp" />
-    <ClCompile Include="positon_mocker.cpp" />
+    <ClCompile Include="position_mocker.cpp" />
     <ClCompile Include="timer_container.cpp" />
     <ClCompile Include="timer_wrapper.cpp" />
     <ClCompile Include="rwini.cpp" />
@@ -366,6 +366,7 @@
     <ClInclude Include="db_moudle.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="equal_section_task.h" />
+    <ClInclude Include="exchange_calendar.h" />
     <ClInclude Include="follow_sell_task.h" />
     <ClInclude Include="GeneratedFiles\ui_about_soft.h" />
     <ClInclude Include="GeneratedFiles\ui_broker_cfg.h" />

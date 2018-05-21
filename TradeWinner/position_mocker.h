@@ -18,6 +18,6 @@ private:
 
     T_CodeMapPosition  positions_;
 
-
+    friend class DBMoudle;
 };
 #endif // POSITION_MOCKER_SDFD_H_

@@ -9,6 +9,8 @@
 #include <TLib/core/tsystem_sqlite_functions.h>
  
 #include "winner_app.h"
+#include "position_mocker.h"
+
 /*CREATE TABLE BrokerInfo (id INTEGER, ip TEXT, port INTEGER, type INTEGER, remark TEXT, com_ver text, PRIMARY KEY(id));
 CREATE TABLE AccountInfo(id INTEGER, account_no TEXT, trade_account_no TEXT, trade_pwd  TEXT, comm_pwd TEXT, broker_id INTEGER, department_id text, remark TEXT, PRIMARY KEY(id));
 CREATE TABLE UserInformation(  id INTEGER
@@ -972,4 +974,23 @@ std::vector<T_PositionItem> DBMoudle::GetPosition(int user_id, std::string date_
         return 0;
     });
     return std::vector<T_PositionItem>();
+}
+
+void DBMoudle::LoadPositionMock(PositionMocker * position_mock)
+{
+    assert(position_mock); 
+    assert(db_conn_);
+
+    if( !utility::ExistTable("Position", *db_conn_) )
+        ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
+                , "DBMoudle::LoadPositionMock"
+                , "can't find table Position: ");
+
+    auto date_time = CurrentDateTime();
+    std::string sql = utility::FormatStr("SELECT code, avaliable, frozen WHERE user_id=%d AND date = %d ", USER_ID_TEST, std::get<0>(date_time) );
+
+    db_conn_->ExecuteSQL(sql.c_str(), [position_mock, this](int cols, char **vals, char **names)
+    {
+
+    });
 }
