@@ -377,8 +377,6 @@ typedef struct _t_position_item
     double frozen;
 }T_PositionItem;
 
-// (date, isopen)
-typedef std::unordered_map<int, bool> T_DateMapIsopen ;
 //struct T_StockPosition
 //{
 //    std::string  code;

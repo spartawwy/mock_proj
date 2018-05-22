@@ -1001,20 +1001,32 @@ std::vector<T_PositionItem> DBMoudle::GetPosition(int user_id, std::string date_
 
 void DBMoudle::LoadPositionMock(PositionMocker * position_mock)
 {
-    assert(position_mock); 
     assert(db_conn_);
-
+    assert(position_mock); 
+    assert(position_mock->days_positions_.empty()); 
+   
     if( !utility::ExistTable("Position", *db_conn_) )
         ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
                 , "DBMoudle::LoadPositionMock"
                 , "can't find table Position: ");
 
     auto date_time = CurrentDateTime();
-    // if current position none get pre day position
-    std::string sql = utility::FormatStr("SELECT code, avaliable, frozen FROM Position WHERE user_id=%d AND date = %d ", USER_ID_TEST, std::get<0>(date_time) );
+    //// if current position none get pre day position
+    std::string sql = utility::FormatStr("SELECT date, code, avaliable, frozen FROM Position WHERE user_id=%d ORDER BY date ", USER_ID_TEST);
 
     db_conn_->ExecuteSQL(sql.c_str(), [position_mock, this](int cols, char **vals, char **names)
     {
+        int date = boost::lexical_cast<int>(*vals);
+        auto target_iter = position_mock->days_positions_.find(date);
+        if( target_iter == position_mock->days_positions_.end() )
+            target_iter = position_mock->days_positions_.insert(std::make_pair(date, T_CodeMapPosition())).first;
+         
+        T_PositionData pos_data;
+        strcpy_s(pos_data.code, sizeof(pos_data.code), *(vals + 1));
+        pos_data.avaliable = boost::lexical_cast<int>(*(vals + 2));
+        pos_data.total = pos_data.avaliable + boost::lexical_cast<int>(*(vals + 3));
+        target_iter->second.insert(std::make_pair(pos_data.code, pos_data));
+
         return 0;
     });
 }

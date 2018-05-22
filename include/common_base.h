@@ -121,6 +121,8 @@ private:
     char *p_data_;
 };
 
+// (date, isopen)
+typedef std::unordered_map<int, bool> T_DateMapIsopen ;
 typedef std::unordered_map<std::string, T_PositionData> T_CodeMapPosition;
 
 #endif // COMMON_BASE_SDF878DF_H_

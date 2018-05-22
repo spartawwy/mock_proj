@@ -145,8 +145,8 @@ bool WinnerApp::Init()
 	trade_agent_.SetupAccountInfo(result.data());
 #endif
 
-    position_mocker_ = std::make_shared<PositionMocker>();
-
+    position_mocker_ = std::make_shared<PositionMocker>(&db_moudle_, trade_dates_);
+    db_moudle_.LoadPositionMock(position_mocker_.get());
 	//------------------------ create tasks ------------------
  
 	db_moudle_.LoadAllTaskInfo(task_infos_);
