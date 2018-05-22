@@ -1,8 +1,9 @@
 #ifndef COMMON_BASE_SDF878DF_H_
 #define COMMON_BASE_SDF878DF_H_
 
-#include <cstring>
+#include <string>
 #include <cassert>
+#include <unordered_map>
 // 0资金  1股份   2当日委托  3当日成交     4可撤单   5股东代码  6融资余额   7融券余额  8可融证券</param>
 enum class TypeQueryCategory : char
 {
@@ -34,8 +35,9 @@ struct T_AccountData
 };
 
 
-struct T_PositionData
+class T_PositionData
 {
+public:
 	char code[32];
 	char pinyin[32];
 	int total;
@@ -118,5 +120,7 @@ private:
     unsigned int size_;
     char *p_data_;
 };
+
+typedef std::unordered_map<std::string, T_PositionData> T_CodeMapPosition;
 
 #endif // COMMON_BASE_SDF878DF_H_

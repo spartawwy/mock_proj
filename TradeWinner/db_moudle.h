@@ -10,6 +10,8 @@
 #include <unordered_map>
 
 #include "common.h"
+#include "exchange_calendar.h"
+#include "position_mocker.h"
 
 namespace SQLite
 {
@@ -21,7 +23,7 @@ namespace TSystem
     class TaskStrand;
 }
 
-class PositionMocker;
+//class PositionMocker;
 class WinnerApp;
 
 class DBMoudle
@@ -67,6 +69,7 @@ public:
      
     std::vector<T_PositionItem> GetPosition(int user_id, std::string date_str);
 
+    //void LoadExchangeCalendar(ExchangeCalendar * calendar);
     void LoadPositionMock(PositionMocker * position_mock);
 
 private:

@@ -6,7 +6,8 @@
 
 #include "common_base.h"
 
-typedef std::unordered_map<std::string, T_PositionData> T_CodeMapPosition;
+//typedef std::unordered_map<std::string, T_PositionData> T_CodeMapPosition;
+//typedef std::unordered_map<std::string, int> T_CodeMapPosition;
 
 class PositionMocker
 {

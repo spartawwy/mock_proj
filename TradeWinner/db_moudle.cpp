@@ -975,6 +975,29 @@ std::vector<T_PositionItem> DBMoudle::GetPosition(int user_id, std::string date_
     });
     return std::vector<T_PositionItem>();
 }
+//
+//void DBMoudle::LoadExchangeCalendar(ExchangeCalendar * calendar)
+//{
+//    assert(calendar); 
+//    assert(db_conn_);
+//    assert(calendar->calendar_date_.empty());
+//
+//    if( !utility::ExistTable("ExchangeDate", *db_conn_) )
+//        ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
+//                , "DBMoudle::LoadExchangeCalendar"
+//                , "can't find table ExchangeDate: ");
+//    std::string sql = utility::FormatStr("SELECT date, is_tradeday, frozen FROM ExchangeDate order by date ");
+//
+//    db_conn_->ExecuteSQL(sql.c_str(), [calendar, this](int cols, char **vals, char **names)
+//    {
+//        //T_CalendarDate calendar_date;
+//        int date = boost::lexical_cast<int>(*vals);
+//        bool is_trd_day = boost::lexical_cast<bool>(*(vals+1));
+//        calendar->calendar_date_.emplace_back(date, is_trd_day);
+//        return 0;
+//    });
+//
+//}
 
 void DBMoudle::LoadPositionMock(PositionMocker * position_mock)
 {
@@ -987,10 +1010,11 @@ void DBMoudle::LoadPositionMock(PositionMocker * position_mock)
                 , "can't find table Position: ");
 
     auto date_time = CurrentDateTime();
-    std::string sql = utility::FormatStr("SELECT code, avaliable, frozen WHERE user_id=%d AND date = %d ", USER_ID_TEST, std::get<0>(date_time) );
+    // if current position none get pre day position
+    std::string sql = utility::FormatStr("SELECT code, avaliable, frozen FROM Position WHERE user_id=%d AND date = %d ", USER_ID_TEST, std::get<0>(date_time) );
 
     db_conn_->ExecuteSQL(sql.c_str(), [position_mock, this](int cols, char **vals, char **names)
     {
-
+        return 0;
     });
 }

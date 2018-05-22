@@ -22,9 +22,7 @@
 #include "cookie.h"
 
 using namespace TSystem;
- 
-typedef std::unordered_map<std::string, T_PositionData> T_CodeMapPosition;
-
+  
 class StockTicker;
 class IndexTicker;
 class StrategyTask; 
@@ -203,6 +201,7 @@ private:
     std::unordered_map<std::string, T_StockPriceInfo> stocks_price_info_;
     T_DateMapIsopen trade_dates_;
      
+
     std::shared_ptr<PositionMocker>  position_mocker_;
      
     friend class IndexTask;
