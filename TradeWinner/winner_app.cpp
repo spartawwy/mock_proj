@@ -61,6 +61,7 @@ WinnerApp::WinnerApp(int argc, char* argv[])
 	, stocks_price_info_(256)
 	, p_user_account_info_(nullptr)
 	, p_user_broker_info_(nullptr)
+    , exchange_calendar_()
     , position_mocker_(nullptr)
 {   
 	connect(strategy_tasks_timer_.get(), SIGNAL(timeout()), this, SLOT(DoStrategyTasksTimeout()));
@@ -116,7 +117,7 @@ bool WinnerApp::Init()
 	assert(p_user_account_info_ && p_user_broker_info_);
 
 #endif
-    db_moudle_.LoadTradeDate(trade_dates_);
+    db_moudle_.LoadTradeDate(&exchange_calendar_);
 
 #ifdef USE_TRADE_FLAG
 
@@ -145,7 +146,7 @@ bool WinnerApp::Init()
 	trade_agent_.SetupAccountInfo(result.data());
 #endif
 
-    position_mocker_ = std::make_shared<PositionMocker>(&db_moudle_, trade_dates_);
+    position_mocker_ = std::make_shared<PositionMocker>(&db_moudle_, &exchange_calendar_);
     db_moudle_.LoadPositionMock(position_mocker_.get());
 	//------------------------ create tasks ------------------
  

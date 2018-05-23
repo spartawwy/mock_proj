@@ -42,6 +42,9 @@
     <Filter Include="win">
       <UniqueIdentifier>{4fe77f8e-f21b-4c38-9f13-d2743a864aed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="moudle\ui_moudle">
+      <UniqueIdentifier>{a7d10936-a1fd-43be-93a3-69c799ba3992}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -97,12 +100,6 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_broker_cfg_win.cpp">
       <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="MySpinBox.cpp">
-      <Filter>moudle</Filter>
-    </ClCompile>
-    <ClCompile Include="HintList.cpp">
-      <Filter>moudle</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_HintList.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -209,6 +206,15 @@
     <ClCompile Include="position_mocker.cpp">
       <Filter>moudle</Filter>
     </ClCompile>
+    <ClCompile Include="MySpinBox.cpp">
+      <Filter>moudle\ui_moudle</Filter>
+    </ClCompile>
+    <ClCompile Include="HintList.cpp">
+      <Filter>moudle\ui_moudle</Filter>
+    </ClCompile>
+    <ClCompile Include="exchange_calendar.cpp">
+      <Filter>moudle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="trade_winner.ui">
@@ -225,9 +231,6 @@
     </CustomBuild>
     <CustomBuild Include="broker_cfg.ui">
       <Filter>Form Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="HintList.h">
-      <Filter>moudle</Filter>
     </CustomBuild>
     <CustomBuild Include="winner_win.h">
       <Filter>win</Filter>
@@ -255,6 +258,9 @@
     </CustomBuild>
     <CustomBuild Include="timer_wrapper.h">
       <Filter>moudle</Filter>
+    </CustomBuild>
+    <CustomBuild Include="HintList.h">
+      <Filter>moudle\ui_moudle</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -290,9 +296,6 @@
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_broker_cfg.h">
       <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MySpinBox.h">
-      <Filter>moudle</Filter>
     </ClInclude>
     <ClInclude Include="inflection_sell_task.h">
       <Filter>task</Filter>
@@ -364,7 +367,10 @@
       <Filter>moudle</Filter>
     </ClInclude>
     <ClInclude Include="exchange_calendar.h">
-      <Filter>Header Files</Filter>
+      <Filter>moudle</Filter>
+    </ClInclude>
+    <ClInclude Include="MySpinBox.h">
+      <Filter>moudle\ui_moudle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

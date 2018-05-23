@@ -21,6 +21,8 @@
   
 #include "cookie.h"
 
+#include "exchange_calendar.h"
+
 using namespace TSystem;
   
 class StockTicker;
@@ -199,7 +201,8 @@ private:
     
     // back test relate 
     std::unordered_map<std::string, T_StockPriceInfo> stocks_price_info_;
-    T_DateMapIsopen trade_dates_;
+    
+    ExchangeCalendar exchange_calendar_;
      
 
     std::shared_ptr<PositionMocker>  position_mocker_;

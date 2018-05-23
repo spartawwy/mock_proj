@@ -11,20 +11,21 @@
 typedef std::unordered_map<int, T_CodeMapPosition> T_DayMapPosition;
 
 //class DBMoudle;
+class ExchangeCalendar;
 class PositionMocker
 {
 public: 
     friend class DBMoudle;
 
     PositionMocker(DBMoudle *db_moudle
-        , const T_DateMapIsopen &trd_dates);
+        ,  ExchangeCalendar *exchange_calendar);
     void Update();
     void UpdatePosition(const std::string &code, double avaliable, double frozon);
 
 private:
 
     DBMoudle *db_moudle_;
-    const T_DateMapIsopen &trade_dates_;
+    ExchangeCalendar *exchange_calendar_;
     T_DayMapPosition  days_positions_;
 
     

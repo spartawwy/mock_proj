@@ -8,8 +8,10 @@
 #include <TLib/core/tsystem_core_common.h>
 #include <TLib/core/tsystem_sqlite_functions.h>
  
-#include "winner_app.h"
+#include "exchange_calendar.h"
 #include "position_mocker.h"
+#include "winner_app.h"
+
 
 /*CREATE TABLE BrokerInfo (id INTEGER, ip TEXT, port INTEGER, type INTEGER, remark TEXT, com_ver text, PRIMARY KEY(id));
 CREATE TABLE AccountInfo(id INTEGER, account_no TEXT, trade_account_no TEXT, trade_pwd  TEXT, comm_pwd TEXT, broker_id INTEGER, department_id text, remark TEXT, PRIMARY KEY(id));
@@ -381,8 +383,9 @@ void DBMoudle::LoadAllTaskInfo(std::unordered_map<int, std::shared_ptr<T_TaskInf
         
 }
 
-void DBMoudle::LoadTradeDate(T_DateMapIsopen &trade_dates)
+void DBMoudle::LoadTradeDate(void *exchange_calendar)
 {
+    assert(exchange_calendar);
     if( !exchange_db_conn_ )
        Open(exchange_db_conn_, exchane_db_file_path);
 
@@ -393,13 +396,13 @@ void DBMoudle::LoadTradeDate(T_DateMapIsopen &trade_dates)
      
     std::string sql = "SELECT date FROM ExchangeDate WHERE is_tradeday = 1 ORDER BY date";
     int num = 0;
-    exchange_db_conn_->ExecuteSQL(sql.c_str(),[&num, &trade_dates, this](int num_cols, char** vals, char** names)->int
+    exchange_db_conn_->ExecuteSQL(sql.c_str(),[&num, &exchange_calendar, this](int num_cols, char** vals, char** names)->int
     { 
         try
         { 
             ++num;
             int date =  boost::lexical_cast<int>(*(vals)); 
-            trade_dates.insert(std::make_pair(date, true));
+            ((ExchangeCalendar*)exchange_calendar)->trade_dates_->insert(std::make_pair(date, true));
          }catch(boost::exception& )
         {
             return 0;

@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 #include "common.h"
-#include "exchange_calendar.h"
+
 #include "position_mocker.h"
 
 namespace SQLite
@@ -37,7 +37,7 @@ public:
 
     void LoadAllUserBrokerInfo();
     void LoadAllTaskInfo(std::unordered_map<int, std::shared_ptr<T_TaskInformation> > &taskinfos);
-    void LoadTradeDate(T_DateMapIsopen &trade_dates);
+    void LoadTradeDate(void *exchange_calendar);
 
     T_UserAccountInfo * FindUserAccountInfo(int user_id);
     T_BrokerInfo * FindUserBrokerByUser(int user_id);

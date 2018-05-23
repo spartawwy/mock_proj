@@ -3,9 +3,9 @@
 #include "common.h"
 #include "db_moudle.h"
 
-PositionMocker::PositionMocker(DBMoudle *db_moudle, const T_DateMapIsopen &trd_dates)
+PositionMocker::PositionMocker(DBMoudle *db_moudle, ExchangeCalendar* exchange_calendar)
     : db_moudle_(db_moudle)
-    , trade_dates_(trd_dates)
+    , exchange_calendar_(exchange_calendar)
     , days_positions_(1024)
 { 
 }
@@ -14,8 +14,8 @@ void PositionMocker::Update()
 {
      auto cur_date = std::get<0>(CurrentDateTime());
 
-     if( trade_dates_.find(cur_date) == trade_dates_.end() )
-         return;
+     /*if( trade_dates_.find(cur_date) == trade_dates_.end() )
+         return;*/
      // todo : get pre trade 's position 
 }
 

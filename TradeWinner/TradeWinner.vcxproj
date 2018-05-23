@@ -175,6 +175,7 @@
     <ClCompile Include="common.cpp" />
     <ClCompile Include="eqsection_task_win.cpp" />
     <ClCompile Include="equal_section_task.cpp" />
+    <ClCompile Include="exchange_calendar.cpp" />
     <ClCompile Include="follow_sell_task.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_broker_cfg_win.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
