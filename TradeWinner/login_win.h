@@ -20,6 +20,8 @@ public:
     
     void Init();
     
+    WinnerApp *app() { return app_; } // tmp code for debug
+
 public slots:
         void DoOkBtnClicked();
 

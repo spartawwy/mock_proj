@@ -160,7 +160,7 @@ void DBMoudle::Init()
          return 0;
      });
      
-     if( !utility::ExistTable("ExchangeDate", *exchange_db_conn_) )
+    if( !utility::ExistTable("ExchangeDate", *exchange_db_conn_) )
          ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
          , "DBMoudle::Init"
          , "can't find table ExchangeDate");
@@ -960,24 +960,7 @@ void DBMoudle::Open(std::shared_ptr<SQLite::SQLiteConnection>& db_conn, const st
     
 }
 
-std::vector<T_PositionItem> DBMoudle::GetPosition(int user_id, std::string date_str)
-{  
-    if( !db_conn_ )
-    {
-        Open(db_conn_, db_file_path);
-    }
-   
-    std::string name;
-    if( !utility::ExistTable("Position", *db_conn_) )
-        return std::vector<T_PositionItem>();
-    std::string sql = utility::FormatStr("SELECT code, avaliable, frozen FROM Position WHERE use_id=%d AND date='%s' ", user_id, date_str.c_str());
-
-    db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
-    {  
-        return 0;
-    });
-    return std::vector<T_PositionItem>();
-}
+ 
 //
 //void DBMoudle::LoadExchangeCalendar(ExchangeCalendar * calendar)
 //{
@@ -1002,11 +985,10 @@ std::vector<T_PositionItem> DBMoudle::GetPosition(int user_id, std::string date_
 //
 //}
 
-void DBMoudle::LoadPositionMock(PositionMocker * position_mock)
+void DBMoudle::LoadPositionMock(PositionMocker &position_mock)
 {
-    assert(db_conn_);
-    assert(position_mock); 
-    assert(position_mock->days_positions_.empty()); 
+    assert(db_conn_); 
+    assert(position_mock.days_positions_.empty()); 
    
     if( !utility::ExistTable("Position", *db_conn_) )
         ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
@@ -1017,12 +999,12 @@ void DBMoudle::LoadPositionMock(PositionMocker * position_mock)
     //// if current position none get pre day position
     std::string sql = utility::FormatStr("SELECT date, code, avaliable, frozen FROM Position WHERE user_id=%d ORDER BY date ", USER_ID_TEST);
 
-    db_conn_->ExecuteSQL(sql.c_str(), [position_mock, this](int cols, char **vals, char **names)
+    db_conn_->ExecuteSQL(sql.c_str(), [&position_mock, this](int cols, char **vals, char **names)
     {
-        int date = boost::lexical_cast<int>(*vals);
-        auto target_iter = position_mock->days_positions_.find(date);
-        if( target_iter == position_mock->days_positions_.end() )
-            target_iter = position_mock->days_positions_.insert(std::make_pair(date, T_CodeMapPosition())).first;
+        position_mock.last_position_date_ = boost::lexical_cast<int>(*vals);
+        auto target_iter = position_mock.days_positions_.find(position_mock.last_position_date_);
+        if( target_iter == position_mock.days_positions_.end() )
+            target_iter = position_mock.days_positions_.insert(std::make_pair(position_mock.last_position_date_, T_CodeMapPosition())).first;
          
         T_PositionData pos_data;
         strcpy_s(pos_data.code, sizeof(pos_data.code), *(vals + 1));
@@ -1032,4 +1014,48 @@ void DBMoudle::LoadPositionMock(PositionMocker * position_mock)
 
         return 0;
     });
+}
+
+bool DBMoudle::UpdatePositionMock(PositionMocker &position_mock, int date, int user_id)
+{
+    assert(db_conn_); 
+
+    auto iter = position_mock.days_positions_.find(date);
+    if( iter == position_mock.days_positions_.end() )
+        return false;
+
+     if( !utility::ExistTable("Position", *db_conn_) )
+        ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
+                , "DBMoudle::UpdateTodayPositionMock"
+                , "can't find table Position: ");
+      
+     std::for_each( std::begin(iter->second), std::end(iter->second), [user_id, date, this](T_CodeMapPosition::reference entry)
+     { 
+         std::string sql = utility::FormatStr("INSERT OR REPLACE INTO Position VALUES(%d, '%s', '%d', %.2f, %.2f)"
+             , user_id, entry.second.code, date, entry.second.avaliable, entry.second.total-entry.second.avaliable);
+         bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
+         return 0; 
+     });
+     return true;
+}
+
+bool DBMoudle::UpdateOneStockInPositionMock(PositionMocker &position_mock, const std::string &code, int date, int user_id)
+{
+    assert(db_conn_); 
+
+    auto iter = position_mock.days_positions_.find(date);
+    if( iter == position_mock.days_positions_.end() )
+        return false;
+
+     if( !utility::ExistTable("Position", *db_conn_) )
+        ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
+                , "DBMoudle::UpdateOneStockInPositionMock"
+                , "can't find table Position: ");
+     auto pos_iter = iter->second.find(code);
+     if( pos_iter == iter->second.end() )
+         return false; 
+     std::string sql = utility::FormatStr("INSERT OR REPLACE INTO Position VALUES(%d, '%s', '%d', %.2f, %.2f)"
+             , user_id, pos_iter->second.code, date, pos_iter->second.avaliable, pos_iter->second.total - pos_iter->second.avaliable);
+     bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
+     return ret;
 }

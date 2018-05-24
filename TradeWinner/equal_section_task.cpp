@@ -496,21 +496,7 @@ BEFORE_TRADE:
         }
          
         std::string cn_order_str = order_type == TypeOrderCategory::BUY ? "买入" : "卖出";
-         
-#ifdef USE_TRADE_FLAG
-        assert(this->app_->trade_agent().account_data(market_type_));
-        //auto sh_hld_code  = const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code;
-       
-        this->app_->local_logger().LogLocal(TagOfOrderLog(), 
-            TSystem::utility::FormatStr("区间任务:%d %s %s 价格:%.2f 数量:%d ", para_.id, cn_order_str.c_str(), this->code_data(), price, qty)); 
-        this->app_->AppendLog2Ui("区间任务:%d %s %s 价格:%.2f 数量:%d ", para_.id, cn_order_str.c_str(), this->code_data(), price, qty);
- 
-        // order the stock
-        this->app_->trade_agent().SendOrder(this->app_->trade_client_id(), (int)order_type, 0
-            , const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code, this->code_data()
-            , price, qty
-            , result, error_info); 
-#endif
+          
         //------------------do trade -------------
         if( is_back_test_ )
         {
@@ -530,6 +516,22 @@ BEFORE_TRADE:
                 bktest_para_.avaliable_position -= qty;
                 bktest_para_.capital += price * qty - CaculateFee(price*qty, order_type == TypeOrderCategory::SELL);
             }
+        }else
+        {
+#ifdef USE_TRADE_FLAG
+        assert(this->app_->trade_agent().account_data(market_type_));
+        //auto sh_hld_code  = const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code;
+       
+        this->app_->local_logger().LogLocal(TagOfOrderLog(), 
+            TSystem::utility::FormatStr("区间任务:%d %s %s 价格:%.2f 数量:%d ", para_.id, cn_order_str.c_str(), this->code_data(), price, qty)); 
+        this->app_->AppendLog2Ui("区间任务:%d %s %s 价格:%.2f 数量:%d ", para_.id, cn_order_str.c_str(), this->code_data(), price, qty);
+ 
+        // order the stock
+        this->app_->trade_agent().SendOrder(this->app_->trade_client_id(), (int)order_type, 0
+            , const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code, this->code_data()
+            , price, qty
+            , result, error_info); 
+#endif
         }
 
 		cur_type_action_ = TypeAction::NOOP; // for rebounce

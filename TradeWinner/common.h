@@ -34,7 +34,9 @@
 #define APP_CODE_TEXT "GBK"
 
 #define DO_LOG(tag, b)  do{ app_->local_logger().LogLocal((tag), b); }while(0);
-//#define USE_TRADE_FLAG
+
+#define USE_TRADE_FLAG
+#define USE_MOCK_FLAG 
 
 #if 0
 std::vector<std::string> split(const std::string& line, const std::string& seperator = " ", 

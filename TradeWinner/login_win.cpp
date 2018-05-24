@@ -43,6 +43,16 @@ void LoginWin::DoOkBtnClicked()
 { 
     // todo: read encode use pearid date in sn file
     T_UserInformation user_info;
+    // tmp code debug ---------
+    
+    auto ckapp0 = app_->db_moudle_address()->app();
+    auto ckappp = app_->db_moudle().app();
+    DBMoudle & db_ref = app_->db_moudle();
+    DBMoudle *ck_db = std::addressof(db_ref);
+    auto ckapp2 = db_ref.app();
+    auto ret0 = db_ref.CheckLogin(ui_.le_name->text().trimmed().toLocal8Bit().data(), ui_.le_pwd->text().trimmed().toLocal8Bit().data()
+        , &user_info);
+    //  ---------
     auto ret = app_->db_moudle().CheckLogin(ui_.le_name->text().trimmed().toLocal8Bit().data(), ui_.le_pwd->text().trimmed().toLocal8Bit().data()
         , &user_info);
 

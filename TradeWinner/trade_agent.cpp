@@ -11,19 +11,21 @@ TradeAgent::TradeAgent()
     :/* app_(app)
      ,*/ TdxApiHMODULE(nullptr)
      , client_id_(-1)
+#ifndef USE_MOCK_FLAG
      , CloseTdx(nullptr)
      , Logon(nullptr)
      , Logoff(nullptr)
      , QueryData(nullptr) 
      , SendOrder(nullptr) 
      , CancelOrder(nullptr)
-     , GetQuote(nullptr) 
+     //, GetQuote(nullptr) 
      , Repay(nullptr) 
      , QueryDatas(nullptr)
-     , QueryHistoryData(nullptr)
+     //, QueryHistoryData(nullptr)
      , SendOrders(nullptr)
      , CancelOrders(nullptr)
-     , GetQuotes(nullptr) 
+     //, GetQuotes(nullptr) 
+#endif
 {
     memset(&account_data_, 0, sizeof(account_data_));
 }
@@ -41,11 +43,10 @@ bool TradeAgent::Setup(TypeBroker broker_type, std::string &account_no)
 {
     assert(account_no.length() > 0);
     broker_type_ = broker_type;
-
+     
+#ifndef USE_MOCK_FLAG
     FreeDynamic();
-
     OpenTdx = nullptr;
-
     char path_str[256] = {0};
     sprintf_s(path_str, "trade_%s.dll\0", account_no.c_str());
     TdxApiHMODULE = LoadLibrary(path_str);
@@ -55,7 +56,7 @@ bool TradeAgent::Setup(TypeBroker broker_type, std::string &account_no)
         //throw excepton;
         return false;
     }
-
+     
     OpenTdx = (OpenTdxDelegate)GetProcAddress(TdxApiHMODULE, "OpenTdx");
     CloseTdx = (CloseTdxDelegate)GetProcAddress(TdxApiHMODULE, "CloseTdx");
     Logon = (LogonDelegate)GetProcAddress(TdxApiHMODULE, "Logon");
@@ -69,7 +70,7 @@ bool TradeAgent::Setup(TypeBroker broker_type, std::string &account_no)
 
     //以下是普通批量版功能函数
     QueryDatas = (QueryDatasDelegate)GetProcAddress(TdxApiHMODULE, "QueryDatas");
-    QueryHistoryData = (QueryHistoryDataDelegate)GetProcAddress(TdxApiHMODULE, "QueryHistoryData");
+    //QueryHistoryData = (QueryHistoryDataDelegate)GetProcAddress(TdxApiHMODULE, "QueryHistoryData");
     SendOrders = (SendOrdersDelegate)GetProcAddress(TdxApiHMODULE, "SendOrders");
     CancelOrders = (CancelOrdersDelegate)GetProcAddress(TdxApiHMODULE, "CancelOrders");
     GetQuotes = (GetQuotesDelegate)GetProcAddress(TdxApiHMODULE, "GetQuotes");
@@ -79,14 +80,18 @@ bool TradeAgent::Setup(TypeBroker broker_type, std::string &account_no)
     //SendMultiAccountsOrdersDelegate SendMultiAccountsOrders = (SendMultiAccountsOrdersDelegate)GetProcAddress(TdxApiHMODULE, "SendMultiAccountsOrders");
     //CancelMultiAccountsOrdersDelegate CancelMultiAccountsOrders = (CancelMultiAccountsOrdersDelegate)GetProcAddress(TdxApiHMODULE, "CancelMultiAccountsOrders");
     //GetMultiAccountsQuotesDelegate GetMultiAccountsQuotes = (GetMultiAccountsQuotesDelegate)GetProcAddress(TdxApiHMODULE, "GetMultiAccountsQuotes");
-
+#endif
     OpenTdx();
     return true;
 }
 
 bool TradeAgent::IsInited() const
 {
+#ifndef USE_MOCK_FLAG
     return TdxApiHMODULE != nullptr && OpenTdx != nullptr;
+#else
+    return true;
+#endif
 }
 
 void TradeAgent::SetupAccountInfo( char*str)
@@ -171,8 +176,10 @@ const T_AccountData * TradeAgent::account_data(TypeMarket type_market) const
 
 void TradeAgent::FreeDynamic()
 {
+#ifndef USE_MOCK_FLAG
     if( CloseTdx )
         CloseTdx();
     if( TdxApiHMODULE )
         FreeLibrary(TdxApiHMODULE);
+#endif
 }

@@ -66,11 +66,14 @@ public:
      
     void GetStockCode(const std::string &code, std::vector<T_StockCodeName>& ret);
     std::string GetStockName(const std::string &code);
-     
-    std::vector<T_PositionItem> GetPosition(int user_id, std::string date_str);
+      
 
     //void LoadExchangeCalendar(ExchangeCalendar * calendar);
-    void LoadPositionMock(PositionMocker * position_mock);
+    void LoadPositionMock(PositionMocker &position_mock);
+    bool UpdatePositionMock(PositionMocker &position_mock, int date, int user_id);
+    bool UpdateOneStockInPositionMock(PositionMocker &position_mock, const std::string &code, int date, int user_id);
+
+    WinnerApp *app() { return app_; } // tmp code for debug
 
 private:
 

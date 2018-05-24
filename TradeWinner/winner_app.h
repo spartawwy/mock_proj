@@ -69,6 +69,7 @@ public:
     void Cookie_MaxTaskId(int task_id);
 
     DBMoudle& db_moudle() { return db_moudle_; }
+    DBMoudle* db_moudle_address() { return &db_moudle_; }
     void user_info(const T_UserInformation& val) { user_info_ = val; }
     T_UserInformation& user_info() { return user_info_; }
 	 

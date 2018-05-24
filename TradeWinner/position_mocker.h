@@ -17,17 +17,19 @@ class PositionMocker
 public: 
     friend class DBMoudle;
 
-    PositionMocker(DBMoudle *db_moudle
+    PositionMocker(int user_id, DBMoudle *db_moudle
         ,  ExchangeCalendar *exchange_calendar);
-    void Update();
+    void UpdateToDb();
     void UpdatePosition(const std::string &code, double avaliable, double frozon);
 
 private:
 
-    DBMoudle *db_moudle_;
-    ExchangeCalendar *exchange_calendar_;
+    int user_id_;
+    DBMoudle  *db_moudle_;
+    ExchangeCalendar  *exchange_calendar_;
     T_DayMapPosition  days_positions_;
 
-    
+    int last_position_date_;
+     
 };
 #endif // POSITION_MOCKER_SDFD_H_

@@ -98,11 +98,14 @@ bool WinnerApp::Init()
 		}
 		return false;
 	}
- 
+    
+    auto checkp0 = db_moudle_.app();
 	db_moudle_.Init();
 	  
+    auto checkp1 = login_win_.app();
 
 	login_win_.Init();
+    auto checkp2 = login_win_.app();
 	ret = login_win_.exec(); 
 	if( ret != QDialog::Accepted )
 	{
@@ -119,7 +122,7 @@ bool WinnerApp::Init()
 #endif
     db_moudle_.LoadTradeDate(&exchange_calendar_);
 
-#ifdef USE_TRADE_FLAG
+#ifndef  USE_MOCK_FLAG
 
 	BrokerCfgWin  bcf_win(this);
 	bcf_win.Init();
@@ -145,9 +148,10 @@ bool WinnerApp::Init()
 
 	trade_agent_.SetupAccountInfo(result.data());
 #endif
-
-    position_mocker_ = std::make_shared<PositionMocker>(&db_moudle_, &exchange_calendar_);
-    db_moudle_.LoadPositionMock(position_mocker_.get());
+    
+    position_mocker_ = std::make_shared<PositionMocker>(user_info_.id, &db_moudle_, &exchange_calendar_);
+    db_moudle_.LoadPositionMock(*position_mocker_);
+    position_mocker_->UpdateToDb();
 	//------------------------ create tasks ------------------
  
 	db_moudle_.LoadAllTaskInfo(task_infos_);
@@ -961,7 +965,7 @@ std::vector<int> WinnerApp::GetSpanTradeDates(int date_begin, int date_end)
             {
                 int local_date = y * 10000 + m * 100 + d;
                 if( local_date >= date_begin && local_date <= date_end 
-                    && trade_dates_.find(local_date) != trade_dates_.end() )
+                    && exchange_calendar_.IsTradeDate(local_date) )
                     ret_days.push_back(local_date);
             } 
         }

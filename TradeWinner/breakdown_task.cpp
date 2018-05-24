@@ -57,7 +57,7 @@ void BreakDownTask::HandleQuoteData()
                 this->app_->AppendLog2Ui("触发任务:%d 破位卖出 %s 价格:%f 数量:%d | 阀值:%d 秒", para_.id, this->code_data(), price, qty, time_span); 
                 
 				// sell the stock
-                this->app_->trade_agent().SendOrder(app_->trade_client_id(), (int)TypeOrderCategory::SELL, 0
+                this->app_->trade_agent().SendOrder(this->app_->trade_client_id(), (int)TypeOrderCategory::SELL, 0
                     , const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code, this->code_data()
                     , price, qty
                     , result, error_info); 

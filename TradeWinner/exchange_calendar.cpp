@@ -16,9 +16,7 @@ bool ExchangeCalendar::IsTradeDate(int date)
 
 // pre n trade date 
 int ExchangeCalendar::PreTradeDate(unsigned int n)
-{ 
-    //using namespace std::chrono;
-    //for( int i = 1; i < n; ++i )
+{  
     unsigned int count = 0;
     int i = 1;
     T_DateMapIsopen &date_map_opend = *trade_dates_;
