@@ -20,7 +20,7 @@
 #define  INOUT
 #endif
 
-#define USER_ID_TEST  9999  // id for user 'test'
+#define USER_ID_TEST  99999  // id for user 'test'
 
 #define EQSEC_MAX_POSITION 9999900
 #define EQSEC_MIN_POSITION 0
@@ -37,6 +37,9 @@
 
 #define USE_TRADE_FLAG
 #define USE_MOCK_FLAG 
+
+#define CAPITAL_SYMBOL "CNY"
+#define CAPITAL_ORI_TOTAL  300000.0
 
 #if 0
 std::vector<std::string> split(const std::string& line, const std::string& seperator = " ", 
@@ -413,7 +416,7 @@ std::string TagOfOrderLog();
 
 
 std::tuple<int, std::string> CurrentDateTime();
-bool IsNowTradeTime();
+bool IsNowTradeTime(bool *is_day_change = nullptr);
 std::string DateTimeString(time_t t_val);
 
 QString IndexCode2IndexName(const QString& code);

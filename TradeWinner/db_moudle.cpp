@@ -1008,8 +1008,8 @@ void DBMoudle::LoadPositionMock(PositionMocker &position_mock)
          
         T_PositionData pos_data;
         strcpy_s(pos_data.code, sizeof(pos_data.code), *(vals + 1));
-        pos_data.avaliable = boost::lexical_cast<int>(*(vals + 2));
-        pos_data.total = pos_data.avaliable + boost::lexical_cast<int>(*(vals + 3));
+        pos_data.avaliable = boost::lexical_cast<double>(*(vals + 2));
+        pos_data.total = pos_data.avaliable + boost::lexical_cast<double>(*(vals + 3));
         target_iter->second.insert(std::make_pair(pos_data.code, pos_data));
 
         return 0;
@@ -1029,11 +1029,13 @@ bool DBMoudle::UpdatePositionMock(PositionMocker &position_mock, int date, int u
                 , "DBMoudle::UpdateTodayPositionMock"
                 , "can't find table Position: ");
       
-     std::for_each( std::begin(iter->second), std::end(iter->second), [user_id, date, this](T_CodeMapPosition::reference entry)
+     std::for_each( std::begin(iter->second), std::end(iter->second), [&position_mock, user_id, date, this](T_CodeMapPosition::reference entry)
      { 
          std::string sql = utility::FormatStr("INSERT OR REPLACE INTO Position VALUES(%d, '%s', '%d', %.2f, %.2f)"
-             , user_id, entry.second.code, date, entry.second.avaliable, entry.second.total-entry.second.avaliable);
+             , user_id, entry.second.code, date, (float)entry.second.avaliable, float(entry.second.total-entry.second.avaliable));
          bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
+         /*if( ret && date > position_mock.last_position_date_ )
+             position_mock.last_position_date_ = date;*/
          return 0; 
      });
      return true;

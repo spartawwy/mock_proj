@@ -210,9 +210,8 @@ std::tuple<int, std::string> CurrentDateTime()
 
 }
 
-bool IsNowTradeTime()
-{
-	return true; //temp code
+bool IsNowTradeTime(bool *is_day_change)
+{ 
     static auto get_date = []()
     {
         time_t rawtime;
@@ -221,8 +220,7 @@ bool IsNowTradeTime()
 	    timeinfo = localtime( &rawtime ); // from 1900 year
         return timeinfo->tm_year * 10000 + timeinfo->tm_mon *100 + timeinfo->tm_mday;
     };
-     
-     
+      
     static int week_day = 0;  
     static int ori_day = 0;
     static time_t sec_beg = 0;
@@ -230,13 +228,21 @@ bool IsNowTradeTime()
     static time_t sec_rest_end = 0;
     static time_t sec_end = 0;
 
+    //return true; //temp code
+
     time_t rawtime = 0;
     struct tm * timeinfo = nullptr;
 	time( &rawtime );
 	
     auto cur_day = get_date();
+    if( is_day_change ) 
+        *is_day_change = false;
     if( ori_day != cur_day )
     {
+        if( is_day_change && ori_day != 0 )
+        {  
+            *is_day_change = true;
+        }
         ori_day = cur_day;
         
         timeinfo = localtime( &rawtime ); // from 1900 year

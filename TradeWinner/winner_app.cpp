@@ -10,6 +10,7 @@
 #include <array>
 
 #include <TLib/core/tsystem_utility_functions.h>
+#include <TLib/core/tsystem_time.h>
 
 #include "common.h"
 #include "db_moudle.h"
@@ -66,7 +67,6 @@ WinnerApp::WinnerApp(int argc, char* argv[])
 {   
 	connect(strategy_tasks_timer_.get(), SIGNAL(timeout()), this, SLOT(DoStrategyTasksTimeout()));
 	connect(normal_timer_.get(), SIGNAL(timeout()), this, SLOT(DoNormalTimer()));
-
 }
 
 WinnerApp::~WinnerApp()
@@ -98,14 +98,10 @@ bool WinnerApp::Init()
 		}
 		return false;
 	}
-    
-    auto checkp0 = db_moudle_.app();
+     
 	db_moudle_.Init();
-	  
-    auto checkp1 = login_win_.app();
-
-	login_win_.Init();
-    auto checkp2 = login_win_.app();
+	    
+	login_win_.Init(); 
 	ret = login_win_.exec(); 
 	if( ret != QDialog::Accepted )
 	{
@@ -151,7 +147,7 @@ bool WinnerApp::Init()
     
     position_mocker_ = std::make_shared<PositionMocker>(user_info_.id, &db_moudle_, &exchange_calendar_);
     db_moudle_.LoadPositionMock(*position_mocker_);
-    position_mocker_->UpdateToDb();
+    UpdatePositionMock();
 	//------------------------ create tasks ------------------
  
 	db_moudle_.LoadAllTaskInfo(task_infos_);
@@ -720,7 +716,13 @@ void WinnerApp::DoShowLongUi(std::string* str, bool flash_taskbar)
 
 void WinnerApp::DoNormalTimer()
 { 
-	ticker_enable_flag_ = IsNowTradeTime();
+    assert(position_mocker_);
+    bool is_date_change = false;
+	ticker_enable_flag_ = IsNowTradeTime(&is_date_change);
+    if( is_date_change )
+    {
+       UpdatePositionMock();
+    }
 
 	if( ticker_enable_flag_ )
 	{
@@ -971,4 +973,13 @@ std::vector<int> WinnerApp::GetSpanTradeDates(int date_begin, int date_end)
         }
     }
     return ret_days;
+}
+
+void WinnerApp::UpdatePositionMock()
+{
+    auto today = TSystem::Today();
+    if( exchange_calendar_.IsTradeDate(today) )
+        position_mocker_->DoEnterNewTradeDate(today);
+    else
+        position_mocker_->UnFreezePosition();
 }

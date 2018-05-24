@@ -14,23 +14,42 @@ PositionMocker::PositionMocker(int user_id, DBMoudle *db_moudle, ExchangeCalenda
 { 
 }
 
-// ps: make sure days_positions_ has loaded
-void PositionMocker::UpdateToDb()
+// ps: make sure days_positions_ has loaded 
+void PositionMocker::DoEnterNewTradeDate(int date)
 { 
-     auto cur_date = std::get<0>(CurrentDateTime());
-     if( !exchange_calendar_->IsTradeDate(cur_date) )
-         return;
-     auto today_iter = days_positions_.find(cur_date);
-     if( today_iter == days_positions_.end() )
+    assert(exchange_calendar_->IsTradeDate(date));
+    assert(date >= last_position_date_);
+     
+     auto iter = days_positions_.find(date);
+     if( iter == days_positions_.end() )
      {
-         //exchange_calendar_->PreTradeDate(last_position_date_) 
-         auto item = days_positions_.find(last_position_date_);
+         // create today 's position and save to db------------ 
+         /*if( last_position_date_ == 0 ) 
+             last_position_date_ = date;*/
+         auto item = days_positions_.find(last_position_date_ == 0 ? date : last_position_date_);
          if( item == days_positions_.end() ) 
-             today_iter = days_positions_.insert( std::make_pair(cur_date, T_CodeMapPosition(256)) ).first;
-         else
-             today_iter = days_positions_.insert( std::make_pair(cur_date, item->second) ).first;
+         {
+             iter = days_positions_.insert( std::make_pair(date, T_CodeMapPosition(256)) ).first;
+             T_PositionData pos;
+             strcpy_s(pos.code, sizeof(pos.code), CAPITAL_SYMBOL);
+             pos.total = CAPITAL_ORI_TOTAL;
+             pos.avaliable = CAPITAL_ORI_TOTAL;
+             iter->second.insert(std::make_pair(CAPITAL_SYMBOL, pos));
+         }else
+         { 
+            std::for_each( std::begin(item->second), std::end(item->second), [](T_CodeMapPosition::reference entry)
+            {
+                entry.second.avaliable = entry.second.total;
+            }); 
+            if( last_position_date_ != 0 && last_position_date_ != date )
+            { 
+                days_positions_.insert( std::make_pair(date, item->second) ).first;
+                db_moudle_->UpdatePositionMock(*this, last_position_date_, user_id_);
+            }
+         }
+         db_moudle_->UpdatePositionMock(*this, date, user_id_);
+         last_position_date_ = date;
      } 
-     db_moudle_->UpdatePositionMock(*this, cur_date, user_id_);
 }
 
 void PositionMocker::UpdatePosition(const std::string &code, double avaliable, double frozon)
@@ -38,4 +57,17 @@ void PositionMocker::UpdatePosition(const std::string &code, double avaliable, d
     auto date_time = CurrentDateTime();
     // if current position none get pre day position
 
+}
+
+void PositionMocker::UnFreezePosition()
+{
+    if( last_position_date_ == 0 )
+        return;
+    auto item = days_positions_.find(last_position_date_);
+    assert( item != days_positions_.end() );
+    std::for_each( std::begin(item->second), std::end(item->second), [](T_CodeMapPosition::reference entry)
+    {
+        entry.second.avaliable = entry.second.total;
+    }); 
+    db_moudle_->UpdatePositionMock(*this, last_position_date_, user_id_);
 }

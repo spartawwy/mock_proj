@@ -72,9 +72,7 @@ public:
     void LoadPositionMock(PositionMocker &position_mock);
     bool UpdatePositionMock(PositionMocker &position_mock, int date, int user_id);
     bool UpdateOneStockInPositionMock(PositionMocker &position_mock, const std::string &code, int date, int user_id);
-
-    WinnerApp *app() { return app_; } // tmp code for debug
-
+     
 private:
 
     DBMoudle(DBMoudle&);

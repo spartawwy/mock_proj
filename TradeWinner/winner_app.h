@@ -108,8 +108,6 @@ public:
 
     void AddPosition(const std::string& code, int pos);
     void SubAvaliablePosition(const std::string& code, int pos);
-
-	
      
     void AppendLog2Ui(const char *fmt, ...);
  
@@ -151,7 +149,10 @@ private:
 	 
     void StopAllStockTasks(); 
     void StopAllIndexRelTypeTasks(TindexTaskType type); 
-     
+    
+    // position mock relate
+    void UpdatePositionMock();
+
     TaskStrand  tick_strand_;
     TaskStrand  index_tick_strand_; 
     TaskStrand  trade_strand_;
@@ -205,7 +206,7 @@ private:
     
     ExchangeCalendar exchange_calendar_;
      
-
+    // position mock relate
     std::shared_ptr<PositionMocker>  position_mocker_;
      
     friend class IndexTask;

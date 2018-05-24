@@ -19,8 +19,9 @@ public:
 
     PositionMocker(int user_id, DBMoudle *db_moudle
         ,  ExchangeCalendar *exchange_calendar);
-    void UpdateToDb();
+    void DoEnterNewTradeDate(int date);
     void UpdatePosition(const std::string &code, double avaliable, double frozon);
+    void UnFreezePosition();
 
 private:
 
