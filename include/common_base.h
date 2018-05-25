@@ -40,17 +40,17 @@ class T_PositionData
 public:
 	char code[32];
 	char pinyin[32];
-	int total;
-	int avaliable;
+	double total;
+	double avaliable;
 	double cost;
 	double value;
 	double profit;
 	double profit_percent;
-    T_PositionData() : total(0), avaliable(0), cost(0.0), value(0.0), profit(0.0), profit_percent(0.0)
+    T_PositionData() : total(0.0), avaliable(0.0), cost(0.0), value(0.0), profit(0.0), profit_percent(0.0)
     { 
         code[0] = '\0'; pinyin[0] = '\0';
     }
-	T_PositionData(const T_PositionData &lh) : total(lh.total),avaliable(lh.avaliable), cost(lh.cost), value(lh.value), profit(lh.profit), profit_percent(lh.profit_percent)
+	T_PositionData(const T_PositionData &lh) : total(lh.total), avaliable(lh.avaliable), cost(lh.cost), value(lh.value), profit(lh.profit), profit_percent(lh.profit_percent)
     {
         strcpy_s(code, lh.code); strcpy_s(pinyin, lh.pinyin); 
     }
@@ -67,6 +67,9 @@ public:
         profit_percent = lh.profit_percent; 
         return *this;
     }
+
+    void SetCode(const std::string& str) { strcpy_s(code, sizeof(code), str.c_str()); }
+    void SetPinyin(const std::string& str) { strcpy_s(pinyin, sizeof(pinyin), str.c_str()); }
 	/*T_PositionData(const T_PositionData &&lh) : total(lh.total),avaliable(lh.avaliable), cost(lh.cost), value(lh.value), profit(lh.profit), profit_percent(lh.profit_percent)
     { 
     }*/

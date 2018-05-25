@@ -998,11 +998,11 @@ void DBMoudle::LoadPositionMock(PositionMocker &position_mock)
     auto date_time = CurrentDateTime();
     //// if current position none get pre day position
     std::string sql = utility::FormatStr("SELECT date, code, avaliable, frozen FROM Position WHERE user_id=%d ORDER BY date ", USER_ID_TEST);
-
-    db_conn_->ExecuteSQL(sql.c_str(), [&position_mock, this](int cols, char **vals, char **names)
+    auto target_iter = position_mock.days_positions_.end();
+    db_conn_->ExecuteSQL(sql.c_str(), [&position_mock, &target_iter, this](int cols, char **vals, char **names)
     {
         position_mock.last_position_date_ = boost::lexical_cast<int>(*vals);
-        auto target_iter = position_mock.days_positions_.find(position_mock.last_position_date_);
+        target_iter = position_mock.days_positions_.find(position_mock.last_position_date_);
         if( target_iter == position_mock.days_positions_.end() )
             target_iter = position_mock.days_positions_.insert(std::make_pair(position_mock.last_position_date_, T_CodeMapPosition())).first;
          
@@ -1014,6 +1014,16 @@ void DBMoudle::LoadPositionMock(PositionMocker &position_mock)
 
         return 0;
     });
+    if( target_iter != position_mock.days_positions_.end() ) 
+    {
+        if( target_iter->second.find(CAPITAL_SYMBOL) == target_iter->second.end() )
+        {
+            app_->local_logger().LogLocal( utility::FormatStr("error: can't find %s of date %d in db", CAPITAL_SYMBOL, position_mock.last_position_date_));
+            ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
+                , "DBMoudle::LoadPositionMock"
+                , "can't find CNY position: ");
+        }
+    }
 }
 
 bool DBMoudle::UpdatePositionMock(PositionMocker &position_mock, int date, int user_id)

@@ -170,8 +170,9 @@ bool WinnerApp::Init()
 	if( !index_ticker_->Init() )
 		return false;
 	TaskFactory::CreateAllTasks(task_infos_, strategy_tasks_, this);
-
+#ifndef USE_MOCK_FLAG
 	QueryPosition();
+#endif
     ticker_enable_flag_ = IsNowTradeTime(); 
 
 	//-----------ticker main loop----------
@@ -396,7 +397,7 @@ T_CodeMapPosition WinnerApp::QueryPosition()
 { 
     //db_moudle_.GetStockCode(); // todo:
 
-#if 0
+#ifndef USE_MOCK_FLAG
 	auto result = std::make_shared<Buffer>(5*1024);
 
 	char error[1024] = {0};
@@ -465,6 +466,7 @@ T_CodeMapPosition WinnerApp::QueryPosition()
 
 T_PositionData* WinnerApp::QueryPosition(const std::string& code)
 {
+#ifndef USE_MOCK_FLAG
 	QueryPosition();
 	std::lock_guard<std::mutex>  locker(stocks_position_mutex_);
 	auto iter = stocks_position_.find(code);
@@ -473,30 +475,46 @@ T_PositionData* WinnerApp::QueryPosition(const std::string& code)
 		return nullptr;
 	}
 	return std::addressof(iter->second);
+#else
+    return position_mocker_->ReadPosition(TSystem::Today(), code);
+#endif
 }
 
 int WinnerApp::QueryPosAvaliable_LazyMode(const std::string& code) 
 {
+#ifndef USE_MOCK_FLAG
 	std::lock_guard<std::mutex>  locker(stocks_position_mutex_);
 	auto iter = stocks_position_.find(code);
 	if( iter == stocks_position_.end() )
 		return 0;
 
-	return iter->second.avaliable;
+	return (int)iter->second.avaliable;
+#else
+    auto pos =  position_mocker_->ReadPosition(TSystem::Today(), code);
+    if( pos )
+        return pos->avaliable;
+    else
+        return 0;
+#endif
 }
 
 T_PositionData* WinnerApp::QueryPosition_LazyMode(const std::string& code)
 {
+#ifndef USE_MOCK_FLAG
 	std::lock_guard<std::mutex>  locker(stocks_position_mutex_);
 	auto iter = stocks_position_.find(code);
 	if( iter == stocks_position_.end() )
 		return nullptr;
-
-	return std::addressof(iter->second);
+    return std::addressof(iter->second);
+#else
+    return position_mocker_->ReadPosition(TSystem::Today(), code);
+#endif
+	
 }
 
 void WinnerApp::AddPosition(const std::string& code, int pos)
 {
+#ifndef USE_MOCK_FLAG
 	std::lock_guard<std::mutex>  locker(stocks_position_mutex_);
 	auto iter = stocks_position_.find(code);
 	if( iter == stocks_position_.end() )
@@ -509,11 +527,15 @@ void WinnerApp::AddPosition(const std::string& code, int pos)
 	{
 		iter->second.total += pos;
 	}
+#else
+    position_mocker_->AddTotalPosition(TSystem::Today(), code, (double)pos, true);
+#endif
 }
 
 // sub avaliable position
 void WinnerApp::SubAvaliablePosition(const std::string& code, int pos)
 {
+#ifndef USE_MOCK_FLAG
 	assert( pos > 0 );
 	std::lock_guard<std::mutex>  locker(stocks_position_mutex_);
 	auto iter = stocks_position_.find(code);
@@ -531,12 +553,16 @@ void WinnerApp::SubAvaliablePosition(const std::string& code, int pos)
 			iter->second.total -= pos;
 		}
 	}
+#else 
+    position_mocker_->SubAvaliablePosition(TSystem::Today(), code, (double)pos);
+#endif
 }
 
 T_Capital WinnerApp::QueryCapital()
 {
 	T_Capital capital;
 
+#ifndef USE_MOCK_FLAG
 	auto result = std::make_shared<Buffer>(5*1024);
 
 	char error[1024] = {0};
@@ -570,7 +596,9 @@ T_Capital WinnerApp::QueryCapital()
 	}catch(boost::exception &e)
 	{ 
 	}
+#else
 
+#endif
 	return capital;
 }
 

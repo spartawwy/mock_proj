@@ -208,7 +208,8 @@ private:
      
     // position mock relate
     std::shared_ptr<PositionMocker>  position_mocker_;
-     
+    //std::mutex  stocks_position_mutex_;
+
     friend class IndexTask;
 };
 #endif
