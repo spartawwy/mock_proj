@@ -4,8 +4,10 @@
 #include <qmessagebox.h>
 
 #include <TLib/core/tsystem_utility_functions.h>
+#include <TLib/core/tsystem_time.h>
 
-
+#include "db_moudle.h"
+#include "position_mocker.h"
 
 TradeAgent::TradeAgent()
     :/* app_(app)
@@ -25,6 +27,10 @@ TradeAgent::TradeAgent()
      , SendOrders(nullptr)
      , CancelOrders(nullptr)
      //, GetQuotes(nullptr) 
+#else
+     , position_mocker_(nullptr)
+     , p_db_moudle_(nullptr)
+     , user_id_(0)
 #endif
 {
     memset(&account_data_, 0, sizeof(account_data_));
@@ -96,6 +102,7 @@ bool TradeAgent::IsInited() const
 
 void TradeAgent::SetupAccountInfo( char*str)
 {
+#ifndef USE_MOCK_FLAG
     std::string result_str(str);
     TSystem::utility::replace_all_distinct(result_str, "\n", "\t");
 
@@ -159,11 +166,13 @@ void TradeAgent::SetupAccountInfo( char*str)
         strcpy(account_data_[i].rzrq_tag, result_array.at(start_index + rzrq_tag_index + n * sec_num).c_str());
         ++i;
     }
+#endif
 }
-
+ 
 const T_AccountData * TradeAgent::account_data(TypeMarket type_market) const
 {
     T_AccountData* p_account = nullptr;
+#ifndef USE_MOCK_FLAG
     for(int i=0; i < sizeof(account_data_)/sizeof(account_data_[0]); ++i)
     {
         if( account_data_[i].type == type_market )
@@ -171,8 +180,56 @@ const T_AccountData * TradeAgent::account_data(TypeMarket type_market) const
             return &account_data_[i];
         }
     }
+#else
+     return &account_data_[0];
+#endif
     return p_account;
 }
+
+#ifdef USE_MOCK_FLAG
+// ps: have to called in trade strand
+void TradeAgent::SendOrder(int ClientID, int Category, int PriceType, char* /*Gddm*/, char* Zqdm, float Price, int Quantity, char* Result, char* ErrInfo)
+{
+    assert(p_db_moudle_);
+    assert(Zqdm && strlen(Zqdm) > 0);
+    if( Category == (int)TypeOrderCategory::BUY )
+    {
+        auto fee = CaculateFee(Price * Quantity, true);
+        auto cost = Price * Quantity + fee;
+        auto capital_pos = position_mocker_->ReadPosition(TSystem::Today(), CAPITAL_SYMBOL);
+        assert(capital_pos);
+        if( capital_pos->avaliable < cost )
+        {
+            strcpy(ErrInfo, "capital not enough!");
+            return;
+        }
+        capital_pos->avaliable -= cost;
+        capital_pos->total -= cost;
+        position_mocker_->AddTotalPosition(TSystem::Today(), Zqdm, Quantity, true);
+        
+    }else // sell 
+    {
+        auto p_pos_mocked = position_mocker_->ReadPosition(TSystem::Today(), Zqdm);
+        assert(p_pos_mocked);
+        if( p_pos_mocked->avaliable < Quantity )
+        {
+            strcpy(ErrInfo, "stock avaliable not enough!");
+            return;
+        }
+        p_pos_mocked->avaliable -= Quantity;
+        p_pos_mocked->total -= Quantity;
+         
+        auto capital_pos = position_mocker_->ReadPosition(TSystem::Today(), CAPITAL_SYMBOL);
+        assert(capital_pos);
+        auto fee = CaculateFee(Price * Quantity, false); 
+        capital_pos->avaliable += Price * Quantity - fee;
+        capital_pos->total += capital_pos->avaliable;
+    }
+    // save to db
+    p_db_moudle_->UpdateOneStockInPositionMock(*position_mocker_, Zqdm, TSystem::Today(), user_id_);
+    p_db_moudle_->UpdateOneStockInPositionMock(*position_mocker_, CAPITAL_SYMBOL, TSystem::Today(), user_id_);
+}
+#endif
 
 void TradeAgent::FreeDynamic()
 {

@@ -86,7 +86,12 @@ void PositionMocker::UnFreezePosition()
 T_PositionData * PositionMocker::ReadPosition(int date, const std::string& code)
 { 
     ReadLock locker(pos_mock_mutex_);
-    auto iter = days_positions_.find(date);
+    if( date < 19900000 || date > 20600000 )
+        return nullptr;
+    int target_date = date;
+    if( !exchange_calendar_->IsTradeDate(date) )
+        target_date = exchange_calendar_->PreTradeDate(date, 1);
+    auto iter = days_positions_.find(target_date);
     if( iter != days_positions_.end() )
     {
         auto item = iter->second.find(code);
@@ -94,6 +99,30 @@ T_PositionData * PositionMocker::ReadPosition(int date, const std::string& code)
             return std::addressof(item->second);
     }
     return nullptr;
+}
+
+T_CodeMapPosition PositionMocker::ReadAllStockPosition(int date)
+{
+    //std::vector<T_PositionData *>  ret_vector; 
+    ReadLock locker(pos_mock_mutex_);
+    if( date < 19900000 || date > 20600000 )
+        return T_CodeMapPosition();
+    int target_date = date;
+    if( !exchange_calendar_->IsTradeDate(date) )
+        target_date = exchange_calendar_->PreTradeDate(date, 1);
+    auto iter = days_positions_.find(target_date);
+    if( iter != days_positions_.end() )
+    { 
+        auto capital_pos_iter = iter->second.find(CAPITAL_SYMBOL);
+        if( capital_pos_iter != iter->second.end() )
+        {
+            T_CodeMapPosition target = iter->second; 
+            target.erase(CAPITAL_SYMBOL);
+            return target;
+        }else
+            return iter->second; 
+    }
+    return T_CodeMapPosition();
 }
 
 void PositionMocker::AddTotalPosition(int date, const std::string& code, double val, bool is_freeze)
@@ -131,4 +160,5 @@ bool PositionMocker::SubAvaliablePosition(int date, const std::string& code, dou
         return false;
     item->second.avaliable -= val;
     item->second.total -= val; 
+    return true;
 }

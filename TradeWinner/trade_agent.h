@@ -6,7 +6,8 @@
 
 #include "common.h"
 class WinnerApp; 
-
+class PositionMocker;
+class DBMoudle;
 class TradeAgent
 {
 public:
@@ -28,9 +29,16 @@ public:
     void Logon(int ClientID){}
     void Logoff(int ClientID){}
     void QueryData(int ClientID, int Category, char* Result, char* ErrInfo){ return; }
-    void SendOrder(int ClientID, int Category, int PriceType, char* Gddm, char* Zqdm, float Price, int Quantity, char* Result, char* ErrInfo){}
+    void SendOrder(int ClientID, int Category, int PriceType, char* Gddm, char* Zqdm, float Price, int Quantity, char* Result, char* ErrInfo);
     void CancelOrder(int ClientID, char* ExchangeID, char* hth, char* Result, char* ErrInfo){}
 
+    void Init(int user_id, DBMoudle *db_moudle, std::shared_ptr<PositionMocker> &position_mocker)
+    {
+        user_id_ = user_id;
+        p_db_moudle_ = db_moudle;
+        position_mocker_ = position_mocker;
+    }
+     
 #else
      OpenTdxDelegate OpenTdx; 
 	 CloseTdxDelegate CloseTdx;
@@ -58,10 +66,13 @@ private:
      WinnerApp *app_;
      HINSTANCE TdxApiHMODULE;
      int client_id_;
-
       
-
      T_AccountData  account_data_[2];
      TypeBroker  broker_type_;
+#ifdef USE_MOCK_FLAG
+     std::shared_ptr<PositionMocker> position_mocker_;
+     DBMoudle *p_db_moudle_;
+     int user_id_;
+#endif
 };
 #endif

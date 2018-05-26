@@ -370,19 +370,27 @@ BEFORE_TRADE:
                     judge_any_pos2buy(iter->cur_price, cur_index, qty_can_buy, true);
                 else 
                     judge_any_pos2sell(iter->cur_price, cur_index, avaliable_pos, true);
-                // reset -----
-                
-               /* reb_bottom_price_ = MAX_STOCK_PRICE;
-                reb_top_price_ = MIN_STOCK_PRICE;
-                
-                reb_base_price_ = price; */
+                // reset ----- 
                 reset_flag_price(price);
                 is_not_enough_capital_continue_ = 0;
 
-                // todo: translate portions state into para.advancesection.portion_states 
-                // todo: save to db: save cur_price as start_price in assistant_field 
-                //if( !is_back_test_ )
-                //    app_->db_moudle().UpdateEqualSection(para_.id, para_.secton_task.is_original, iter->cur_price);
+                // translate portions state into para.advancesection.portion_states 
+                para_.advance_section_task.portion_states.clear(); 
+                for(auto item: this->portions_)
+                {
+                    switch( item.state() )
+                    {
+                    case PortionState::WAIT_BUY: para_.advance_section_task.portion_states.append(std::to_string(int(PortionState::WAIT_BUY)));break;
+                    case PortionState::WAIT_SELL: para_.advance_section_task.portion_states.append(std::to_string(int(PortionState::WAIT_SELL)));break;
+                    case PortionState::UNKNOW: para_.advance_section_task.portion_states.append(std::to_string(int(PortionState::UNKNOW)));break;
+                    default: assert(false); break;
+                    }
+                }
+                para_.advance_section_task.pre_trade_price = price;
+                para_.advance_section_task.is_original = false;
+
+                // save to db: save cur_price as start_price in assistant_field 
+                app_->db_moudle().UpdateAdvanceSection(para_);
 
             }else
             {

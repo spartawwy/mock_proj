@@ -28,6 +28,7 @@ public:
     void UnFreezePosition();
 
     T_PositionData * ReadPosition(int date, const std::string& code);
+    T_CodeMapPosition ReadAllStockPosition(int date);
     void AddTotalPosition(int date, const std::string& code, double val, bool is_freeze);
     bool SubAvaliablePosition(int date, const std::string& code, double val);
 

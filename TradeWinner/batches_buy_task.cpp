@@ -103,13 +103,7 @@ void BatchesBuyTask::HandleQuoteData()
         this->app_->RemoveTask(this->task_id(), TypeTask::BATCHES_BUY);
         return;
     }
-     
-
-    /*if( is_wait_trade_result_ )
-    {
-        app_->local_logger().LogLocal(TagOfCurTask(), "BatchesBuyTask::HandleQuoteData wait trade result!");
-        return;
-    }*/
+      
     if( continue_trade_fail_count_ >= 3 )
     {
         if( ++trade_fail_ctr_count_ % 60 != 0 )

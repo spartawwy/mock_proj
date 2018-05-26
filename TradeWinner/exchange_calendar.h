@@ -21,17 +21,19 @@ public:
     ExchangeCalendar();
 
     bool IsTradeDate(int date);
-    int PreTradeDate(unsigned int n);
+    int PreTradeDate(int date, unsigned int n);
 
     // return: yyyymmdd
     int TodayAddDays(int days=0);
+    int DateAddDays(int date, int days);
 
 private:
 
     std::shared_ptr<T_DateMapIsopen> trade_dates_;
 
     //std::vector<T_CalendarDate>  calendar_date_;
-
+    int min_trade_date_;
+    int max_trade_date_;
     friend class DBMoudle;
 };
 

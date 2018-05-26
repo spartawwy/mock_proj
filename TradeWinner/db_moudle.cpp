@@ -394,8 +394,9 @@ void DBMoudle::LoadTradeDate(void *exchange_calendar)
                 , "DBMoudle::LoadTradeDate"
                 , "can't find table ExchangeDate ");
      
-    std::string sql = "SELECT date FROM ExchangeDate WHERE is_tradeday = 1 ORDER BY date";
+    std::string sql = "SELECT date FROM ExchangeDate WHERE is_tradeday = 1 ORDER BY date ";
     int num = 0;
+    ((ExchangeCalendar*)exchange_calendar)->min_trade_date_ = 0;
     exchange_db_conn_->ExecuteSQL(sql.c_str(),[&num, &exchange_calendar, this](int num_cols, char** vals, char** names)->int
     { 
         try
@@ -403,6 +404,11 @@ void DBMoudle::LoadTradeDate(void *exchange_calendar)
             ++num;
             int date =  boost::lexical_cast<int>(*(vals)); 
             ((ExchangeCalendar*)exchange_calendar)->trade_dates_->insert(std::make_pair(date, true));
+
+            if( ((ExchangeCalendar*)exchange_calendar)->min_trade_date_ == 0 )
+                ((ExchangeCalendar*)exchange_calendar)->min_trade_date_ = date;
+
+            ((ExchangeCalendar*)exchange_calendar)->max_trade_date_ = date;
          }catch(boost::exception& )
         {
             return 0;
@@ -778,6 +784,25 @@ void DBMoudle::UpdateEqualSection(int taskid, bool is_original, double start_pri
 	}
 }
 
+
+void DBMoudle::UpdateAdvanceSection(T_TaskInformation &info)
+{
+    if( !db_conn_ )
+    {
+        Open(db_conn_, db_file_path);
+    } 
+    std::string sql = utility::FormatStr("UPDATE AdvanceSectionTask SET portion_sections='%s', portion_states='%s', pre_trade_price=%.2f, is_original=%d WHERE id=%d "
+        , info.advance_section_task.portion_sections.c_str(), info.advance_section_task.portion_states.c_str()
+        , info.advance_section_task.pre_trade_price, (int)info.advance_section_task.is_original, info.id); 
+    {
+        WriteLock locker(equalsection_table_mutex_);
+        db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
+        { 
+            return 0;
+        });
+    }
+}
+
 bool DBMoudle::AddHisTask(std::shared_ptr<T_TaskInformation>& info)
 {
     std::tuple<int, std::string> date_time = CurrentDateTime();
@@ -1054,7 +1079,7 @@ bool DBMoudle::UpdatePositionMock(PositionMocker &position_mock, int date, int u
 bool DBMoudle::UpdateOneStockInPositionMock(PositionMocker &position_mock, const std::string &code, int date, int user_id)
 {
     assert(db_conn_); 
-
+    assert(!code.empty());
     auto iter = position_mock.days_positions_.find(date);
     if( iter == position_mock.days_positions_.end() )
         return false;

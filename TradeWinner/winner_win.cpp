@@ -347,8 +347,9 @@ void WinnerWin::DoQueryCapital()
     ui.pte_capital->appendPlainText(QString::fromLocal8Bit("股票: \t\t总数\t可用\t浮动盈亏\t盈亏比例\n"));
     std::for_each(std::begin(pos_map), std::end(pos_map), [this]( std::unordered_map<std::string, T_PositionData>::reference entry)
     {  
+        auto code_name = QTextCodec::codecForName( "utf-8" )->toUnicode(app_->db_moudle().GetStockName(entry.first).c_str());
         auto str = QString::fromLocal8Bit(
-            utility::FormatStr("%s\t%s\t%d\t%d\t%.2f\t%.2f\n", entry.first.c_str(), app_->db_moudle().GetStockName(entry.first).c_str()
+            utility::FormatStr("%s\t %s\t %.2f\t %.2f\t %.2f\t %.2f\n", entry.first.c_str(), code_name.toLocal8Bit().data()
                 , entry.second.total, entry.second.avaliable, entry.second.profit, entry.second.profit_percent).c_str()  );
         qDebug() << str << " -------\n";
         ui.pte_capital->appendPlainText(str);

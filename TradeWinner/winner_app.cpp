@@ -148,6 +148,7 @@ bool WinnerApp::Init()
     position_mocker_ = std::make_shared<PositionMocker>(user_info_.id, &db_moudle_, &exchange_calendar_);
     db_moudle_.LoadPositionMock(*position_mocker_);
     UpdatePositionMock();
+    trade_agent_.Init(user_info_.id, &db_moudle_, position_mocker_);
 	//------------------------ create tasks ------------------
  
 	db_moudle_.LoadAllTaskInfo(task_infos_);
@@ -460,8 +461,11 @@ T_CodeMapPosition WinnerApp::QueryPosition()
 				iter->second = pos_data;
 		}
 	} 
+    return stocks_position_;
+#else
+    return position_mocker_->ReadAllStockPosition(TSystem::Today());
 #endif 
-	return stocks_position_;
+	
 }
 
 T_PositionData* WinnerApp::QueryPosition(const std::string& code)
@@ -490,6 +494,7 @@ int WinnerApp::QueryPosAvaliable_LazyMode(const std::string& code)
 
 	return (int)iter->second.avaliable;
 #else
+    assert(position_mocker_);
     auto pos =  position_mocker_->ReadPosition(TSystem::Today(), code);
     if( pos )
         return pos->avaliable;
@@ -507,6 +512,7 @@ T_PositionData* WinnerApp::QueryPosition_LazyMode(const std::string& code)
 		return nullptr;
     return std::addressof(iter->second);
 #else
+    assert(position_mocker_);
     return position_mocker_->ReadPosition(TSystem::Today(), code);
 #endif
 	
@@ -528,6 +534,7 @@ void WinnerApp::AddPosition(const std::string& code, int pos)
 		iter->second.total += pos;
 	}
 #else
+    assert(position_mocker_);
     position_mocker_->AddTotalPosition(TSystem::Today(), code, (double)pos, true);
 #endif
 }
@@ -554,6 +561,7 @@ void WinnerApp::SubAvaliablePosition(const std::string& code, int pos)
 		}
 	}
 #else 
+    assert(position_mocker_);
     position_mocker_->SubAvaliablePosition(TSystem::Today(), code, (double)pos);
 #endif
 }
@@ -597,7 +605,14 @@ T_Capital WinnerApp::QueryCapital()
 	{ 
 	}
 #else
-
+    assert(position_mocker_);
+    auto p_capital_pos = position_mocker_->ReadPosition(TSystem::Today(), CAPITAL_SYMBOL);
+    if( p_capital_pos )
+    {
+        capital.total = p_capital_pos->total;
+        capital.available = p_capital_pos->avaliable;
+        capital.remain = capital.available; // need check
+    }
 #endif
 	return capital;
 }
