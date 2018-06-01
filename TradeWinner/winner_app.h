@@ -136,6 +136,7 @@ signals:
 public slots:
 
     void SlotStopAllTasks(bool);    
+    void SlotResetMockSys(bool);
 
 private slots:
 

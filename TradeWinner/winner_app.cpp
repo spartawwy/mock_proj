@@ -658,6 +658,11 @@ void WinnerApp::SlotStopAllTasks(bool)
 
 }
 
+void WinnerApp::SlotResetMockSys(bool)
+{
+    // todo: reset mock system
+}
+
 void WinnerApp::DoStrategyTasksTimeout()
 {
     static auto is_in_task_time = [](const QTime &current, const QTime &start, const QTime &end) ->bool

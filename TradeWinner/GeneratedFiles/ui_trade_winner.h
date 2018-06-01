@@ -46,6 +46,8 @@ public:
     QAction *actionStopAllTask;
     QAction *actionOpenCalcWin;
     QAction *actionAbout;
+    QAction *actionAaa;
+    QAction *actionResetMockSys;
     QWidget *centralWidget;
     QTabWidget *tabwid_holder;
     QWidget *tab_task_list;
@@ -298,6 +300,10 @@ public:
         actionOpenCalcWin->setObjectName(QStringLiteral("actionOpenCalcWin"));
         actionAbout = new QAction(TradeWinnerClass);
         actionAbout->setObjectName(QStringLiteral("actionAbout"));
+        actionAaa = new QAction(TradeWinnerClass);
+        actionAaa->setObjectName(QStringLiteral("actionAaa"));
+        actionResetMockSys = new QAction(TradeWinnerClass);
+        actionResetMockSys->setObjectName(QStringLiteral("actionResetMockSys"));
         centralWidget = new QWidget(TradeWinnerClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         tabwid_holder = new QTabWidget(centralWidget);
@@ -1328,11 +1334,12 @@ public:
         menu_system->addAction(actionRestart);
         menu_help->addAction(actionAbout);
         menu_operate->addAction(actionStopAllTask);
+        menu_operate->addAction(actionResetMockSys);
         tool_menu->addAction(actionOpenCalcWin);
 
         retranslateUi(TradeWinnerClass);
 
-        tabwid_holder->setCurrentIndex(8);
+        tabwid_holder->setCurrentIndex(7);
 
 
         QMetaObject::connectSlotsByName(TradeWinnerClass);
@@ -1346,6 +1353,8 @@ public:
         actionStopAllTask->setText(QApplication::translate("TradeWinnerClass", "\345\201\234\346\255\242\346\211\200\346\234\211\344\273\273\345\212\241", 0));
         actionOpenCalcWin->setText(QApplication::translate("TradeWinnerClass", "\350\256\241\347\256\227\345\231\250", 0));
         actionAbout->setText(QApplication::translate("TradeWinnerClass", "\345\205\263\344\272\216\346\234\254\350\275\257\344\273\266", 0));
+        actionAaa->setText(QApplication::translate("TradeWinnerClass", "aaa", 0));
+        actionResetMockSys->setText(QApplication::translate("TradeWinnerClass", "\351\207\215\347\275\256\346\250\241\346\213\237\347\263\273\347\273\237", 0));
         tabwid_holder->setTabText(tabwid_holder->indexOf(tab_task_list), QApplication::translate("TradeWinnerClass", "\344\273\273\345\212\241\345\210\227\350\241\250", 0));
         label_buytask_alert_price->setText(QApplication::translate("TradeWinnerClass", "\350\202\241\347\245\250\344\275\216\344\272\216:", 0));
         label_buytask_stock->setText(QApplication::translate("TradeWinnerClass", "\350\202\241\347\245\250\344\273\243\347\240\201:", 0));

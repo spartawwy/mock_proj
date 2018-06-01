@@ -6,7 +6,7 @@
     <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b$(PATH)</LocalDebuggerEnvironment>
     <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommand>E:\Dev_wwy\StockTrader\src\mock_proj\build\Win32\Release\$(ProjectName).exe</LocalDebuggerCommand>
+    <LocalDebuggerCommand>$(OutDir)\$(ProjectName).exe</LocalDebuggerCommand>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <QTDIR>C:\Qt32\Qt5.2.1\5.2.1\msvc2012</QTDIR>
