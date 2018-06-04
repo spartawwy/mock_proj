@@ -574,6 +574,7 @@ BEFORE_TRADE:
                 {
                     DO_LOG(TagOfCurTask(), utility::FormatStr("DB UpdateEqualSection %d price:%.2f", para_.id, iter->cur_price));
                     app_->db_moudle().UpdateEqualSection(para_.id, para_.secton_task.is_original, iter->cur_price);
+                    AddFill2DB(price, qty, order_type == TypeOrderCategory::BUY);
                 }
                 app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ unlock");
                 this->timed_mutex_wrapper_.unlock();
@@ -589,6 +590,7 @@ BEFORE_TRADE:
 
                 if( !is_back_test_ )
                 {
+                    AddFill2DB(price, qty, order_type == TypeOrderCategory::BUY);
                     this->app_->EmitSigShowUi(ret_str);
                     this->app_->RemoveTask(this->task_id(), TypeTask::EQUAL_SECTION); // invoker delete self
                 }else

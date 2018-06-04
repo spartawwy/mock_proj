@@ -203,6 +203,27 @@ int StrategyTask::GetAvaliablePosition()
     }
 }
 
+void StrategyTask::AddFill2DB(double price, double qty, bool is_buy)
+{
+    T_FillItem fill_item;
+    fill_item.user_id = app_->user_info().id;
+    auto date_time = CurrentDateIntTime();
+
+    if( !app()->exchange_calendar().IsTradeDate(std::get<0>(date_time)) )
+        fill_item.date = app()->exchange_calendar().NextTradeDate(std::get<0>(date_time), 1);
+    else
+        fill_item.date = std::get<0>(date_time);
+    fill_item.time_stamp = std::get<1>(date_time);
+    fill_item.stock = para_.stock;
+    fill_item.pinyin = para_.stock_pinyin;
+    fill_item.price = price;
+    fill_item.quantity = qty;
+    fill_item.is_buy = is_buy;
+    fill_item.amount = price * qty;
+    fill_item.fee = CaculateFee(price * qty, is_buy);
+    app_->db_moudle().AddFillRecord(fill_item);
+}
+
 void StrategyTask::ShowError(const std::string &msg)
 {
     auto p_str = new std::string(msg);

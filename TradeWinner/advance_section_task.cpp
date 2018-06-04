@@ -388,9 +388,12 @@ BEFORE_TRADE:
                 }
                 para_.advance_section_task.pre_trade_price = price;
                 para_.advance_section_task.is_original = false;
-
-                // save to db: save cur_price as start_price in assistant_field 
-                app_->db_moudle().UpdateAdvanceSection(para_);
+                if( !is_back_test_ )
+                {
+                    // save to db: save cur_price as start_price in assistant_field 
+                    app_->db_moudle().UpdateAdvanceSection(para_);
+                    AddFill2DB(price, qty, order_type == TypeOrderCategory::BUY);
+                } 
 
             }else
             {

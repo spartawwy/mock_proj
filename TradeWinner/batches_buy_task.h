@@ -10,7 +10,7 @@ public:
      
     BatchesBuyTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *mock_para=nullptr);
 
-    virtual ~BatchesBuyTask(){}
+    virtual ~BatchesBuyTask();
     virtual void HandleQuoteData() override;
 
     __int64 time_point_open_warning_; // if val is 0, means not in warning

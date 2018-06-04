@@ -22,6 +22,7 @@ public:
 
     bool IsTradeDate(int date);
     int PreTradeDate(int date, unsigned int n);
+    int NextTradeDate(int date, unsigned int n);
 
     // return: yyyymmdd
     int TodayAddDays(int days=0);

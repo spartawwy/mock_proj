@@ -23,6 +23,7 @@ public:
 
     PositionMocker(int user_id, DBMoudle *db_moudle, ExchangeCalendar *exchange_calendar);
 
+    void Reset();
     void DoEnterNewTradeDate(int date);
     void UpdatePosition(const std::string &code, double avaliable, double frozon);
     void UnFreezePosition();
@@ -31,8 +32,9 @@ public:
     T_CodeMapPosition ReadAllStockPosition(int date);
     void AddTotalPosition(int date, const std::string& code, double val, bool is_freeze);
     bool SubAvaliablePosition(int date, const std::string& code, double val);
+     
+    ExchangeCalendar & exchange_calendar() { return *exchange_calendar_; }
 
-    
 private:
 
     int user_id_;

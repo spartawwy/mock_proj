@@ -93,6 +93,7 @@ protected:
    int HandleSellByStockPosition(double price, bool remove_task = true);
    int GetTototalPosition();
    int GetAvaliablePosition();
+   void AddFill2DB(double price, double qty, bool is_buy);
    void ShowError(const std::string &msg);
 
    WinnerApp  *app_;
@@ -108,7 +109,7 @@ protected:
    double  cur_price_;
    
    volatile TaskCurrentState cur_state_;
-   bool is_waitting_removed_; 
+   volatile bool is_waitting_removed_; 
 
    TSystem::TaskStrand   strand_;
      

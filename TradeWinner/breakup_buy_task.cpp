@@ -64,6 +64,7 @@ void BreakUpBuyTask::HandleQuoteData()
                 {
                     auto ret_str = new std::string(utility::FormatStr("执行任务:%d 突破买入 %s %.2f %d 成功!", para_.id, para_.stock.c_str(), price, para_.quantity));
                     this->app_->EmitSigShowUi(ret_str, true);
+                    AddFill2DB(price, para_.quantity, true);
                 }
                  
                 this->app_->RemoveTask(this->task_id(), TypeTask::BREAKUP_BUY);

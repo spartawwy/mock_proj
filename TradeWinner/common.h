@@ -382,6 +382,28 @@ typedef struct _t_position_item
     double frozen;
 }T_PositionItem;
 
+class T_FillItem
+{
+public: 
+    int user_id;
+    int date;
+    int time_stamp;
+    std::string stock;
+    std::string pinyin;
+    bool is_buy;
+    double price;
+    double quantity;
+    double amount;
+    double fee;
+    T_FillItem() : user_id(0), date(0), time_stamp(0), is_buy(false), price(0.0), quantity(0.0), amount(0.0), fee(0.0)
+    { 
+    }
+    T_FillItem(const T_FillItem &lh) : user_id(lh.user_id), date(lh.date), time_stamp(lh.time_stamp)
+        , stock(lh.stock), pinyin(lh.pinyin), is_buy(lh.is_buy), price(lh.price), quantity(lh.quantity), amount(lh.amount), fee(lh.fee)
+    {  
+    }
+};
+
 //struct T_StockPosition
 //{
 //    std::string  code;
@@ -416,6 +438,7 @@ std::string TagOfOrderLog();
 
 
 std::tuple<int, std::string> CurrentDateTime();
+std::tuple<int, int> CurrentDateIntTime();
 bool IsNowTradeTime(bool *is_day_change = nullptr);
 std::string DateTimeString(time_t t_val);
 

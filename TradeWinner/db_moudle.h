@@ -71,9 +71,14 @@ public:
 
     //void LoadExchangeCalendar(ExchangeCalendar * calendar);
     void LoadPositionMock(PositionMocker &position_mock);
-    bool UpdatePositionMock(PositionMocker &position_mock, int date, int user_id);
-    bool UpdateOneStockInPositionMock(PositionMocker &position_mock, const std::string &code, int date, int user_id);
-     
+    void UpdatePositionMock(PositionMocker &position_mock, int date, int user_id);
+    void UpdateOnePositionMock(PositionMocker &position_mock, const std::string &code, int date, int user_id);
+    void AddOnePositionMock(PositionMocker &position_mock, const std::string &code, int date, int user_id);
+    void ResetPositionMock(int user_id);
+
+    void AddFillRecord(T_FillItem& fill_item);
+    void DelAllFillRecord();
+
 private:
 
     DBMoudle(DBMoudle&);

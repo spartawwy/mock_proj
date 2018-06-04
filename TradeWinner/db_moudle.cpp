@@ -8,10 +8,13 @@
 #include <TLib/core/tsystem_core_common.h>
 #include <TLib/core/tsystem_sqlite_functions.h>
  
+#include <QDebug>
+
 #include "exchange_calendar.h"
 #include "position_mocker.h"
 #include "winner_app.h"
 
+//#define USE_DB_STRAND
 
 /*CREATE TABLE BrokerInfo (id INTEGER, ip TEXT, port INTEGER, type INTEGER, remark TEXT, com_ver text, PRIMARY KEY(id));
 CREATE TABLE AccountInfo(id INTEGER, account_no TEXT, trade_account_no TEXT, trade_pwd  TEXT, comm_pwd TEXT, broker_id INTEGER, department_id text, remark TEXT, PRIMARY KEY(id));
@@ -94,7 +97,12 @@ CREATE TABLE AdvanceSectionTask(id INTEGER,
                                 PRIMARY KEY(id));
 
 CREATE TABLE CapitalMock(id INTEGER, avaliable DOUBLE);
-CREATE TABLE PositionMock(stock TEXT not null, avaiable INTEGER, frozen INTEGER, updata_date INTEGER, PRIMARY KEY(stock));
+CREATE TABLE Position(user_id TEXT, code TEXT NOT NULL, date TEXT NOT NULL, avaliable DOUBLE, frozen    DOUBLE,
+                     PRIMARY KEY(user_id, code, date));
+CREATE TABLE FillsRecord(id TEXT NOT NULL, user_id TEXT, date INTEGER, time_stamp INTEGER,
+   stock TEXT not null, pinyin TEXT,
+   is_buy BOOL, price DOUBLE, quantity DOUBLE,
+   amount DOUBLE, fee DOUBLE, PRIMARY KEY(id)); 
  */
 
 static std::string db_file_path = "./pzwj.kd";
@@ -159,11 +167,35 @@ void DBMoudle::Init()
          }  
          return 0;
      });
-     
+      
+    app_->Cookie_MaxFillId(0);
+    if( !utility::ExistTable("FillsRecord", *db_conn_) )
+        ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
+        , "DBMoudle::Init"
+        , "can't find table FillsRecord");
+    sql = "SELECT max(id) FROM FillsRecord ";
+    db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
+    {
+        if( !(*vals) )
+            return 0;
+        try
+        {
+            //this->max_task_id_ = boost::lexical_cast<int>(*(vals));
+            int max_fill_id = boost::lexical_cast<int>(*(vals));
+            if( max_fill_id > app_->Cookie_MaxFillId() )
+                app_->Cookie_MaxFillId(max_fill_id);
+
+        }catch(boost::exception& )
+        {
+            return 0;
+        }  
+        return 0;
+    });
     if( !utility::ExistTable("ExchangeDate", *exchange_db_conn_) )
-         ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
-         , "DBMoudle::Init"
-         , "can't find table ExchangeDate");
+        ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
+        , "DBMoudle::Init"
+        , "can't find table ExchangeDate");
+
 }
 
 void DBMoudle::LoadAllUserBrokerInfo()
@@ -239,8 +271,8 @@ void DBMoudle::LoadAllTaskInfo(std::unordered_map<int, std::shared_ptr<T_TaskInf
                 , "can't find table TaskInfo: ");
 
     std::string sql  = utility::FormatStr("SELECT id, type, stock, alert_price, back_alert_trigger, rebounce, continue_second, step, quantity, target_price_level, start_time, end_time, is_loop, state, user_id, stock_pinyin, bs_times, assistant_field"
-        " FROM TaskInfo WHERE user_id=%d AND type NOT IN (%d, %d) order by id ", app_->user_info().id, (int)TypeTask::EQUAL_SECTION, (int)TypeTask::INDEX_RISKMAN);
-    
+        " FROM TaskInfo WHERE user_id=%d AND type NOT IN (%d, %d) ORDER BY id ", app_->user_info().id, (int)TypeTask::EQUAL_SECTION, (int)TypeTask::INDEX_RISKMAN);
+    qDebug() << sql.c_str() << "\n";
     //std::make_shared<std::string>();
     db_conn_->ExecuteSQL(sql.c_str(),[&taskinfos, this](int num_cols, char** vals, char** names)->int
     {
@@ -292,6 +324,7 @@ void DBMoudle::LoadAllTaskInfo(std::unordered_map<int, std::shared_ptr<T_TaskInf
 		" t.quantity, t.target_price_level, t.start_time, t.end_time, t.state, t.user_id, "
 		" e.raise_percent, e.fall_percent, e.raise_infection, e.fall_infection, e.multi_qty, e.max_trig_price, e.min_trig_price, e.is_original, t.assistant_field, e.max_position, e.min_position "
         " FROM TaskInfo t INNER JOIN EqualSectionTask e ON t.id=e.id WHERE t.user_id=%d order by t.id ", app_->user_info().id);
+    qDebug() << sql.c_str() << "\n";
     db_conn_->ExecuteSQL(sql.c_str(),[&taskinfos, this](int num_cols, char** vals, char** names)->int
     {
         auto task_info = std::make_shared<T_TaskInformation>();
@@ -682,34 +715,54 @@ bool DBMoudle::DelTaskInfo(int task_id, TypeTask type)
         ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
                 , "DBMoudle::DelTaskInfo"
                 , "can't find table TaskInfo");
-     
-    std::string sql = utility::FormatStr("DELETE FROM TaskInfo WHERE id=%d ", task_id);
-     
+      
     {
-        WriteLock locker(taskinfo_table_mutex_);
-        db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
+#ifdef USE_DB_STRAND
+        strand_->PostTask([task_id, this]()
         { 
-            return 0;
+#endif
+            std::string sql = utility::FormatStr("DELETE FROM TaskInfo WHERE id=%d ", task_id);
+            WriteLock locker(taskinfo_table_mutex_);
+            db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
+            { 
+                return 0;
+            });
+#ifdef USE_DB_STRAND
         });
+#endif
     }
 	if( type == TypeTask::EQUAL_SECTION )
 	{
 		// del related recorde in table EqualSectionTask
-		std::string sql = utility::FormatStr("DELETE FROM EqualSectionTask WHERE id=%d ", task_id);
-		WriteLock locker(equalsection_table_mutex_);
-		db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
-        { 
-            return 0;
+#ifdef USE_DB_STRAND
+        strand_->PostTask([task_id, this]()
+        {
+#endif
+            std::string sql = utility::FormatStr("DELETE FROM EqualSectionTask WHERE id=%d ", task_id);
+            WriteLock locker(equalsection_table_mutex_);
+            db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
+            { 
+                return 0;
+            });
+#ifdef USE_DB_STRAND           
         });
+#endif
     }else if( type == TypeTask::INDEX_RISKMAN )
 	{
 		// del related recorde in table IndexRelateTask
-		std::string sql = utility::FormatStr("DELETE FROM IndexRelateTask WHERE id=%d ", task_id);
-		WriteLock locker(index_rel_table_mutex_);
-		db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
-        { 
-            return 0;
+#ifdef USE_DB_STRAND
+        strand_->PostTask([task_id, this]()
+        {
+#endif
+            std::string sql = utility::FormatStr("DELETE FROM IndexRelateTask WHERE id=%d ", task_id);
+            WriteLock locker(index_rel_table_mutex_);
+            db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
+            { 
+                return 0;
+            });
+#ifdef USE_DB_STRAND
         });
+#endif
 	}
     return true;
 }
@@ -748,15 +801,23 @@ bool DBMoudle::UpdateTaskInfo(T_TaskInformation &info)
         , info.bs_times
         , info.assistant_field.c_str()
          , info.id);
-    bool ret = true; 
+     
     {
-        WriteLock locker(taskinfo_table_mutex_);
-        ret = db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
-        { 
-            return 0;
+#ifdef USE_DB_STRAND
+        strand_->PostTask([sql, this]()
+        {
+#endif
+            WriteLock locker(taskinfo_table_mutex_);
+            bool ret = db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
+            { 
+                return 0;
+            });
+            ret = ret;
+#ifdef USE_DB_STRAND
         });
+#endif
     }
-    return ret;
+    return true;
 }
 
 void DBMoudle::UpdateEqualSection(int taskid, bool is_original, double start_price)
@@ -787,20 +848,27 @@ void DBMoudle::UpdateEqualSection(int taskid, bool is_original, double start_pri
 
 void DBMoudle::UpdateAdvanceSection(T_TaskInformation &info)
 {
-    if( !db_conn_ )
-    {
-        Open(db_conn_, db_file_path);
-    } 
-    std::string sql = utility::FormatStr("UPDATE AdvanceSectionTask SET portion_sections='%s', portion_states='%s', pre_trade_price=%.2f, is_original=%d WHERE id=%d "
-        , info.advance_section_task.portion_sections.c_str(), info.advance_section_task.portion_states.c_str()
-        , info.advance_section_task.pre_trade_price, (int)info.advance_section_task.is_original, info.id); 
-    {
-        WriteLock locker(equalsection_table_mutex_);
-        db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
-        { 
-            return 0;
-        });
-    }
+#ifdef USE_DB_STRAND
+    strand_->PostTask([&info, this]()
+    { 
+#endif
+        if( !db_conn_ )
+        {
+            Open(db_conn_, db_file_path);
+        } 
+        std::string sql = utility::FormatStr("UPDATE AdvanceSectionTask SET portion_sections='%s', portion_states='%s', pre_trade_price=%.2f, is_original=%d WHERE id=%d "
+            , info.advance_section_task.portion_sections.c_str(), info.advance_section_task.portion_states.c_str()
+            , info.advance_section_task.pre_trade_price, (int)info.advance_section_task.is_original, info.id); 
+        {
+            WriteLock locker(equalsection_table_mutex_);
+            db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
+            { 
+                return 0;
+            });
+        }
+#ifdef USE_DB_STRAND
+    });
+#endif
 }
 
 bool DBMoudle::AddHisTask(std::shared_ptr<T_TaskInformation>& info)
@@ -1022,7 +1090,7 @@ void DBMoudle::LoadPositionMock(PositionMocker &position_mock)
 
     auto date_time = CurrentDateTime();
     //// if current position none get pre day position
-    std::string sql = utility::FormatStr("SELECT date, code, avaliable, frozen FROM Position WHERE user_id=%d ORDER BY date ", USER_ID_TEST);
+    std::string sql = utility::FormatStr("SELECT date, code, avaliable, frozen FROM Position WHERE user_id='%d' ORDER BY date ", USER_ID_TEST);
     auto target_iter = position_mock.days_positions_.end();
     db_conn_->ExecuteSQL(sql.c_str(), [&position_mock, &target_iter, this](int cols, char **vals, char **names)
     {
@@ -1039,60 +1107,167 @@ void DBMoudle::LoadPositionMock(PositionMocker &position_mock)
 
         return 0;
     });
-    if( target_iter != position_mock.days_positions_.end() ) 
+    if( target_iter == position_mock.days_positions_.end() ) 
     {
-        if( target_iter->second.find(CAPITAL_SYMBOL) == target_iter->second.end() )
+        app_->local_logger().LogLocal( utility::FormatStr("error: can't find any record of user:%d in Position in db", USER_ID_TEST));
+        ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
+            , "DBMoudle::LoadPositionMock"
+            , "can't find any record of test user");
+    }else
+    {
+        auto capital_iter = target_iter->second.find(CAPITAL_SYMBOL);
+        if( capital_iter == target_iter->second.end() )
         {
-            app_->local_logger().LogLocal( utility::FormatStr("error: can't find %s of date %d in db", CAPITAL_SYMBOL, position_mock.last_position_date_));
+            app_->local_logger().LogLocal( utility::FormatStr("error: can't find %s of user:%d date %d in db", CAPITAL_SYMBOL, USER_ID_TEST, position_mock.last_position_date_));
             ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
                 , "DBMoudle::LoadPositionMock"
                 , "can't find CNY position: ");
+        }else
+        { 
+            position_mock.p_cur_capital_ = std::addressof(capital_iter->second);
         }
     }
 }
 
-bool DBMoudle::UpdatePositionMock(PositionMocker &position_mock, int date, int user_id)
+void DBMoudle::UpdatePositionMock(PositionMocker &position_mock, int date, int user_id)
 {
     assert(db_conn_); 
-
-    auto iter = position_mock.days_positions_.find(date);
-    if( iter == position_mock.days_positions_.end() )
-        return false;
-
-     if( !utility::ExistTable("Position", *db_conn_) )
-        ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
-                , "DBMoudle::UpdateTodayPositionMock"
-                , "can't find table Position: ");
-      
-     std::for_each( std::begin(iter->second), std::end(iter->second), [&position_mock, user_id, date, this](T_CodeMapPosition::reference entry)
-     { 
-         std::string sql = utility::FormatStr("INSERT OR REPLACE INTO Position VALUES(%d, '%s', '%d', %.2f, %.2f)"
-             , user_id, entry.second.code, date, (float)entry.second.avaliable, float(entry.second.total-entry.second.avaliable));
-         bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
-         /*if( ret && date > position_mock.last_position_date_ )
-             position_mock.last_position_date_ = date;*/
-         return 0; 
-     });
-     return true;
+    assert( utility::ExistTable("Position", *db_conn_) );
+#ifdef USE_DB_STRAND
+    strand_->PostTask([&position_mock, date, user_id, this]()
+    { 
+#endif
+        auto iter = position_mock.days_positions_.find(date);
+        if( iter == position_mock.days_positions_.end() )
+            return; 
+         std::for_each( std::begin(iter->second), std::end(iter->second), [&position_mock, user_id, date, this](T_CodeMapPosition::reference entry)
+         { 
+             std::string sql = utility::FormatStr("INSERT OR REPLACE INTO Position VALUES('%d', '%s', '%d', %.2f, %.2f)"
+                 , user_id, entry.second.code, date, (float)entry.second.avaliable, float(entry.second.total-entry.second.avaliable));
+             bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
+             /*if( ret && date > position_mock.last_position_date_ )
+                 position_mock.last_position_date_ = date;*/
+             return 0; 
+         });
+         return;
+#ifdef USE_DB_STRAND
+    });
+#endif
 }
 
-bool DBMoudle::UpdateOneStockInPositionMock(PositionMocker &position_mock, const std::string &code, int date, int user_id)
+void DBMoudle::UpdateOnePositionMock(PositionMocker &position_mock, const std::string &code, int date, int user_id)
 {
     assert(db_conn_); 
     assert(!code.empty());
-    auto iter = position_mock.days_positions_.find(date);
-    if( iter == position_mock.days_positions_.end() )
-        return false;
+    assert( utility::ExistTable("Position", *db_conn_) );
+#ifdef USE_DB_STRAND
+    strand_->PostTask([&position_mock, code, date, user_id, this]()
+    {
+#endif
+        auto iter = position_mock.days_positions_.find(date);
+        if( iter == position_mock.days_positions_.end() )
+            return;
 
-     if( !utility::ExistTable("Position", *db_conn_) )
+        auto pos_iter = iter->second.find(code);
+        if( pos_iter == iter->second.end() )
+            return; 
+        std::string sql = utility::FormatStr("INSERT OR REPLACE INTO Position VALUES('%d', '%s', '%d', %.2f, %.2f)"
+            , user_id, pos_iter->second.code, date, pos_iter->second.avaliable, pos_iter->second.total - pos_iter->second.avaliable);
+        bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
+#ifdef USE_DB_STRAND       
+    }); 
+#endif
+}
+
+void DBMoudle::AddOnePositionMock(PositionMocker &position_mock, const std::string &code, int date, int user_id)
+{
+    assert(db_conn_); 
+    assert(!code.empty());
+    assert( utility::ExistTable("Position", *db_conn_) );
+#ifdef USE_DB_STRAND
+    strand_->PostTask([&position_mock, code, date, user_id, this]()
+    {
+#endif
+        auto iter = position_mock.days_positions_.find(date);
+        if( iter == position_mock.days_positions_.end() )
+        {
+            iter = position_mock.days_positions_.insert( std::make_pair(date, T_CodeMapPosition(256)) ).first;
+        }
+        auto pos_iter = iter->second.find(code);
+        if( pos_iter == iter->second.end() )
+        {
+            T_PositionData pos_data;
+            pos_data.SetCode(code);
+            pos_iter = iter->second.insert( std::make_pair(code, pos_data) ).first;
+        }
+        std::string sql = utility::FormatStr("INSERT OR REPLACE INTO Position VALUES('%d', '%s', '%d', %.2f, %.2f)"
+            , user_id, pos_iter->second.code, date, pos_iter->second.avaliable, pos_iter->second.total - pos_iter->second.avaliable);
+        bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
+#ifdef USE_DB_STRAND
+    }); 
+#endif
+}
+
+void DBMoudle::ResetPositionMock(int user_id)
+{
+    assert(db_conn_); 
+    assert( utility::ExistTable("Position", *db_conn_) );
+#ifdef USE_DB_STRAND
+    strand_->PostTask([user_id, this]()
+    { 
+#endif
+        std::string sql = utility::FormatStr("DELETE FROM Position WHERE user_id='%d'", user_id);
+        bool ret = this->db_conn_->ExecuteSQL(sql.c_str()); 
+
+        /*auto iter = position_mock.days_positions_.find(date);
+        if( iter == position_mock.days_positions_.end() )
+        return;
+        std::for_each( std::begin(iter->second), std::end(iter->second), [date, user_id, this](T_CodeMapPosition::reference entry)
+        { 
+        std::string sql = utility::FormatStr("INSERT OR REPLACE INTO Position VALUES(%d, '%s', '%d', %.2f, %.2f)"
+        , user_id, entry.second.code, date, entry.second.avaliable, entry.second.total - entry.second.avaliable);
+        bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
+        });*/
+#ifdef USE_DB_STRAND
+    });
+#endif
+
+}
+
+void DBMoudle::AddFillRecord(T_FillItem& fill_item)
+{
+    assert(db_conn_); 
+    if( !utility::ExistTable("FillsRecord", *db_conn_) )
         ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
-                , "DBMoudle::UpdateOneStockInPositionMock"
-                , "can't find table Position: ");
-     auto pos_iter = iter->second.find(code);
-     if( pos_iter == iter->second.end() )
-         return false; 
-     std::string sql = utility::FormatStr("INSERT OR REPLACE INTO Position VALUES(%d, '%s', '%d', %.2f, %.2f)"
-             , user_id, pos_iter->second.code, date, pos_iter->second.avaliable, pos_iter->second.total - pos_iter->second.avaliable);
-     bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
-     return ret;
+        , "DBMoudle::AddFillRecord"
+        , "can't find table FillsRecord: ");
+#ifdef USE_DB_STRAND
+    strand_->PostTask([fill_item, this]()
+    { 
+#endif
+    std::string sql = utility::FormatStr("INSERT INTO FillsRecord VALUES('%d', '%d', %d, %d, '%s', '%s',%d, %.2f, %.2f, %.2f, %.2f)"
+        , app_->Cookie_NextFillId(), fill_item.user_id, fill_item.date, fill_item.time_stamp
+        , fill_item.stock.c_str(), fill_item.pinyin.c_str(), fill_item.is_buy, fill_item.price
+        , fill_item.quantity, fill_item.amount, fill_item.fee);
+    bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
+    ret = ret;
+#ifdef USE_DB_STRAND
+    });
+#endif
+}
+
+void DBMoudle::DelAllFillRecord()
+{
+    assert(db_conn_); 
+    assert( utility::ExistTable("FillsRecord", *db_conn_) );
+#ifdef USE_DB_STRAND
+    strand_->PostTask([this]()
+    { 
+#endif
+        std::string sql = utility::FormatStr("DELETE FROM FillsRecord ");
+        bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
+        ret = ret;
+#ifdef USE_DB_STRAND
+    });
+#endif
 }

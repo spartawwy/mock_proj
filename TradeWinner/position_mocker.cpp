@@ -15,6 +15,29 @@ PositionMocker::PositionMocker(int user_id, DBMoudle *db_moudle, ExchangeCalenda
 { 
 }
 
+void PositionMocker::Reset()
+{
+    assert(p_cur_capital_);
+     
+    days_positions_.clear();
+    int target_date = std::get<0>(CurrentDateTime());
+    if( !exchange_calendar_->IsTradeDate(target_date) )
+        target_date = exchange_calendar_->PreTradeDate(target_date, 1);
+
+    last_position_date_ = target_date;
+    auto iter = days_positions_.insert( std::make_pair(target_date, T_CodeMapPosition(256)) ).first;
+    T_PositionData pos;
+    strcpy_s(pos.code, sizeof(pos.code), CAPITAL_SYMBOL);
+    pos.total = CAPITAL_ORI_TOTAL;
+    pos.avaliable = CAPITAL_ORI_TOTAL; 
+
+    p_cur_capital_ = std::addressof(iter->second.insert(std::make_pair(CAPITAL_SYMBOL, pos)).first->second);
+    
+    db_moudle_->ResetPositionMock(user_id_);
+    db_moudle_->UpdatePositionMock(*this, last_position_date_, user_id_);
+
+}
+
 // ps: make sure days_positions_ has loaded 
 void PositionMocker::DoEnterNewTradeDate(int date)
 { 

@@ -8,6 +8,7 @@
 
 #include "db_moudle.h"
 #include "position_mocker.h"
+#include "exchange_calendar.h"
 
 TradeAgent::TradeAgent()
     :/* app_(app)
@@ -191,12 +192,18 @@ const T_AccountData * TradeAgent::account_data(TypeMarket type_market) const
 void TradeAgent::SendOrder(int ClientID, int Category, int PriceType, char* /*Gddm*/, char* Zqdm, float Price, int Quantity, char* Result, char* ErrInfo)
 {
     assert(p_db_moudle_);
+    assert(position_mocker_);
     assert(Zqdm && strlen(Zqdm) > 0);
+
+    auto today = TSystem::Today();
+    auto date = today;
+    if( !position_mocker_->exchange_calendar().IsTradeDate(date) )
+        date = position_mocker_->exchange_calendar().NextTradeDate(date, 1);
     if( Category == (int)TypeOrderCategory::BUY )
     {
         auto fee = CaculateFee(Price * Quantity, true);
         auto cost = Price * Quantity + fee;
-        auto capital_pos = position_mocker_->ReadPosition(TSystem::Today(), CAPITAL_SYMBOL);
+        auto capital_pos = position_mocker_->ReadPosition(today, CAPITAL_SYMBOL);
         assert(capital_pos);
         if( capital_pos->avaliable < cost )
         {
@@ -205,11 +212,12 @@ void TradeAgent::SendOrder(int ClientID, int Category, int PriceType, char* /*Gd
         }
         capital_pos->avaliable -= cost;
         capital_pos->total -= cost;
-        position_mocker_->AddTotalPosition(TSystem::Today(), Zqdm, Quantity, true);
+
+        position_mocker_->AddTotalPosition(date, Zqdm, Quantity, true);
         
     }else // sell 
     {
-        auto p_pos_mocked = position_mocker_->ReadPosition(TSystem::Today(), Zqdm);
+        auto p_pos_mocked = position_mocker_->ReadPosition(today, Zqdm);
         assert(p_pos_mocked);
         if( p_pos_mocked->avaliable < Quantity )
         {
@@ -219,15 +227,22 @@ void TradeAgent::SendOrder(int ClientID, int Category, int PriceType, char* /*Gd
         p_pos_mocked->avaliable -= Quantity;
         p_pos_mocked->total -= Quantity;
          
-        auto capital_pos = position_mocker_->ReadPosition(TSystem::Today(), CAPITAL_SYMBOL);
+        auto capital_pos = position_mocker_->ReadPosition(today, CAPITAL_SYMBOL);
         assert(capital_pos);
         auto fee = CaculateFee(Price * Quantity, false); 
         capital_pos->avaliable += Price * Quantity - fee;
         capital_pos->total += capital_pos->avaliable;
     }
     // save to db
-    p_db_moudle_->UpdateOneStockInPositionMock(*position_mocker_, Zqdm, TSystem::Today(), user_id_);
-    p_db_moudle_->UpdateOneStockInPositionMock(*position_mocker_, CAPITAL_SYMBOL, TSystem::Today(), user_id_);
+    if( today == date )
+    {
+        p_db_moudle_->UpdateOnePositionMock(*position_mocker_, Zqdm, date, user_id_);
+        p_db_moudle_->UpdateOnePositionMock(*position_mocker_, CAPITAL_SYMBOL, date, user_id_);
+    }else
+    {
+        p_db_moudle_->AddOnePositionMock(*position_mocker_, Zqdm, date, user_id_);
+        p_db_moudle_->AddOnePositionMock(*position_mocker_, CAPITAL_SYMBOL, date, user_id_);
+    }
 }
 #endif
 

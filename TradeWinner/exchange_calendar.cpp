@@ -38,6 +38,26 @@ int ExchangeCalendar::PreTradeDate(int date, unsigned int n)
     return a;
 }
 
+int ExchangeCalendar::NextTradeDate(int date, unsigned int n)
+{   
+    assert(trade_dates_->size() > 0);
+    auto date_time_point = TSystem::MakeTimePoint(date/10000, (date % 10000) / 100, date % 100);
+    unsigned int count = 0;
+    int i = 1;
+    T_DateMapIsopen &date_map_opend = *trade_dates_;
+    int a = 0;
+    while( count < n )
+    {
+        a = DateAddDays(date, i);  
+        if( a > max_trade_date_ )
+            return 0;
+        if( date_map_opend.find(a) != date_map_opend.end() )
+            ++count;
+        ++i;
+    }
+    return a;
+}
+
 int ExchangeCalendar::TodayAddDays(int days)
 {
     std::time_t day_t = 0;

@@ -137,6 +137,7 @@ BEFORE_TRADE:
                 this->app_->SubAvaliablePosition(para_.stock, qty); // sub availiable position
                 auto ret_str = new std::string(utility::FormatStr("执行任务:%d 分批出货 %s %.2f %d 成功!", para_.id, para_.stock.c_str(), price, qty));
                 this->app_->EmitSigShowUi(ret_str, true);
+                AddFill2DB(price, qty, false);
             }
             // update assistant filed in db ------------
             para_.assistant_field.clear();

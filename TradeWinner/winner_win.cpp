@@ -233,7 +233,9 @@ void WinnerWin::Init()
 
     //
     ret = connect(ui.actionStopAllTask, SIGNAL(triggered(bool)), this->app_, SLOT(SlotStopAllTasks(bool)));
+#ifdef USE_MOCK_FLAG
     ret = connect(ui.actionResetMockSys, SIGNAL(triggered(bool)), this->app_, SLOT(SlotResetMockSys(bool)));
+#endif
     // ndedt
     ret = connect(ui.actionOpenCalcWin, SIGNAL(triggered(bool)), this, SLOT(SlotOpenCalcWin(bool)));
     ret = connect(ui.actionAbout, SIGNAL(triggered(bool)), this, SLOT(SlotOpenAbout(bool)));

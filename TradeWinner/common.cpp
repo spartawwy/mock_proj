@@ -210,8 +210,21 @@ std::tuple<int, std::string> CurrentDateTime()
 
 }
 
+std::tuple<int, int> CurrentDateIntTime()
+{
+    time_t rawtime;
+    time(&rawtime); 
+    struct tm * timeinfo = localtime(&rawtime);
+    int time_value = timeinfo->tm_hour * 10000 + timeinfo->tm_min * 100 + timeinfo->tm_sec;
+    return std::make_tuple((timeinfo->tm_year + 1900) * 10000 + (timeinfo->tm_mon + 1) * 100 + timeinfo->tm_mday
+        , time_value);
+}
+
 bool IsNowTradeTime(bool *is_day_change)
 { 
+#ifdef USE_MOCK_FLAG
+    //return true;
+#endif
     static auto get_date = []()
     {
         time_t rawtime;
@@ -227,9 +240,7 @@ bool IsNowTradeTime(bool *is_day_change)
     static time_t sec_rest_beg = 0;
     static time_t sec_rest_end = 0;
     static time_t sec_end = 0;
-
-    //return true; //temp code
-
+     
     time_t rawtime = 0;
     struct tm * timeinfo = nullptr;
 	time( &rawtime );

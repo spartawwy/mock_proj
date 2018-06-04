@@ -75,6 +75,11 @@ BatchesBuyTask::BatchesBuyTask(T_TaskInformation &task_info, WinnerApp *app, T_M
     }
 }
 
+BatchesBuyTask::~BatchesBuyTask()
+{
+    int i = 0;
+    i = i;
+}
 
 void BatchesBuyTask::HandleQuoteData()
 {
@@ -94,6 +99,17 @@ void BatchesBuyTask::HandleQuoteData()
         return -1;
     };
 
+#if 1
+    int ms_for_wait_lock = 1000;
+    if( is_back_test_ ) ms_for_wait_lock = 5000;
+    //app_->local_logger().LogLocal("mutex", "try lock");
+    if( !timed_mutex_wrapper_.try_lock_for(ms_for_wait_lock) )  
+    {
+        //DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
+        app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock fail"); 
+        return;
+    }
+#endif
     if( is_waitting_removed_ )
         return;
 
@@ -125,18 +141,7 @@ void BatchesBuyTask::HandleQuoteData()
      
     if( !(iter->cur_price < para_.alert_price) )
         return;
-
-    int ms_for_wait_lock = 1000;
-    if( is_back_test_ ) ms_for_wait_lock = 5000;
-    //app_->local_logger().LogLocal("mutex", "try lock");
-    if( !timed_mutex_wrapper_.try_lock_for(ms_for_wait_lock) )  
-    {
-        //DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
-        app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock fail"); 
-        return;
-    }
      
-
     int index = in_which_part(this, iter->cur_price);
     if( index < 0 )
         goto NO_TRADE;
@@ -170,7 +175,9 @@ void BatchesBuyTask::HandleQuoteData()
     goto BEFORE_TRADE;
 
 NO_TRADE:
+#if 1
     timed_mutex_wrapper_.unlock();
+#endif
     return;
 
 
@@ -267,7 +274,10 @@ BEFORE_TRADE:
         }
     } 
     if( !this->is_back_test_ )
-        app_->db_moudle().UpdateTaskInfo(para_);
+    {
+        //app_->db_moudle().UpdateTaskInfo(para_); // temp nouse it
+        AddFill2DB(price, qty, true);
+    }
 
     if( times_has_buy_ >= para_.bs_times )
     {
@@ -277,10 +287,10 @@ BEFORE_TRADE:
         if( !is_back_test_ )
             this->app_->RemoveTask(this->task_id(), TypeTask::BATCHES_BUY);
     }
+#if 1
     timed_mutex_wrapper_.unlock();
-    });
-     
-
+#endif
+    }); 
 }
 
 std::string BatchesBuyTask::TagOfCurTask()

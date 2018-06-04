@@ -99,6 +99,11 @@ bool WinnerApp::Init()
 		return false;
 	}
      
+    for (int i = 0; i < 2; ++ i)
+    {
+        task_pool_.AddWorker();
+    }
+     
 	db_moudle_.Init();
 	    
 	login_win_.Init(); 
@@ -145,14 +150,14 @@ bool WinnerApp::Init()
 	trade_agent_.SetupAccountInfo(result.data());
 #endif
     
+    db_moudle_.LoadAllTaskInfo(task_infos_);
+
     position_mocker_ = std::make_shared<PositionMocker>(user_info_.id, &db_moudle_, &exchange_calendar_);
     db_moudle_.LoadPositionMock(*position_mocker_);
     UpdatePositionMock();
     trade_agent_.Init(user_info_.id, &db_moudle_, position_mocker_);
 	//------------------------ create tasks ------------------
- 
-	db_moudle_.LoadAllTaskInfo(task_infos_);
-
+   
 	winner_win_.Init(); // inner use task_info
 	winner_win_.show();
 	bool ret1 = QObject::connect(this, SIGNAL(SigTaskStatChange(StrategyTask*, int)), &winner_win_, SLOT(DoTaskStatChangeSignal(StrategyTask*, int)));
@@ -239,6 +244,24 @@ void WinnerApp::Cookie_MaxTaskId(int task_id)
 {
 	std::lock_guard<std::mutex> locker(cookie_mutex_);
 	cookie_.data_->max_task_id = task_id;
+}
+
+int WinnerApp::Cookie_NextFillId()
+{
+    std::lock_guard<std::mutex> locker(cookie_fill_mutex_);
+    return ++ cookie_.data_->max_fill_id;
+}
+
+int WinnerApp::Cookie_MaxFillId()
+{
+    std::lock_guard<std::mutex> locker(cookie_fill_mutex_);
+    return cookie_.data_->max_fill_id;
+}
+
+void WinnerApp::Cookie_MaxFillId(int fill_id)
+{
+    std::lock_guard<std::mutex> locker(cookie_fill_mutex_);
+    cookie_.data_->max_fill_id = fill_id;
 }
 
 bool WinnerApp::LoginBroker(int broker_id, int depart_id, const std::string& account, const std::string& password)
@@ -650,7 +673,7 @@ T_StockPriceInfo * WinnerApp::GetStockPriceInfo(const std::string& code, bool is
 }
 
 void WinnerApp::SlotStopAllTasks(bool)
-{
+{ 
     StopAllStockTasks();
 	StopAllIndexRelTypeTasks(TindexTaskType::ALERT); 
     StopAllIndexRelTypeTasks(TindexTaskType::CLEAR); 
@@ -660,7 +683,21 @@ void WinnerApp::SlotStopAllTasks(bool)
 
 void WinnerApp::SlotResetMockSys(bool)
 {
-    // todo: reset mock system
+    
+    assert(position_mocker_);
+    auto ret_button = QMessageBox::question(nullptr, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("重置系统将删除所有模拟交易数据.确定要重置?"),
+        QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel);
+    if( ret_button == QMessageBox::Cancel )
+        return;
+    SlotStopAllTasks(true);
+    // reset mock system
+    this->trade_strand().PostTask([this]()
+    {
+        position_mocker_->Reset();
+        db_moudle_.DelAllFillRecord();
+    });
+
+    
 }
 
 void WinnerApp::DoStrategyTasksTimeout()

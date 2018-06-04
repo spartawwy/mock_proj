@@ -68,6 +68,10 @@ public:
     int Cookie_MaxTaskId();
     void Cookie_MaxTaskId(int task_id);
 
+    int Cookie_NextFillId();
+    int Cookie_MaxFillId();
+    void Cookie_MaxFillId(int fill_id);
+
     DBMoudle& db_moudle() { return db_moudle_; }
     DBMoudle* db_moudle_address() { return &db_moudle_; }
     void user_info(const T_UserInformation& val) { user_info_ = val; }
@@ -114,7 +118,8 @@ public:
     bool SellAllPosition(IndexTask * task);   
 
     WinnerWin& winner_win() { return  winner_win_; }
-     
+    ExchangeCalendar &exchange_calendar() { return exchange_calendar_; }
+
     // back test related ----------
     T_StockPriceInfo * GetStockPriceInfo(const std::string& code, bool is_lazy=true);
     std::vector<int> GetSpanTradeDates(int date_begin, int date_end);
@@ -190,6 +195,7 @@ private:
     int trade_client_id_;
 
     std::mutex cookie_mutex_;
+    std::mutex cookie_fill_mutex_;
     Cookie   cookie_;
     DBMoudle db_moudle_;
 

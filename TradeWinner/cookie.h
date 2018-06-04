@@ -18,6 +18,7 @@ public:
     struct  T_DataAccess
     {
         int max_task_id;
+        long long max_fill_id;
         //std::string name;
     };
 
