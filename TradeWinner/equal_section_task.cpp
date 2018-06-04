@@ -252,15 +252,15 @@ void EqualSectionTask::HandleQuoteData()
     };
 
     int ms_for_wait_lock = 1000;
-    if( is_back_test_ ) ms_for_wait_lock = 5000;
-    app_->local_logger().LogLocal("mutex", "try lock");
+    if( is_back_test_ ) ms_for_wait_lock = 5000; 
     if( !timed_mutex_wrapper_.try_lock_for(ms_for_wait_lock) )  
     {
         DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
         app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock fail"); 
         return;
-    };
-    app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock ok");
+    }; 
+    if( is_waitting_removed_ )
+        return;
 
     if( is_back_test_ && !has_set_ori_bktest_price_)
     {  
@@ -471,7 +471,7 @@ void EqualSectionTask::HandleQuoteData()
 	
 
 NOT_TRADE:
-    app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ unlock");
+    //app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ unlock");
     timed_mutex_wrapper_.unlock();
     return;
 
@@ -584,8 +584,7 @@ BEFORE_TRADE:
                                         + utility::FormatStr(" 区间任务:%d %s 破底清仓!", para_.id, para_.stock.c_str()));
                 this->app_->AppendLog2Ui(ret_str->c_str());
                 
-                is_waitting_removed_ = true;
-                app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ unlock");
+                is_waitting_removed_ = true; 
                 this->timed_mutex_wrapper_.unlock();
 
                 if( !is_back_test_ )
@@ -607,8 +606,7 @@ BEFORE_TRADE:
                 this->app_->EmitSigShowUi(ret_str, true);
             else
                 delete ret_str; ret_str = nullptr;
-
-            app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ unlock");
+             
             this->timed_mutex_wrapper_.unlock();
         }
     });

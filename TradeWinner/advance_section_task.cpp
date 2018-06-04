@@ -139,6 +139,8 @@ void AdvanceSectionTask::HandleQuoteData()
         app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock fail"); 
         return;
     };
+    if( is_waitting_removed_ )
+        return;
 
     TypeAction action = TypeAction::NOOP;
     TypeOrderCategory order_type = TypeOrderCategory::SELL;
@@ -396,11 +398,15 @@ BEFORE_TRADE:
                 } 
 
             }else
-            {
-                is_waitting_removed_ = true;
+            { 
                 ShowError(utility::FormatStr("贝塔任务:%d %s 已破底清仓! 将移除任务!", para_.id, para_.stock.c_str()));
                 if( !is_back_test_ )
+                {
+                    is_waitting_removed_ = true;
+                    timed_mutex_wrapper_.unlock();
                     this->app_->RemoveTask(this->task_id(), TypeTask::ADVANCE_SECTION); // invoker delete self
+                    return;
+                }
             }
         }else // trade fail
         {  

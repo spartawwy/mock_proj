@@ -5,6 +5,7 @@
 
 #include "winner_app.h"
   
+#define  TEMP_DEBUG
 /*
 --------------------
        alert price 
@@ -98,36 +99,26 @@ void BatchesBuyTask::HandleQuoteData()
         }
         return -1;
     };
-
-#if 1
+ 
     int ms_for_wait_lock = 1000;
-    if( is_back_test_ ) ms_for_wait_lock = 5000;
-    //app_->local_logger().LogLocal("mutex", "try lock");
+    if( is_back_test_ ) ms_for_wait_lock = 5000; 
     if( !timed_mutex_wrapper_.try_lock_for(ms_for_wait_lock) )  
     {
         //DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
         app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock fail"); 
         return;
-    }
-#endif
+    } 
+ 
     if( is_waitting_removed_ )
         return;
-
+ 
     if( !is_ok_ )
     {
         is_waitting_removed_ = true;
         this->app_->RemoveTask(this->task_id(), TypeTask::BATCHES_BUY);
         return;
     }
-      
-    if( continue_trade_fail_count_ >= 3 )
-    {
-        if( ++trade_fail_ctr_count_ % 60 != 0 )
-        {
-            app_->local_logger().LogLocal(TagOfCurTask(), "BatchesBuyTask::HandleQuoteData continue trade fail, do return!");
-            return;
-        }
-    }
+       
     assert( !quote_data_queue_.empty() );
     auto data_iter = quote_data_queue_.rbegin();
     std::shared_ptr<QuotesData> & iter = *data_iter;
@@ -138,10 +129,19 @@ void BatchesBuyTask::HandleQuoteData()
         ori_bktest_price_ = iter->cur_price;
     } 
     double pre_price = quote_data_queue_.size() > 1 ? (*(++data_iter))->cur_price : iter->cur_price;
-     
+      
     if( !(iter->cur_price < para_.alert_price) )
-        return;
-     
+        goto NO_TRADE;
+
+    if( continue_trade_fail_count_ >= 3 )
+    {
+        if( ++trade_fail_ctr_count_ % 60 != 0 )
+        {
+            app_->local_logger().LogLocal(TagOfCurTask(), "BatchesBuyTask::HandleQuoteData continue trade fail, do return!");
+            goto NO_TRADE;
+        }
+    }
+
     int index = in_which_part(this, iter->cur_price);
     if( index < 0 )
         goto NO_TRADE;
@@ -175,20 +175,18 @@ void BatchesBuyTask::HandleQuoteData()
     goto BEFORE_TRADE;
 
 NO_TRADE:
-#if 1
+ 
     timed_mutex_wrapper_.unlock();
-#endif
     return;
-
-
+  
 BEFORE_TRADE:
 
     app_->local_logger().LogLocal(TagOfCurTask()
         , utility::FormatStr(" trigger step index %d: bottom: %.2f up:%.2f %s", index, step_items_[index].bottom_price, step_items_[index].up_price, ( qty > para_.quantity ? "supplement buy other index" : "")));
-        
+ 
     //is_wait_trade_result_ = true;
     app_->trade_strand().PostTask([iter, index, qty, capital, this]()
-    {
+    {  
     // send order 
     char result[1024] = {0};
     char error_info[1024] = {0};
@@ -204,31 +202,28 @@ BEFORE_TRADE:
         if( IsPriceJumpUp(iter->cur_price, price) )
             price = iter->cur_price;
     }
-#ifdef USE_TRADE_FLAG
     assert(this->app_->trade_agent().account_data(market_type_));
 
-    //auto sh_hld_code  = const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code;
-        
+    //auto sh_hld_code  = const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code;     
 	this->app_->local_logger().LogLocal(TagOfOrderLog(), 
         TSystem::utility::FormatStr("触发任务:%d 分批买入 %s 价格:%.2f 数量:%d ", para_.id, this->code_data(), price, qty)); 
     this->app_->AppendLog2Ui("触发任务:%d 分批买入 %s 价格:%.2f 数量:%d ", para_.id, this->code_data(), price, qty);
-        
+      
 	// buy the stock
     this->app_->trade_agent().SendOrder(this->app_->trade_client_id(), (int)TypeOrderCategory::BUY, 0
         , const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code, this->code_data()
         , price, qty
         , result, error_info); 
-#endif
     // judge result 
     if( strlen(error_info) > 0 )
     {
         ++continue_trade_fail_count_;
+
         auto ret_str = new std::string(utility::FormatStr("error %d 分批买入 %s %.2f %d error:%s"
                     , para_.id, para_.stock.c_str(), price, qty, error_info));
         this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str);
         this->app_->AppendLog2Ui(ret_str->c_str());
         this->app_->EmitSigShowUi(ret_str, true);
-
     }else
     {   
         continue_trade_fail_count_ = 0;
@@ -250,7 +245,7 @@ BEFORE_TRADE:
                 }
             }
         }
-
+ 
         auto ret_str = new std::string(utility::FormatStr("执行任务:%d 分批买入 %s %.2f %d 成功!", para_.id, para_.stock.c_str(), price, qty));
         this->app_->EmitSigShowUi(ret_str, true);
     }
@@ -275,22 +270,29 @@ BEFORE_TRADE:
     } 
     if( !this->is_back_test_ )
     {
-        //app_->db_moudle().UpdateTaskInfo(para_); // temp nouse it
+        app_->db_moudle().UpdateTaskInfo(para_);
         AddFill2DB(price, qty, true);
     }
 
     if( times_has_buy_ >= para_.bs_times )
-    {
+    { 
         auto info_str = utility::FormatStr("分批买入任务:%d %s 已买 %d 次,任务结束!", para_.id, para_.stock.c_str(), times_has_buy_);
         this->app_->local_logger().LogLocal(info_str);
         this->app_->AppendLog2Ui(info_str.c_str());
+ 
         if( !is_back_test_ )
+        {
+            is_waitting_removed_ = true;
+            timed_mutex_wrapper_.unlock();
             this->app_->RemoveTask(this->task_id(), TypeTask::BATCHES_BUY);
+        }
+    }else
+    {
+        timed_mutex_wrapper_.unlock();
     }
-#if 1
-    timed_mutex_wrapper_.unlock();
-#endif
+     
     }); 
+ 
 }
 
 std::string BatchesBuyTask::TagOfCurTask()

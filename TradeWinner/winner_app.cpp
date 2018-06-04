@@ -24,6 +24,7 @@
 #include "message_win.h"
 
 #include "index_task.h"
+#include "back_tester.h"
 
 static bool SetCurrentEnvPath();
 
@@ -64,6 +65,7 @@ WinnerApp::WinnerApp(int argc, char* argv[])
 	, p_user_broker_info_(nullptr)
     , exchange_calendar_()
     , position_mocker_(nullptr)
+    , back_tester_(std::make_shared<BackTester>(this))
 {   
 	connect(strategy_tasks_timer_.get(), SIGNAL(timeout()), this, SLOT(DoStrategyTasksTimeout()));
 	connect(normal_timer_.get(), SIGNAL(timeout()), this, SLOT(DoNormalTimer()));

@@ -30,6 +30,7 @@ class IndexTicker;
 class StrategyTask; 
 class IndexTask;
 class PositionMocker;
+class BackTester;
 
 class WinnerApp : public QApplication, public TSystem::ServerClientAppBase
 {
@@ -121,6 +122,7 @@ public:
     ExchangeCalendar &exchange_calendar() { return exchange_calendar_; }
 
     // back test related ----------
+    std::shared_ptr<BackTester> & back_tester(){ return back_tester_; }
     T_StockPriceInfo * GetStockPriceInfo(const std::string& code, bool is_lazy=true);
     std::vector<int> GetSpanTradeDates(int date_begin, int date_end);
     void Emit_SigEnableBtnBackTest() { emit SigEnableBtnBackTest(); } 
@@ -202,15 +204,16 @@ private:
     std::shared_ptr<QTimer>  strategy_tasks_timer_;
     std::shared_ptr<QTimer>  normal_timer_;
 
-    T_CodeMapPosition stocks_position_;
+    T_CodeMapPosition  stocks_position_;
     std::mutex  stocks_position_mutex_;
 	   
-    T_UserAccountInfo *p_user_account_info_;
-    T_BrokerInfo *p_user_broker_info_;
+    T_UserAccountInfo  *p_user_account_info_;
+    T_BrokerInfo  *p_user_broker_info_;
     
     // back test relate 
-    std::unordered_map<std::string, T_StockPriceInfo> stocks_price_info_;
-    
+    std::unordered_map<std::string, T_StockPriceInfo>  stocks_price_info_;
+    std::shared_ptr<BackTester>  back_tester_;
+
     ExchangeCalendar exchange_calendar_;
      
     // position mock relate

@@ -12,8 +12,14 @@
 
 #include "winner_hq_api.h"
 
+#include "back_tester.h"
+
+//#define USE_LOCAL_STATIC
+
 typedef std::tuple<std::shared_ptr<StrategyTask>, std::shared_ptr<T_TaskInformation> > T_Task_Inf_Pair;
 
+ 
+#ifdef USE_LOCAL_STATIC
 static void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para);
 
 static HMODULE st_api_handle = nullptr;
@@ -21,6 +27,7 @@ static WinnerHisHq_ConnectDelegate WinnerHisHq_Connect = nullptr;
 static WinnerHisHq_DisconnectDelegate WinnerHisHq_DisConnect = nullptr;
 static WinnerHisHq_GetHisFenbiDataDelegate WinnerHisHq_GetHisFenbiData  = nullptr;
 static WinnerHisHq_GetHisFenbiDataBatchDelegate WinnerHisHq_GetHisFenbiDataBatch  = nullptr;
+#endif
 
 static const std::string cst_back_test_tag = "bktest";
 
@@ -49,7 +56,8 @@ bool WinnerWin::InitBacktestWin()
 
     ret = connect(ui.pbtn_start_backtest, SIGNAL(clicked(bool)), this, SLOT(DoStartBacktest(bool)));
     ret = connect(this->app_, SIGNAL(SigEnableBtnBackTest()), this, SLOT(DoEnableBtnBackTest()));
-
+     
+#ifdef USE_LOCAL_STATIC   
     /*HMODULE*/ st_api_handle = LoadLibrary("winner_api.dll");
     if( !st_api_handle )
     {
@@ -57,7 +65,6 @@ bool WinnerWin::InitBacktestWin()
         return false;
     }
     //ui.pbtn_start_backtest->setDisabled(true);
-   
     WinnerHisHq_Connect = (WinnerHisHq_ConnectDelegate)GetProcAddress(st_api_handle, "WinnerHisHq_Connect"); 
     if ( !WinnerHisHq_Connect )
     {
@@ -81,18 +88,20 @@ bool WinnerWin::InitBacktestWin()
         std::cout << " GetProcAddress WinnerHisHq_GetHisFenbiDataBatch fail " << std::endl;
         return false;
     }
-    
+#endif
     return true;
 }
 
 void WinnerWin::UnInstallBacktest()
 {
+#ifdef USE_LOCAL_STATIC
     if( WinnerHisHq_DisConnect )
         WinnerHisHq_DisConnect();
     if( !st_api_handle )
     {
         FreeLibrary(st_api_handle);
     }
+#endif
 }
 
 void WinnerWin::DoBktestTypeChanged(const QString&)
@@ -185,13 +194,13 @@ void WinnerWin::DoStartBacktest(bool)
         }
         return true;
     };
-  
+#ifdef USE_LOCAL_STATIC  
     if( !WinnerHisHq_GetHisFenbiData )
     {
         app_->winner_win().DoStatusBar("回测接口未安装!");
         return;
     }
-
+ 
     int ret_val = -1;
     //ret_val = WinnerHisHq_Connect("192.168.11.5", 50010, result, error);
     char result[1024] = {0};
@@ -207,7 +216,7 @@ void WinnerWin::DoStartBacktest(bool)
         this->DoStatusBar("服务器未连接!");
         return;
     }
-     
+ 
     //-----------------
     static std::vector<std::shared_ptr<StrategyTask> > task_vector;
     static std::vector<std::shared_ptr<T_TaskInformation> > taskinfo_vector;
@@ -219,6 +228,7 @@ void WinnerWin::DoStartBacktest(bool)
     callback_vector.clear();
     mock_strategy_para_vector.clear();
     //--------------------
+#endif
 
     auto task_info = std::make_shared<T_TaskInformation>();
 
@@ -227,7 +237,7 @@ void WinnerWin::DoStartBacktest(bool)
     QString stock_pinyin = stock_str.section('/', 1, 1, flag);
     task_info->stock = stock_str.section('/', 0, 0, flag).toLocal8Bit();
  
-    task_info->id = 123; // ndedt:
+    task_info->id = app_->back_tester()->AllocTaskId(); 
     task_info->type = (TypeTask)ui.cb_bktest_type->currentData().toInt();
      
     task_info->back_alert_trigger = false;
@@ -304,32 +314,45 @@ void WinnerWin::DoStartBacktest(bool)
         mock_para->capital = (top_price + bottom_price) * task_info->quantity * ui.spb_bktest_adv_section_count->value() / 2;
     }
     
-     
+#ifdef USE_LOCAL_STATIC     
     mock_strategy_para_vector.push_back(std::move(mock_para));
     taskinfo_vector.push_back( task_info );
-      
+#endif
+    std::shared_ptr<StrategyTask> task = nullptr;
     switch (task_info->type)
     {
     case TypeTask::EQUAL_SECTION:
         {
-            auto task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
+#ifdef USE_LOCAL_STATIC 
+            task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
             task_vector.push_back( std::move(task) );
+#else
+            task = std::make_shared<EqualSectionTask>(*task_info, app_, mock_para.get()); 
+#endif
             break;
         }
     case TypeTask::ADVANCE_SECTION:
         {
-            auto task = std::make_shared<AdvanceSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
+#ifdef USE_LOCAL_STATIC
+            task = std::make_shared<AdvanceSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
             task_vector.push_back( std::move(task) );
+#else
+            task = std::make_shared<AdvanceSectionTask>(*task_info, app_, mock_para.get()); 
+#endif
             break;
         }
     case TypeTask::BATCHES_BUY:
         {
-            auto task = std::make_shared<BatchesBuyTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
+#ifdef USE_LOCAL_STATIC
+            task = std::make_shared<BatchesBuyTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
             task_vector.push_back( std::move(task) );
+#else
+            task = std::make_shared<BatchesBuyTask>(*task_info, app_, mock_para.get()); 
+#endif
             break;
         }
     }
-    
+    app_->back_tester()->AddBackTestItem(task, task_info, mock_para);
      
 #ifdef TMP_TEST     
     const double capital = 200000.00;
@@ -432,13 +455,18 @@ void WinnerWin::DoStartBacktest(bool)
        
 #endif
 
+#ifdef USE_LOCAL_STATIC
     auto fenbi_callback_obj = std::make_shared<T_FenbiCallBack>();
     fenbi_callback_obj->call_back_func = FenbiCallBackFunc;
     fenbi_callback_obj->para = std::addressof(task_vector[0]);
     callback_vector.push_back(std::move(fenbi_callback_obj));
 
     assert(callback_vector.size());
+#endif
+
+#ifdef USE_LOCAL_STATIC
     memset(error, 0, sizeof(error)); 
+#endif
     //auto date_vector = app_->GetSpanTradeDates(20170914, 20171031);
     auto start_date = ui.de_bktest_begin->date().toString("yyyyMMdd").toInt();
     auto end_date = ui.de_bktest_end->date().toString("yyyyMMdd").toInt();
@@ -449,20 +477,19 @@ void WinnerWin::DoStartBacktest(bool)
         return;
     }
 
-#if 1 
     this->ui.pbtn_start_backtest->setDisabled(true);
     oneceshot_timer_contain_->InsertTimer(2 * 2 * 1000, [this]()
     {
         this->ui.pbtn_start_backtest->setEnabled(true);
     }); 
-#endif
 
+#ifdef USE_LOCAL_STATIC
     WinnerHisHq_GetHisFenbiDataBatch(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
             , start_date
             , end_date
             , callback_vector[0].get()
             , error);
-  
+#endif
 }
 
 
@@ -471,6 +498,7 @@ void WinnerWin::DoEnableBtnBackTest()
     ui.pbtn_start_backtest->setEnabled(true);
 }
 
+#ifdef USE_LOCAL_STATIC
 void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
 {
     //static unsigned int num = 0; 
@@ -520,3 +548,4 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
         strategy_task->app()->Emit_SigEnableBtnBackTest();
     }
 }
+#endif
