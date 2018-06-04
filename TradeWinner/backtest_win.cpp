@@ -483,6 +483,8 @@ void WinnerWin::DoStartBacktest(bool)
         this->ui.pbtn_start_backtest->setEnabled(true);
     }); 
 
+    app_->back_tester()->StartTest(start_date, end_date);
+
 #ifdef USE_LOCAL_STATIC
     WinnerHisHq_GetHisFenbiDataBatch(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
             , start_date

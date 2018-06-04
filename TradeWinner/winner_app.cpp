@@ -158,6 +158,8 @@ bool WinnerApp::Init()
     db_moudle_.LoadPositionMock(*position_mocker_);
     UpdatePositionMock();
     trade_agent_.Init(user_info_.id, &db_moudle_, position_mocker_);
+    
+    back_tester_->Init();
 	//------------------------ create tasks ------------------
    
 	winner_win_.Init(); // inner use task_info

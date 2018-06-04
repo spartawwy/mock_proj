@@ -13,6 +13,12 @@ WinnerHisHq_DisconnectDelegate WinnerHisHq_DisConnect;
 WinnerHisHq_GetHisFenbiDataDelegate WinnerHisHq_GetHisFenbiData;
 WinnerHisHq_GetHisFenbiDataBatchDelegate WinnerHisHq_GetHisFenbiDataBatch;
 */
+
+static void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
+{
+
+}
+
 BackTester::BackTester(WinnerApp *app)
     : app_(app)
     , st_api_handle(nullptr)
@@ -20,7 +26,7 @@ BackTester::BackTester(WinnerApp *app)
     , WinnerHisHq_DisConnect(nullptr)
     , WinnerHisHq_GetHisFenbiData(nullptr)
     , WinnerHisHq_GetHisFenbiDataBatch(nullptr)
-    , FuncFenbiCallback_(nullptr)
+    , p_fenbi_callback_obj_(nullptr)
     , id_backtest_items_(64)
 {
     cur_max_task_id_ = 0;
@@ -28,13 +34,16 @@ BackTester::BackTester(WinnerApp *app)
 
 BackTester::~BackTester()
 {
-    if( FuncFenbiCallback_ )
-        delete FuncFenbiCallback_;
+    if( p_fenbi_callback_obj_ )
+        delete p_fenbi_callback_obj_;
 }
 
 bool BackTester::Init()
 {
-    FuncFenbiCallback_ = new T_FenbiCallBack;
+    p_fenbi_callback_obj_ = new T_FenbiCallBack;
+    ((T_FenbiCallBack*)p_fenbi_callback_obj_)->call_back_func = FenbiCallBackFunc;
+    ((T_FenbiCallBack*)p_fenbi_callback_obj_)->para = this;
+
     /*HMODULE*/ st_api_handle = LoadLibrary("winner_api.dll");
     if( !st_api_handle )
     {
@@ -103,7 +112,18 @@ void BackTester::AddBackTestItem(std::shared_ptr<StrategyTask> &task, std::share
     id_backtest_items_.insert(std::make_pair(task->task_id(), std::make_tuple(task, task_info, para)));
 }
 
-void BackTester::StartTest()
+void BackTester::StartTest(int start_date, int end_date)
 {
+    assert(p_fenbi_callback_obj_);
+    char error[1024] = {0};
 
+    auto iter = id_backtest_items_.begin();
+    if( iter == id_backtest_items_.end() )
+        return;
+
+    auto strategy_task = std::get<0>(iter->second);
+    auto get_his_fenbi_data_batch = ((WinnerHisHq_GetHisFenbiDataBatchDelegate)WinnerHisHq_GetHisFenbiDataBatch);
+
+    get_his_fenbi_data_batch( const_cast<char*>(strategy_task->stock_code()), start_date, end_date, (T_FenbiCallBack*)p_fenbi_callback_obj_, error);
+    //FuncFenbiCallback_
 }
