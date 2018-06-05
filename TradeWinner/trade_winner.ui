@@ -3423,7 +3423,7 @@ background-color: rgb(255, 255,255);</string>
         <x>419</x>
         <y>89</y>
         <width>361</width>
-        <height>381</height>
+        <height>271</height>
        </rect>
       </property>
       <widget class="QLabel" name="label_bktest_maxprice_5">
@@ -3714,6 +3714,44 @@ background-color: rgb(255, 255,255);</string>
         <string>计算满仓资金</string>
        </property>
       </widget>
+      <zorder>label_bktest_maxprice_5</zorder>
+      <zorder>dbspb_bktest_adv_max_price</zorder>
+      <zorder>label_bktest_maxprice_adv</zorder>
+      <zorder>dbspb_bktest_adv_min_price</zorder>
+      <zorder>label_bktest_adv_reb</zorder>
+      <zorder>spb_bktest_adv_rebounce</zorder>
+      <zorder>lab_bktest_advsec_qty</zorder>
+      <zorder>spinBox_bktest_adv_qty</zorder>
+      <zorder>dbspb_bktest_adv_start_capital</zorder>
+      <zorder>lab_bktest_start_capital_2</zorder>
+      <zorder>spb_bktest_adv_section_count</zorder>
+      <zorder>lab_bktest_adv_secnums</zorder>
+      <zorder>label_raise_percent_rebounce_2</zorder>
+      <zorder>pbtn_bktest_need_capital</zorder>
+      <zorder>tbview_bktest_tasks</zorder>
+     </widget>
+     <widget class="QWidget" name="wid_bktest_task_tbview" native="true">
+      <property name="geometry">
+       <rect>
+        <x>420</x>
+        <y>370</y>
+        <width>431</width>
+        <height>101</height>
+       </rect>
+      </property>
+      <widget class="QTableView" name="tbview_bktest_tasks">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>401</width>
+         <height>81</height>
+        </rect>
+       </property>
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
+       </property>
+      </widget>
      </widget>
     </widget>
    </widget>
@@ -3724,7 +3762,7 @@ background-color: rgb(255, 255,255);</string>
      <x>0</x>
      <y>0</y>
      <width>917</width>
-     <height>18</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_system">

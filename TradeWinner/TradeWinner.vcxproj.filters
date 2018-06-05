@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;cxx;c;def</Extensions>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h</Extensions>
@@ -45,16 +41,20 @@
     <Filter Include="moudle\ui_moudle">
       <UniqueIdentifier>{a7d10936-a1fd-43be-93a3-69c799ba3992}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;cxx;c;def</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\qrc_tradewinner.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="stock_ticker.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="common.cpp">
       <Filter>Header Files</Filter>
@@ -66,7 +66,7 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="winner_app.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_winner_win.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -75,7 +75,7 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="trade_agent.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="strategy_task.cpp">
       <Filter>task</Filter>
@@ -201,7 +201,7 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="back_tester.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="position_mocker.cpp">
       <Filter>moudle</Filter>
@@ -224,7 +224,7 @@
       <Filter>Resource Files</Filter>
     </CustomBuild>
     <CustomBuild Include="winner_app.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source</Filter>
     </CustomBuild>
     <CustomBuild Include="login_dlg.ui">
       <Filter>Form Files</Filter>
@@ -268,7 +268,7 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="stock_ticker.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="common.h">
       <Filter>Header Files</Filter>
@@ -277,7 +277,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="trade_agent.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="strategy_task.h">
       <Filter>task</Filter>
@@ -361,7 +361,7 @@
       <Filter>moudle</Filter>
     </ClInclude>
     <ClInclude Include="back_tester.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="position_mocker.h">
       <Filter>moudle</Filter>

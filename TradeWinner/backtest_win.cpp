@@ -1,5 +1,8 @@
 #include "winner_win.h"
 
+#include <QtGui/QStandardItemModel>
+#include <qtextcodec.h>
+
 #include <TLib/core/tsystem_utility_functions.h>
 
 #include "winner_app.h"
@@ -35,6 +38,10 @@ static const char cst_str_eqsec_bktest[] = {"区间交易回测"};
 static const char cst_str_advancesec_bktest[] = {"贝塔交易回测"};
 static const char cst_str_batchbuy_bktest[] = {"分批买入回测"};
 
+static const int cst_bktest_tbview_col_count = 6;
+static const int cst_bktest_tbview_rowindex_task_id = 0;
+static const int cst_bktest_tbview_rowindex_task_type = 1;
+
 bool WinnerWin::InitBacktestWin()
 {
     bool ret = true;
@@ -62,7 +69,19 @@ bool WinnerWin::InitBacktestWin()
     auto begin_date = app_->exchange_calendar().TodayAddDays(-30);
     ui.de_bktest_begin->setDate(QDate(begin_date/10000, begin_date % 10000 / 100, begin_date % 100));
     ui.de_bktest_end->setDate(QDate(cur_date/10000, cur_date % 10000 / 100, cur_date % 100));
+    // ----------tbview_bktest_tasks----------------------
+    QStandardItemModel * model = new QStandardItemModel(0, cst_bktest_tbview_col_count, ui.wid_bktest_task_tbview);
+    model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_task_id, new QStandardItem(QString::fromLocal8Bit("任务号")));
+    model->horizontalHeaderItem(cst_bktest_tbview_rowindex_task_id)->setTextAlignment(Qt::AlignCenter);
+     
+    model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_task_type, new QStandardItem("类型"));
 
+    ui.tbview_bktest_tasks->setModel(model);
+    ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_task_type, 5);
+
+    ui.tbview_bktest_tasks->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    // ---------------------------------------------------
 #ifdef USE_LOCAL_STATIC   
     /*HMODULE*/ st_api_handle = LoadLibrary("winner_api.dll");
     if( !st_api_handle )

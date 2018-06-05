@@ -22,15 +22,28 @@ WinnerHisHq_GetHisFenbiDataBatchDelegate WinnerHisHq_GetHisFenbiDataBatch;
 
 void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
 {
-    static auto show_result = [](std::shared_ptr<StrategyTask>& strategy_task, int date, double price)
+    static auto show_result = [](std::shared_ptr<StrategyTask>& strategy_task, int date, double price, bool is_end)
     {
         double ori_assets = strategy_task->GetOriMockAssets();
         double assets = strategy_task->GetMockAssets(price);
 
-        auto p_str = new std::string(TSystem::utility::FormatStr("back_test %s original assets:%.2f | %d ret assets:%.2f", strategy_task->stock_code(), ori_assets, date, assets));
-        strategy_task->app()->local_logger().LogLocal(cst_back_test_tag, *p_str);
-        strategy_task->app()->AppendLog2Ui(p_str->c_str());
-        strategy_task->app()->EmitSigShowUi(p_str);
+        
+        if( is_end )
+        {
+            auto profit = (assets - ori_assets) / ori_assets * 100;
+            auto p_str = new std::string(TSystem::utility::FormatStr("back_test %s original assets:%.2f | %d ret assets:%.2f\n | PROFIT:%.2f%%%", strategy_task->stock_code(), ori_assets, date, assets, profit));
+
+            strategy_task->app()->local_logger().LogLocal(cst_back_test_tag, *p_str);
+            strategy_task->app()->AppendLog2Ui(p_str->c_str());
+            strategy_task->app()->EmitSigShowUi(p_str);
+        }else
+        {
+            auto p_str = new std::string(TSystem::utility::FormatStr("back_test %s original assets:%.2f | %d ret assets:%.2f", strategy_task->stock_code(), ori_assets, date, assets));
+
+            strategy_task->app()->local_logger().LogLocal(cst_back_test_tag, *p_str);
+            strategy_task->app()->AppendLog2Ui(p_str->c_str());
+            delete p_str; p_str = nullptr;
+        }
         //qDebug() << "FenbiCallBackFunc assets: " << assets << "\n";
     }; 
 
@@ -69,11 +82,11 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
         if( strategy_task->is_waitting_removed() )
         {
             strategy_task->has_bktest_result_fetched(true);
-            show_result(strategy_task, p_callback_obj->date, data->cur_price);  
+            show_result(strategy_task, p_callback_obj->date, data->cur_price, is_end);  
 
         }else if( is_end ) 
         {
-            show_result(strategy_task, p_callback_obj->date, data->cur_price);  
+            show_result(strategy_task, p_callback_obj->date, data->cur_price, is_end);  
             strategy_task->app()->Emit_SigEnableBtnBackTest();
         }
     });
