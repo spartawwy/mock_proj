@@ -29,7 +29,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>7</number>
+     <number>8</number>
     </property>
     <property name="iconSize">
      <size>
@@ -3679,7 +3679,7 @@ background-color: rgb(255, 255,255);</string>
        <property name="geometry">
         <rect>
          <x>210</x>
-         <y>180</y>
+         <y>140</y>
          <width>31</width>
          <height>21</height>
         </rect>
@@ -3694,6 +3694,24 @@ background-color: rgb(255, 255,255);</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pbtn_bktest_need_capital">
+       <property name="geometry">
+        <rect>
+         <x>240</x>
+         <y>220</y>
+         <width>111</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>计算满仓资金</string>
        </property>
       </widget>
      </widget>

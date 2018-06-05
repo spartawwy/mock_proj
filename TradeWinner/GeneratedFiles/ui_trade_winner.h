@@ -277,6 +277,7 @@ public:
     QSpinBox *spb_bktest_adv_section_count;
     QLabel *lab_bktest_adv_secnums;
     QLabel *label_raise_percent_rebounce_2;
+    QPushButton *pbtn_bktest_need_capital;
     QMenuBar *menuBar;
     QMenu *menu_system;
     QMenu *menu_help;
@@ -1260,9 +1261,15 @@ public:
         lab_bktest_adv_secnums->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         label_raise_percent_rebounce_2 = new QLabel(wid_bktest_adv_sec);
         label_raise_percent_rebounce_2->setObjectName(QStringLiteral("label_raise_percent_rebounce_2"));
-        label_raise_percent_rebounce_2->setGeometry(QRect(210, 180, 31, 21));
+        label_raise_percent_rebounce_2->setGeometry(QRect(210, 140, 31, 21));
         label_raise_percent_rebounce_2->setFont(font);
         label_raise_percent_rebounce_2->setAlignment(Qt::AlignCenter);
+        pbtn_bktest_need_capital = new QPushButton(wid_bktest_adv_sec);
+        pbtn_bktest_need_capital->setObjectName(QStringLiteral("pbtn_bktest_need_capital"));
+        pbtn_bktest_need_capital->setGeometry(QRect(240, 220, 111, 23));
+        QFont font2;
+        font2.setPointSize(11);
+        pbtn_bktest_need_capital->setFont(font2);
         tabwid_holder->addTab(tab_back_test, QString());
         TradeWinnerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(TradeWinnerClass);
@@ -1339,7 +1346,7 @@ public:
 
         retranslateUi(TradeWinnerClass);
 
-        tabwid_holder->setCurrentIndex(7);
+        tabwid_holder->setCurrentIndex(8);
 
 
         QMetaObject::connectSlotsByName(TradeWinnerClass);
@@ -1503,6 +1510,7 @@ public:
         lab_bktest_start_capital_2->setText(QApplication::translate("TradeWinnerClass", "\346\211\200\351\234\200\350\265\204\351\207\221:", 0));
         lab_bktest_adv_secnums->setText(QApplication::translate("TradeWinnerClass", "\345\214\272\351\227\264\346\225\260:", 0));
         label_raise_percent_rebounce_2->setText(QApplication::translate("TradeWinnerClass", "%", 0));
+        pbtn_bktest_need_capital->setText(QApplication::translate("TradeWinnerClass", "\350\256\241\347\256\227\346\273\241\344\273\223\350\265\204\351\207\221", 0));
         tabwid_holder->setTabText(tabwid_holder->indexOf(tab_back_test), QApplication::translate("TradeWinnerClass", "\345\233\236\346\265\213", 0));
         menu_system->setTitle(QApplication::translate("TradeWinnerClass", "\347\263\273\347\273\237", 0));
         menu_help->setTitle(QApplication::translate("TradeWinnerClass", "\345\270\256\345\212\251", 0));

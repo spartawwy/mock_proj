@@ -104,6 +104,7 @@ public slots:
     void DoBktestTypeChanged(const QString&);
     void DoStartBacktest(bool);
     void DoEnableBtnBackTest();
+    void DoAdveqGetNeedCapital();
     //------------------
 	
     void ChangeTabBuyAssistantImg(TypeTask type);

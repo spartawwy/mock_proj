@@ -29,6 +29,10 @@ public:
 
     void StartTest(int start_date, int end_date);
 
+    TTaskIdMapBackTestItem & id_backtest_items() { return id_backtest_items_; }
+
+    void * p_fenbi_callback_obj() { return p_fenbi_callback_obj_; } //FuncFenbiCallback_;
+
 private:
      
     WinnerApp * app_;
@@ -38,7 +42,7 @@ private:
     void *  WinnerHisHq_DisConnect;
     void *  WinnerHisHq_GetHisFenbiData;
     void *  WinnerHisHq_GetHisFenbiDataBatch;
-    void *  p_fenbi_callback_obj_; //FuncFenbiCallback_;
+    void *  p_fenbi_callback_obj_; // ;
 
     TTaskIdMapBackTestItem  id_backtest_items_;
     std::atomic_int  cur_max_task_id_;
@@ -46,7 +50,7 @@ private:
     TTaskIdMapTaskInfo  id_task_infos_; 
     TTaskIdMapMockPara  id_mock_strategy_para_;*/
     //static std::vector<std::shared_ptr<T_FenbiCallBack> > callback_vector;
-     
+      
 };
 
 #endif // BACK_TESTER_SDF7ERETR_H_

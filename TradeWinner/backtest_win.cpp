@@ -53,10 +53,16 @@ bool WinnerWin::InitBacktestWin()
     ret = QObject::connect(m_backtest_list_hint_, SIGNAL(clicked(QModelIndex)), this, SLOT(OnClickedListWidget(QModelIndex)));
     ret = QObject::connect(m_backtest_list_hint_, SIGNAL(choiceStr(QString)), this, SLOT(ChangeFromStationText(QString)));
      
+    ret = QObject::connect(ui.pbtn_bktest_need_capital, SIGNAL(clicked(bool)), this, SLOT(DoAdveqGetNeedCapital()));
 
     ret = connect(ui.pbtn_start_backtest, SIGNAL(clicked(bool)), this, SLOT(DoStartBacktest(bool)));
     ret = connect(this->app_, SIGNAL(SigEnableBtnBackTest()), this, SLOT(DoEnableBtnBackTest()));
      
+    auto cur_date = std::get<0>(CurrentDateIntTime());
+    auto begin_date = app_->exchange_calendar().TodayAddDays(-30);
+    ui.de_bktest_begin->setDate(QDate(begin_date/10000, begin_date % 10000 / 100, begin_date % 100));
+    ui.de_bktest_end->setDate(QDate(cur_date/10000, cur_date % 10000 / 100, cur_date % 100));
+
 #ifdef USE_LOCAL_STATIC   
     /*HMODULE*/ st_api_handle = LoadLibrary("winner_api.dll");
     if( !st_api_handle )
@@ -499,6 +505,37 @@ void WinnerWin::DoEnableBtnBackTest()
 {
     ui.pbtn_start_backtest->setEnabled(true);
 }
+
+
+void WinnerWin::DoAdveqGetNeedCapital()
+{
+    if( ui.dbspb_bktest_adv_max_price->value() < ui.dbspb_bktest_adv_min_price->value() + 0.05 )
+    {
+        app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("顶部价格必须大于底部价格一定值!"));
+        return;
+    }
+   
+    QString::SectionFlag flag = QString::SectionSkipEmpty;
+    QString text_str = ui.le_bktest_stock->text().trimmed();
+    QString stock_str = text_str.section('/', 0, 0, flag);
+
+    //if( !CheckAdveqTaskWinInput(stock_str, true) )
+    //    return;
+     
+    double qty = ui.spinBox_bktest_adv_qty->value();
+    double top_price = ui.dbspb_bktest_adv_max_price->value();
+    double bottom_price = ui.dbspb_bktest_adv_min_price->value();
+    const int section_count = ui.spb_bktest_adv_section_count->value(); 
+    double atom_h = (top_price - bottom_price ) / section_count;
+    double need_capital = 0.0;
+    for( int i = 0; i < section_count; ++i )
+    {
+        double cur_sec_bottom = bottom_price + atom_h * i;
+        need_capital += (cur_sec_bottom + atom_h / 2) * qty;
+    } 
+    ui.dbspb_bktest_adv_start_capital->setValue(need_capital);
+}
+
 
 #ifdef USE_LOCAL_STATIC
 void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)

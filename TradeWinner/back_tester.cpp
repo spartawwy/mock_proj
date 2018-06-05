@@ -2,10 +2,16 @@
 
 #include <qt_windows.h>
 
+#include <algorithm>
+
 #include <TLib/core/tsystem_utility_functions.h>
+
+#include <qdebug.h>
 
 #include "winner_hq_api.h"
 #include "winner_app.h"
+
+static const std::string cst_back_test_tag = "bktest";
 
 /*
 WinnerHisHq_ConnectDelegate WinnerHisHq_Connect;
@@ -14,9 +20,64 @@ WinnerHisHq_GetHisFenbiDataDelegate WinnerHisHq_GetHisFenbiData;
 WinnerHisHq_GetHisFenbiDataBatchDelegate WinnerHisHq_GetHisFenbiDataBatch;
 */
 
-static void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
+void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
 {
+    static auto show_result = [](std::shared_ptr<StrategyTask>& strategy_task, int date, double price)
+    {
+        double ori_assets = strategy_task->GetOriMockAssets();
+        double assets = strategy_task->GetMockAssets(price);
 
+        auto p_str = new std::string(TSystem::utility::FormatStr("back_test %s original assets:%.2f | %d ret assets:%.2f", strategy_task->stock_code(), ori_assets, date, assets));
+        strategy_task->app()->local_logger().LogLocal(cst_back_test_tag, *p_str);
+        strategy_task->app()->AppendLog2Ui(p_str->c_str());
+        strategy_task->app()->EmitSigShowUi(p_str);
+        //qDebug() << "FenbiCallBackFunc assets: " << assets << "\n";
+    }; 
+
+    if( !para )
+        return;
+
+    BackTester &back_tester = *(BackTester*)(((T_FenbiCallBack*)para)->para);
+
+    auto data = std::make_shared<QuotesData>(); 
+    data->time_stamp= quote_data->time;
+    data->cur_price = quote_data->price;
+    //qDebug() << p_callback_obj->serial++ 
+     
+    struct tm * timeinfo = localtime(&quote_data->time);
+    int long_date = (timeinfo->tm_year + 1900) * 10000 + (timeinfo->tm_mon + 1) * 100 + timeinfo->tm_mday;
+     
+    std::for_each(back_tester.id_backtest_items().begin(), back_tester.id_backtest_items().end(), [&data, &back_tester, is_end, long_date](TTaskIdMapBackTestItem::reference entry)
+    {
+        auto task_id = entry.first;
+        std::shared_ptr<StrategyTask> strategy_task = std::get<0>(entry.second);
+        //std::shared_ptr<T_TaskInformation> task_info = std::get<1>(entry.second);
+        //std::shared_ptr<T_MockStrategyPara> mock_para = std::get<2>(entry.second);
+
+        T_FenbiCallBack *p_callback_obj = ((T_FenbiCallBack*)(back_tester.p_fenbi_callback_obj()));
+        p_callback_obj->serial++ ;
+
+        if( strategy_task->has_bktest_result_fetched() )
+            return;
+        if( long_date != p_callback_obj->date )
+        { 
+            p_callback_obj->date = long_date; 
+            strategy_task->do_mock_date_change(long_date);
+        }
+        strategy_task->ObtainData(data);
+
+        if( strategy_task->is_waitting_removed() )
+        {
+            strategy_task->has_bktest_result_fetched(true);
+            show_result(strategy_task, p_callback_obj->date, data->cur_price);  
+
+        }else if( is_end ) 
+        {
+            show_result(strategy_task, p_callback_obj->date, data->cur_price);  
+            strategy_task->app()->Emit_SigEnableBtnBackTest();
+        }
+    });
+     
 }
 
 BackTester::BackTester(WinnerApp *app)
@@ -114,6 +175,8 @@ void BackTester::AddBackTestItem(std::shared_ptr<StrategyTask> &task, std::share
 
 void BackTester::StartTest(int start_date, int end_date)
 {
+    if( !ConnectHisHqServer() )
+        return;
     assert(p_fenbi_callback_obj_);
     char error[1024] = {0};
 
@@ -125,5 +188,6 @@ void BackTester::StartTest(int start_date, int end_date)
     auto get_his_fenbi_data_batch = ((WinnerHisHq_GetHisFenbiDataBatchDelegate)WinnerHisHq_GetHisFenbiDataBatch);
 
     get_his_fenbi_data_batch( const_cast<char*>(strategy_task->stock_code()), start_date, end_date, (T_FenbiCallBack*)p_fenbi_callback_obj_, error);
-    //FuncFenbiCallback_
+
+
 }
