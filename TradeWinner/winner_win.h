@@ -105,6 +105,8 @@ public slots:
     void DoStartBacktest(bool);
     void DoEnableBtnBackTest();
     void DoAdveqGetNeedCapital();
+    void DoBktestAddTask();
+    void DoBktestClearTask();
     //------------------
 	
     void ChangeTabBuyAssistantImg(TypeTask type);

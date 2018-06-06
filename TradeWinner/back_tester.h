@@ -24,7 +24,7 @@ public:
     bool Init();
     bool ConnectHisHqServer();
     void AddBackTestItem(std::shared_ptr<StrategyTask> &task, std::shared_ptr<T_TaskInformation> &task_info, std::shared_ptr<T_MockStrategyPara> &para);
-
+    void ClearTestItems(){ id_backtest_items_.clear(); cur_max_task_id_ = 0; }
     int AllocTaskId() { return ++ cur_max_task_id_; }
 
     void StartTest(int start_date, int end_date);

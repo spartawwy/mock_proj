@@ -31,7 +31,7 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
         if( is_end )
         {
             auto profit = (assets - ori_assets) / ori_assets * 100;
-            auto p_str = new std::string(TSystem::utility::FormatStr("back_test %s original assets:%.2f | %d ret assets:%.2f\n | PROFIT:%.2f%%%", strategy_task->stock_code(), ori_assets, date, assets, profit));
+            auto p_str = new std::string(TSystem::utility::FormatStr("back_test %s original assets:%.2f | %d ret assets:%.2f\n | PROFIT PERCENT:%.2f", strategy_task->stock_code(), ori_assets, date, assets, profit));
 
             strategy_task->app()->local_logger().LogLocal(cst_back_test_tag, *p_str);
             strategy_task->app()->AppendLog2Ui(p_str->c_str());

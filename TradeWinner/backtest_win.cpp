@@ -64,7 +64,8 @@ bool WinnerWin::InitBacktestWin()
 
     ret = connect(ui.pbtn_start_backtest, SIGNAL(clicked(bool)), this, SLOT(DoStartBacktest(bool)));
     ret = connect(this->app_, SIGNAL(SigEnableBtnBackTest()), this, SLOT(DoEnableBtnBackTest()));
-     
+    ret = connect(ui.pbtn_bktest_add_task, SIGNAL(clicked(bool)), this, SLOT(DoBktestAddTask()));
+    ret = connect(ui.pbtn_bktest_clear_task, SIGNAL(clicked(bool)), this, SLOT(DoBktestClearTask()));
     auto cur_date = std::get<0>(CurrentDateIntTime());
     auto begin_date = app_->exchange_calendar().TodayAddDays(-30);
     ui.de_bktest_begin->setDate(QDate(begin_date/10000, begin_date % 10000 / 100, begin_date % 100));
@@ -149,20 +150,54 @@ void WinnerWin::DoBktestTypeChanged(const QString&)
 
 void WinnerWin::DoStartBacktest(bool)
 {
+    this->ui.pbtn_start_backtest->setDisabled(true);
+    oneceshot_timer_contain_->InsertTimer(2 * 2 * 1000, [this]()
+    {
+        this->ui.pbtn_start_backtest->setEnabled(true);
+    }); 
+
+    //auto date_vector = app_->GetSpanTradeDates(20170914, 20171031);
+    auto start_date = ui.de_bktest_begin->date().toString("yyyyMMdd").toInt();
+    auto end_date = ui.de_bktest_end->date().toString("yyyyMMdd").toInt();
+    auto date_vector = app_->GetSpanTradeDates(start_date, end_date);
+    if( date_vector.size() < 1 )
+    {
+        app_->winner_win().DoStatusBar("无可用交易日!");
+        return;
+    }
+    app_->back_tester()->StartTest(start_date, end_date);
+
+#ifdef USE_LOCAL_STATIC
+    WinnerHisHq_GetHisFenbiDataBatch(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
+            , start_date
+            , end_date
+            , callback_vector[0].get()
+            , error);
+#endif
+}
+
+
+void WinnerWin::DoEnableBtnBackTest()
+{
+    ui.pbtn_start_backtest->setEnabled(true);
+}
+
+void WinnerWin::DoBktestAddTask()
+{
     static auto check_le_stock = [this]() ->bool
     {
-       // check stock codes
-		QString::SectionFlag flag = QString::SectionSkipEmpty;
-		QString text_str = ui.le_bktest_stock->text().trimmed();
-		QString stock_str = text_str.section('/', 0, 0, flag);
+        // check stock codes
+        QString::SectionFlag flag = QString::SectionSkipEmpty;
+        QString text_str = ui.le_bktest_stock->text().trimmed();
+        QString stock_str = text_str.section('/', 0, 0, flag);
         if( stock_str.length() != 6 )
         {
-			// todo: show erro info
+            // todo: show erro info
             ui.le_bktest_stock->setFocus();
             this->DoStatusBar("股票代码有误!");
             return false;
         } 
-        
+
         if( ui.dbspbox_bktest_start_price->value() < 0.01 )
         {
             ui.dbspbox_bktest_start_price->setFocus();
@@ -200,7 +235,7 @@ void WinnerWin::DoStartBacktest(bool)
             this->DoStatusBar("买卖数量不能为0!");
             return false;
         }
-        
+
         if( ui.cb_bktest_max_qty->isChecked() && ui.spinBox_bktest_max_qty->value() < 100 )
         {
             ui.cb_bktest_max_qty->setFocus();
@@ -225,7 +260,7 @@ void WinnerWin::DoStartBacktest(bool)
         app_->winner_win().DoStatusBar("回测接口未安装!");
         return;
     }
- 
+
     int ret_val = -1;
     //ret_val = WinnerHisHq_Connect("192.168.11.5", 50010, result, error);
     char result[1024] = {0};
@@ -241,13 +276,13 @@ void WinnerWin::DoStartBacktest(bool)
         this->DoStatusBar("服务器未连接!");
         return;
     }
- 
+
     //-----------------
     static std::vector<std::shared_ptr<StrategyTask> > task_vector;
     static std::vector<std::shared_ptr<T_TaskInformation> > taskinfo_vector;
     static std::vector<std::shared_ptr<T_FenbiCallBack> > callback_vector;
     static std::vector<std::shared_ptr<T_MockStrategyPara> > mock_strategy_para_vector;
-   
+
     task_vector.clear();
     taskinfo_vector.clear();
     callback_vector.clear();
@@ -261,16 +296,16 @@ void WinnerWin::DoStartBacktest(bool)
     QString stock_str = ui.le_bktest_stock->text().trimmed();
     QString stock_pinyin = stock_str.section('/', 1, 1, flag);
     task_info->stock = stock_str.section('/', 0, 0, flag).toLocal8Bit();
- 
+
     task_info->id = app_->back_tester()->AllocTaskId(); 
     task_info->type = (TypeTask)ui.cb_bktest_type->currentData().toInt();
-     
+
     task_info->back_alert_trigger = false;
     task_info->assistant_field = ""; 
     task_info->continue_second = 0; 
 
     auto mock_para = std::make_shared<T_MockStrategyPara>();
-     
+
     if( task_info->type == TypeTask::BATCHES_BUY || task_info->type == TypeTask::EQUAL_SECTION )
     {
         if( !check_le_stock() ) 
@@ -338,7 +373,7 @@ void WinnerWin::DoStartBacktest(bool)
         mock_para->avaliable_position = 0;
         mock_para->capital = (top_price + bottom_price) * task_info->quantity * ui.spb_bktest_adv_section_count->value() / 2;
     }
-    
+
 #ifdef USE_LOCAL_STATIC     
     mock_strategy_para_vector.push_back(std::move(mock_para));
     taskinfo_vector.push_back( task_info );
@@ -377,108 +412,10 @@ void WinnerWin::DoStartBacktest(bool)
             break;
         }
     }
+#ifndef USE_LOCAL_STATIC
     app_->back_tester()->AddBackTestItem(task, task_info, mock_para);
-     
-#ifdef TMP_TEST     
-    const double capital = 200000.00;
-
-    auto task_info = std::make_shared<T_TaskInformation>();
-#if 1
-    task_info->id = 123;
-    task_info->type = TypeTask::EQUAL_SECTION; 
-    task_info->stock = "601069";
-    task_info->back_alert_trigger = false;
-    task_info->rebounce = 0.3;
-    //task_info->rebounce = 0;
-    task_info->continue_second = 0; 
-    task_info->quantity = 500;
-    const double alert_price = 20.3;
-    task_info->alert_price = alert_price;
-    task_info->assistant_field = "";
-
-    task_info->secton_task.fall_percent = 1;
-    //task_info->secton_task.fall_infection = 0.2;
-    task_info->secton_task.raise_percent = 1;
-    //task_info->secton_task.raise_infection = 0.2;
-    task_info->secton_task.max_position = 3000*10;
-    task_info->secton_task.max_trig_price = 23.0;
-    task_info->secton_task.min_trig_price = 15.0; 
-    taskinfo_vector.push_back( std::move(task_info));
-
-    auto mock_para = std::make_shared<T_MockStrategyPara>();
-    mock_para->avaliable_position = (capital / alert_price ) / 2 / 100 * 100;
-    mock_para->capital = capital - mock_para->avaliable_position * alert_price;
-    mock_strategy_para_vector.push_back(std::move(mock_para));
-
-    auto equal_sec_task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
-    task_vector.push_back( std::move(equal_sec_task) );
-
-#elif 0 // test equal section task 
-    task_info->id = 123;
-    task_info->type = TypeTask::EQUAL_SECTION;
-    //task_info->stock = "600123";
-    task_info->stock = "000789";
-    task_info->back_alert_trigger = false;
-    //task_in->o.rebounce = 0.3;
-    task_info->continue_second = 0;
-    //task_info->quantity = 400;
-    task_info->quantity = 5000;
-    const double alert_price = 8.2;
-    task_info->alert_price = alert_price;
-    task_info->assistant_field = "";
-
-    task_info->secton_task.fall_percent = 0.7;
-    task_info->secton_task.raise_percent = 0.7;
-    task_info->secton_task.fall_infection = 0.2;
-    task_info->secton_task.raise_percent = 0.2;
-    task_info->secton_task.max_position = 3000*10;
-    task_info->secton_task.max_trig_price = 9.1;
-    task_info->secton_task.min_trig_price = 7.95; 
-    taskinfo_vector.push_back( std::move(task_info));
-
-    auto mock_para = std::make_shared<T_MockStrategyPara>();
-    mock_para->avaliable_position = (capital / alert_price ) / 2 / 100 * 100;
-    mock_para->capital = capital - mock_para->avaliable_position * alert_price;
-    mock_strategy_para_vector.push_back(std::move(mock_para));
-
-    auto equal_sec_task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
-    task_vector.push_back( std::move(equal_sec_task) );
-
-#else
-    task_info->id = 888;
-    task_info->type = TypeTask::ADVANCE_SECTION;
-    task_info->stock = "000789";
-    task_info->rebounce = 1;   
-    task_info->back_alert_trigger = false;
-    task_info->continue_second = 0; 
-    task_info->assistant_field = ""; 
-    task_info->advance_section_task.is_original = true;
-    
-    double top_price = 9.0;
-    double bottom_price = 8.0;
-    double mid_price = (top_price + bottom_price) / 2;
-    const int section_num = 5;
-    task_info->quantity = int(capital / mid_price / section_num);
-    assert(top_price > bottom_price && section_num > 1);
-
-    int i = 0;
-    for( ; i < section_num; ++i )
-    {
-        std::string temp_str = std::to_string(bottom_price + ((top_price - bottom_price) / section_num) * i);
-        task_info->advance_section_task.portion_sections += temp_str + ";";
-
-    }
-    if( i == section_num )
-        task_info->advance_section_task.portion_sections += std::to_string(bottom_price + ((top_price - bottom_price) / section_num) * i);
-
-    task_info->advance_section_task.portion_states = "";
-     
-    taskinfo_vector.push_back( std::move(task_info));
-    auto equal_sec_task = std::make_shared<AdvanceSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
-    task_vector.push_back( std::move(equal_sec_task) );
-#endif 
-       
 #endif
+ 
 
 #ifdef USE_LOCAL_STATIC
     auto fenbi_callback_obj = std::make_shared<T_FenbiCallBack>();
@@ -492,39 +429,13 @@ void WinnerWin::DoStartBacktest(bool)
 #ifdef USE_LOCAL_STATIC
     memset(error, 0, sizeof(error)); 
 #endif
-    //auto date_vector = app_->GetSpanTradeDates(20170914, 20171031);
-    auto start_date = ui.de_bktest_begin->date().toString("yyyyMMdd").toInt();
-    auto end_date = ui.de_bktest_end->date().toString("yyyyMMdd").toInt();
-    auto date_vector = app_->GetSpanTradeDates(start_date, end_date);
-    if( date_vector.size() < 1 )
-    {
-        app_->winner_win().DoStatusBar("无可用交易日!");
-        return;
-    }
-
-    this->ui.pbtn_start_backtest->setDisabled(true);
-    oneceshot_timer_contain_->InsertTimer(2 * 2 * 1000, [this]()
-    {
-        this->ui.pbtn_start_backtest->setEnabled(true);
-    }); 
-
-    app_->back_tester()->StartTest(start_date, end_date);
-
-#ifdef USE_LOCAL_STATIC
-    WinnerHisHq_GetHisFenbiDataBatch(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
-            , start_date
-            , end_date
-            , callback_vector[0].get()
-            , error);
-#endif
+   
 }
 
-
-void WinnerWin::DoEnableBtnBackTest()
+void WinnerWin::DoBktestClearTask()
 {
-    ui.pbtn_start_backtest->setEnabled(true);
+    app_->back_tester()->ClearTestItems();
 }
-
 
 void WinnerWin::DoAdveqGetNeedCapital()
 {
