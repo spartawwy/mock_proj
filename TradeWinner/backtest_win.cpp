@@ -430,11 +430,13 @@ void WinnerWin::DoBktestAddTask()
     memset(error, 0, sizeof(error)); 
 #endif
    
+	this->DoStatusBar("添加成功!");
 }
 
 void WinnerWin::DoBktestClearTask()
 {
     app_->back_tester()->ClearTestItems();
+	this->DoStatusBar("清除成功!");
 }
 
 void WinnerWin::DoAdveqGetNeedCapital()
