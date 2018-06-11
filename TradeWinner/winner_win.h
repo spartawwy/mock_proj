@@ -79,6 +79,7 @@ public slots:
     void DoQueryQtyCanBuy();
 
 	void ResetBuyTabTaskTime();
+	void InsertIntoBktestTbvTask(T_TaskInformation &task_info);
 
     //---------------eqsection task related----
 	void DoAddEqSectionTask();

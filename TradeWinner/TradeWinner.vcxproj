@@ -89,7 +89,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>$(QTDIR)\lib;Z:\lib\win32;$(VMP_ROOT)\Lib\COFF;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(QTDIR)\lib;Z:\lib\win32;$(VMP_ROOT)\Lib\Windows;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;TLib_d.lib;TLibTool_d.lib;SQLite_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <StackReserveSize>2097152</StackReserveSize>

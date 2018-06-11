@@ -41,6 +41,10 @@ static const char cst_str_batchbuy_bktest[] = {"分批买入回测"};
 static const int cst_bktest_tbview_col_count = 6;
 static const int cst_bktest_tbview_rowindex_task_id = 0;
 static const int cst_bktest_tbview_rowindex_task_type = 1;
+static const int cst_bktest_tbview_rowindex_task_qty = 2;
+static const int cst_bktest_tbview_rowindex_task_inflect = 3; 
+static const int cst_bktest_tbview_rowindex_top_price = 4;
+static const int cst_bktest_tbview_rowindex_clear_price = 5;
 
 bool WinnerWin::InitBacktestWin()
 {
@@ -75,7 +79,20 @@ bool WinnerWin::InitBacktestWin()
     model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_task_id, new QStandardItem(QString::fromLocal8Bit("任务号")));
     model->horizontalHeaderItem(cst_bktest_tbview_rowindex_task_id)->setTextAlignment(Qt::AlignCenter);
      
-    model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_task_type, new QStandardItem("类型"));
+    model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_task_type, new QStandardItem(QString::fromLocal8Bit("类型")));
+	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_task_id)->setTextAlignment(Qt::AlignCenter);
+	
+    model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_task_qty, new QStandardItem(QString::fromLocal8Bit("每次数量")));
+	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_task_qty)->setTextAlignment(Qt::AlignCenter);
+
+	model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_task_inflect, new QStandardItem(QString::fromLocal8Bit("拐点")));
+	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_task_inflect)->setTextAlignment(Qt::AlignCenter);
+
+	model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_top_price, new QStandardItem(QString::fromLocal8Bit("顶部价格")));
+	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_top_price)->setTextAlignment(Qt::AlignCenter);
+
+	model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_clear_price, new QStandardItem(QString::fromLocal8Bit("清仓价格")));
+	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_clear_price)->setTextAlignment(Qt::AlignCenter);
 
     ui.tbview_bktest_tasks->setModel(model);
     ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_task_type, 5);
@@ -413,7 +430,13 @@ void WinnerWin::DoBktestAddTask()
         }
     }
 #ifndef USE_LOCAL_STATIC
+	//ui.tbview_bktest_tasks;
+	//id , 类型, 拐点 , 每次数量 top price , bottom price
+	InsertIntoBktestTbvTask(*task_info);
+	// InsertIntoTbvTasklist(ui.tbview_tasks, *task_info);
+	 
     app_->back_tester()->AddBackTestItem(task, task_info, mock_para);
+
 #endif
  
 
@@ -435,6 +458,9 @@ void WinnerWin::DoBktestAddTask()
 
 void WinnerWin::DoBktestClearTask()
 {
+	QStandardItemModel * model = static_cast<QStandardItemModel *>(ui.tbview_bktest_tasks->model());
+	model->removeRows(0, model->rowCount());
+
     app_->back_tester()->ClearTestItems();
 	this->DoStatusBar("清除成功!");
 }
@@ -520,3 +546,28 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
     }
 }
 #endif
+
+void WinnerWin::InsertIntoBktestTbvTask(T_TaskInformation &task_info)
+{ 
+	QStandardItemModel * model = static_cast<QStandardItemModel *>(ui.tbview_bktest_tasks->model());
+ 
+    model->insertRow(model->rowCount());
+    int row_index = model->rowCount() - 1;
+    auto align_way = Qt::AlignCenter;
+    auto item = new QStandardItem( utility::FormatStr("%d", task_info.id).c_str() );
+    model->setItem(row_index, cst_bktest_tbview_rowindex_task_id, item);
+
+	item = new QStandardItem( ToQString(task_info.type) );
+	model->setItem(row_index, cst_bktest_tbview_rowindex_task_type, item);
+
+	item = new QStandardItem( utility::FormatStr("%.2f", task_info.rebounce).c_str() );
+	model->setItem(row_index, cst_bktest_tbview_rowindex_task_inflect, item);
+	  
+	item = new QStandardItem( utility::FormatStr("%d", task_info.quantity).c_str() );
+	model->setItem(row_index, cst_bktest_tbview_rowindex_task_qty, item);
+    //model->item(row_index, cst_bktest_tbview_rowindex_task_type)->setTextAlignment(align_way);
+	
+	/*if( task_info.type == TypeTask::EQUAL_SECTION )
+	{ 
+	}*/
+}

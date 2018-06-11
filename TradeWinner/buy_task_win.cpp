@@ -3,6 +3,8 @@
 #include <qdebug.h>
 #include <qmessagebox.h> 
 #include <QTextCodec> 
+#include <QStandardItemModel>
+
 //#include <QtGui/QStandardItemModel>
 
 #include <TLib/core/tsystem_utility_functions.h>
