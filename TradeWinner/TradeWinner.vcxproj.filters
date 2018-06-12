@@ -215,6 +215,15 @@
     <ClCompile Include="exchange_calendar.cpp">
       <Filter>moudle</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_records_win.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_records_win.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="records_win.cpp">
+      <Filter>win</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="trade_winner.ui">
@@ -261,6 +270,12 @@
     </CustomBuild>
     <CustomBuild Include="HintList.h">
       <Filter>moudle\ui_moudle</Filter>
+    </CustomBuild>
+    <CustomBuild Include="records.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="records_win.h">
+      <Filter>win</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -371,6 +386,9 @@
     </ClInclude>
     <ClInclude Include="MySpinBox.h">
       <Filter>moudle\ui_moudle</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_records.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

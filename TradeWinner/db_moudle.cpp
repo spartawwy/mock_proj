@@ -1247,7 +1247,7 @@ void DBMoudle::AddFillRecord(T_FillItem& fill_item)
 #endif
     std::string sql = utility::FormatStr("INSERT INTO FillsRecord VALUES('%d', '%d', %d, %d, '%s', '%s',%d, %.2f, %.2f, %.2f, %.2f)"
         , app_->Cookie_NextFillId(), fill_item.user_id, fill_item.date, fill_item.time_stamp
-        , fill_item.stock.c_str(), fill_item.pinyin.c_str(), fill_item.is_buy, fill_item.price
+        , fill_item.stock.c_str(), gbkToUtf8(fill_item.pinyin), fill_item.is_buy, fill_item.price
         , fill_item.quantity, fill_item.amount, fill_item.fee);
     bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
     ret = ret;
@@ -1270,4 +1270,51 @@ void DBMoudle::DelAllFillRecord()
 #ifdef USE_DB_STRAND
     });
 #endif
+}
+
+std::vector<std::shared_ptr<T_FillItem> > DBMoudle::LoadAllFillRecord()
+{  
+	std::vector<std::shared_ptr<T_FillItem> >  fill_item_records;
+
+    std::shared_ptr<SQLite::SQLiteConnection> db_conn = nullptr;
+    Open(db_conn, db_file_path);
+
+    if( !utility::ExistTable("fillsRecord", *db_conn) )
+	{
+        /*ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
+                , "DBMoudle::LoadAllFillRecord"
+                , "can't find table fillsRecord");*/
+		app_->local_logger().LogLocal("error", "DBMoudle::LoadAllFillRecord can't find table fillsRecord");
+		return fill_item_records;
+	}
+     std::string sql = "SELECT id, date, time_stamp, stock, pinyin, is_buy, price, quantity, amount, fee FROM fillsRecord ORDER BY id ";
+     db_conn->ExecuteSQL(sql.c_str(),[&fill_item_records, this](int num_cols, char** vals, char** names)->int
+     {
+		 auto fill_item = std::make_shared<T_FillItem>();
+		  
+         try
+         {
+			 fill_item->id = boost::lexical_cast<long long>(*(vals));
+			 fill_item->date = boost::lexical_cast<int>(*(vals + 1));
+			 fill_item->time_stamp = boost::lexical_cast<int>(*(vals + 2));
+			 fill_item->stock = *(vals + 3);
+			 fill_item->pinyin = *(vals + 4);
+			 utf8ToGbk(fill_item->pinyin);
+			 fill_item->is_buy = boost::lexical_cast<int>(*(vals + 5));
+			 fill_item->price = boost::lexical_cast<double>(*(vals + 6));
+			 fill_item->quantity = boost::lexical_cast<double>(*(vals + 7));
+			 fill_item->amount = boost::lexical_cast<double>(*(vals + 8));
+			 fill_item->fee = boost::lexical_cast<double>(*(vals + 9));
+
+			 fill_item_records.push_back(fill_item);
+
+         }catch(boost::exception& )
+         {
+            return 0;
+         } 
+		  
+         return 0;
+     });
+
+	 return fill_item_records;
 }

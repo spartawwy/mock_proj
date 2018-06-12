@@ -48,6 +48,7 @@ public:
     QAction *actionAbout;
     QAction *actionAaa;
     QAction *actionResetMockSys;
+    QAction *actionOpenRecordsWin;
     QWidget *centralWidget;
     QTabWidget *tabwid_holder;
     QWidget *tab_task_list;
@@ -287,6 +288,7 @@ public:
     QMenu *menu_help;
     QMenu *menu_operate;
     QMenu *tool_menu;
+    QMenu *menu_vew;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -309,6 +311,8 @@ public:
         actionAaa->setObjectName(QStringLiteral("actionAaa"));
         actionResetMockSys = new QAction(TradeWinnerClass);
         actionResetMockSys->setObjectName(QStringLiteral("actionResetMockSys"));
+        actionOpenRecordsWin = new QAction(TradeWinnerClass);
+        actionOpenRecordsWin->setObjectName(QStringLiteral("actionOpenRecordsWin"));
         centralWidget = new QWidget(TradeWinnerClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         tabwid_holder = new QTabWidget(centralWidget);
@@ -1291,7 +1295,7 @@ public:
         TradeWinnerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(TradeWinnerClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 917, 23));
+        menuBar->setGeometry(QRect(0, 0, 917, 18));
         menu_system = new QMenu(menuBar);
         menu_system->setObjectName(QStringLiteral("menu_system"));
         menu_help = new QMenu(menuBar);
@@ -1300,6 +1304,8 @@ public:
         menu_operate->setObjectName(QStringLiteral("menu_operate"));
         tool_menu = new QMenu(menuBar);
         tool_menu->setObjectName(QStringLiteral("tool_menu"));
+        menu_vew = new QMenu(menuBar);
+        menu_vew->setObjectName(QStringLiteral("menu_vew"));
         TradeWinnerClass->setMenuBar(menuBar);
         mainToolBar = new QToolBar(TradeWinnerClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -1352,6 +1358,7 @@ public:
 
         menuBar->addAction(menu_system->menuAction());
         menuBar->addAction(menu_operate->menuAction());
+        menuBar->addAction(menu_vew->menuAction());
         menuBar->addAction(tool_menu->menuAction());
         menuBar->addAction(menu_help->menuAction());
         menu_system->addAction(actionClose);
@@ -1360,6 +1367,7 @@ public:
         menu_operate->addAction(actionStopAllTask);
         menu_operate->addAction(actionResetMockSys);
         tool_menu->addAction(actionOpenCalcWin);
+        menu_vew->addAction(actionOpenRecordsWin);
 
         retranslateUi(TradeWinnerClass);
 
@@ -1379,6 +1387,7 @@ public:
         actionAbout->setText(QApplication::translate("TradeWinnerClass", "\345\205\263\344\272\216\346\234\254\350\275\257\344\273\266", 0));
         actionAaa->setText(QApplication::translate("TradeWinnerClass", "aaa", 0));
         actionResetMockSys->setText(QApplication::translate("TradeWinnerClass", "\351\207\215\347\275\256\346\250\241\346\213\237\347\263\273\347\273\237", 0));
+        actionOpenRecordsWin->setText(QApplication::translate("TradeWinnerClass", "\344\272\244\346\230\223\350\256\260\345\275\225(F12)", 0));
         tabwid_holder->setTabText(tabwid_holder->indexOf(tab_task_list), QApplication::translate("TradeWinnerClass", "\344\273\273\345\212\241\345\210\227\350\241\250", 0));
         label_buytask_alert_price->setText(QApplication::translate("TradeWinnerClass", "\350\202\241\347\245\250\344\275\216\344\272\216:", 0));
         label_buytask_stock->setText(QApplication::translate("TradeWinnerClass", "\350\202\241\347\245\250\344\273\243\347\240\201:", 0));
@@ -1535,6 +1544,7 @@ public:
         menu_help->setTitle(QApplication::translate("TradeWinnerClass", "\345\270\256\345\212\251", 0));
         menu_operate->setTitle(QApplication::translate("TradeWinnerClass", "\346\223\215\344\275\234", 0));
         tool_menu->setTitle(QApplication::translate("TradeWinnerClass", "\345\267\245\345\205\267", 0));
+        menu_vew->setTitle(QApplication::translate("TradeWinnerClass", "\347\252\227\345\217\243", 0));
     } // retranslateUi
 
 };

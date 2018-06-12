@@ -17,6 +17,8 @@
 #include "stock_ticker.h"
 #include "MySpinBox.h"
 #include "HintList.h"
+
+#include "records_win.h"
 #include "calc_win.h"
 
 #include "timer_container.h"
@@ -64,6 +66,7 @@ WinnerWin::WinnerWin(WinnerApp *app, QWidget *parent)
 	, eqsec_task_cur_price_(0.0)
     , backtest_cur_price_(0.0)
     , status_label_(nullptr)
+	, records_win_(nullptr)
     , calc_win_(nullptr)
     , flash_win_timer_(nullptr)
     , oneceshot_timer_contain_(nullptr)
@@ -237,6 +240,7 @@ void WinnerWin::Init()
     ret = connect(ui.actionResetMockSys, SIGNAL(triggered(bool)), this->app_, SLOT(SlotResetMockSys(bool)));
 #endif
     // ndedt
+	ret = connect(ui.actionOpenRecordsWin, SIGNAL(triggered(bool)), this, SLOT(SlotOpenRecordsWin(bool)));
     ret = connect(ui.actionOpenCalcWin, SIGNAL(triggered(bool)), this, SLOT(SlotOpenCalcWin(bool)));
     ret = connect(ui.actionAbout, SIGNAL(triggered(bool)), this, SLOT(SlotOpenAbout(bool)));
 
@@ -316,7 +320,10 @@ void WinnerWin::keyPressEvent(QKeyEvent *event)
 		{
 			m_backtest_list_hint_->close();
 		}
-    }else
+	}else if( event->key() == Qt::Key_F12 )
+	{
+		
+	}else
     {
         if( ui.le_stock->hasFocus() )
         {
@@ -869,6 +876,15 @@ void WinnerWin::AssignHintListAndLineEdit(HintList *& p_list, QLineEdit *&p_edit
         p_dbspb_alert_price = ui.dbspbox_bktest_start_price;
     }else 
         assert(false);
+}
+
+void WinnerWin::SlotOpenRecordsWin(bool)
+{
+	if( !records_win_ )
+		records_win_ = std::make_shared<RecordsWin>(this->app_);
+	records_win_->UpdateTblviewFills();
+	records_win_->show();
+	records_win_->activateWindow();
 }
 
 void WinnerWin::SlotOpenCalcWin(bool)

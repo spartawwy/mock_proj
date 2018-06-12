@@ -34,6 +34,7 @@ void WinnerWin::InitIndexTradeWin()
     ui.spinBox_indtrd_quantity->setObjectName(obj_name);
     ui.spinBox_indtrd_quantity->setGeometry(geome_val);
     ui.spinBox_indtrd_quantity->setMaximum(1000000000);
+
 #endif
      
     // radio button

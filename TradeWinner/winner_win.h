@@ -17,6 +17,7 @@
 class StrategyTask;
 class WinnerApp;
 class HintList;
+class RecordsWin;
 class CalcWin;
 
 class WinnerWin : public QMainWindow
@@ -119,6 +120,7 @@ public slots:
 	 
     void AssignHintListAndLineEdit(HintList *& p_list, QLineEdit *&p_edit, QDoubleSpinBox *&p_dbspb_alert_price, QDoubleSpinBox *&p_dbspb_percent);
 
+	void SlotOpenRecordsWin(bool);
     void SlotOpenCalcWin(bool);
     void SlotOpenAbout(bool);
 
@@ -180,6 +182,7 @@ private:
     HintList *m_backtest_list_hint_;
 
     QLabel  *status_label_;
+	std::shared_ptr<RecordsWin> records_win_;
     std::shared_ptr<CalcWin> calc_win_;
 
     double cur_price_;

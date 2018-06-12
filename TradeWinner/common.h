@@ -385,6 +385,7 @@ typedef struct _t_position_item
 class T_FillItem
 {
 public: 
+	uint64_t id;
     int user_id;
     int date;
     int time_stamp;
@@ -400,6 +401,10 @@ public:
     }
     T_FillItem(const T_FillItem &lh) : user_id(lh.user_id), date(lh.date), time_stamp(lh.time_stamp)
         , stock(lh.stock), pinyin(lh.pinyin), is_buy(lh.is_buy), price(lh.price), quantity(lh.quantity), amount(lh.amount), fee(lh.fee)
+    {  
+    }
+	T_FillItem(T_FillItem &&lh) : user_id(lh.user_id), date(lh.date), time_stamp(lh.time_stamp)
+        , stock(std::move(lh.stock)), pinyin(std::move(lh.pinyin)), is_buy(lh.is_buy), price(lh.price), quantity(lh.quantity), amount(lh.amount), fee(lh.fee)
     {  
     }
 };

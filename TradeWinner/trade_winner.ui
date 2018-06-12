@@ -3773,7 +3773,7 @@ background-color: rgb(255, 255,255);</string>
      <x>0</x>
      <y>0</y>
      <width>917</width>
-     <height>23</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_system">
@@ -3802,8 +3802,15 @@ background-color: rgb(255, 255,255);</string>
     </property>
     <addaction name="actionOpenCalcWin"/>
    </widget>
+   <widget class="QMenu" name="menu_vew">
+    <property name="title">
+     <string>窗口</string>
+    </property>
+    <addaction name="actionOpenRecordsWin"/>
+   </widget>
    <addaction name="menu_system"/>
    <addaction name="menu_operate"/>
+   <addaction name="menu_vew"/>
    <addaction name="tool_menu"/>
    <addaction name="menu_help"/>
   </widget>
@@ -3849,6 +3856,11 @@ background-color: rgb(255, 255,255);</string>
   <action name="actionResetMockSys">
    <property name="text">
     <string>重置模拟系统</string>
+   </property>
+  </action>
+  <action name="actionOpenRecordsWin">
+   <property name="text">
+    <string>交易记录(F12)</string>
    </property>
   </action>
  </widget>
