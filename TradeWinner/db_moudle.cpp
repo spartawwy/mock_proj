@@ -1245,9 +1245,10 @@ void DBMoudle::AddFillRecord(T_FillItem& fill_item)
     strand_->PostTask([fill_item, this]()
     { 
 #endif
+	gbkToUtf8(fill_item.pinyin);
     std::string sql = utility::FormatStr("INSERT INTO FillsRecord VALUES('%d', '%d', %d, %d, '%s', '%s',%d, %.2f, %.2f, %.2f, %.2f)"
         , app_->Cookie_NextFillId(), fill_item.user_id, fill_item.date, fill_item.time_stamp
-        , fill_item.stock.c_str(), gbkToUtf8(fill_item.pinyin), fill_item.is_buy, fill_item.price
+        , fill_item.stock.c_str(), fill_item.pinyin, fill_item.is_buy, fill_item.price
         , fill_item.quantity, fill_item.amount, fill_item.fee);
     bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
     ret = ret;
