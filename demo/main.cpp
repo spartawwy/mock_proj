@@ -18,6 +18,7 @@ int TodayAddDays(int days);
 
 int main(int argc, char *argv[])
 { 
+#if 0
     // test();
     test_time();
     int ch_val = 0;
@@ -30,6 +31,19 @@ int main(int argc, char *argv[])
       ch_val = TodayAddDays(-10);
       ch_val = TodayAddDays(-40);
     getchar();
+#endif
+	QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+
+	//-----------------------
+	std::string  tmp_str = "中兴通信";
+
+	/*utf8ToGbk(tmp_str);
+	gbkToUtf8(tmp_str);*/
+
+	gbkToUtf8(tmp_str);
+
+	utf8ToGbk(tmp_str);
+
     QApplication a(argc, argv);
 #if 1
     demo w;

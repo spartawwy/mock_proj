@@ -3,6 +3,8 @@
 
 #include <memory>
 
+#include <QTextCodec>
+
 #include <QtWidgets/QDialog>
 #include "ui_demo.h"
 
@@ -31,5 +33,9 @@ private:
     
     std::shared_ptr<QTimerContainner>  serial_shot_timers_; 
 };
+
+void utf8ToGbk(std::string& strUtf8);
+
+void gbkToUtf8(std::string& strGbk);
 
 #endif // DEMO_H

@@ -109,3 +109,27 @@ demo::~demo()
 {
 
 }
+
+void utf8ToGbk(std::string& strUtf8)
+{
+    QTextCodec* utf8Codec = QTextCodec::codecForName("utf-8");
+    QTextCodec* gbkCodec = QTextCodec::codecForName("gbk");
+
+    QString strUnicode = utf8Codec->toUnicode(strUtf8.c_str());
+    QByteArray ByteGbk = gbkCodec->fromUnicode(strUnicode);
+
+    strUtf8 = ByteGbk.data();
+}
+
+void gbkToUtf8(std::string& strGbk)
+{
+
+    QTextCodec* utf8Codec = QTextCodec::codecForName("utf-8");
+    QTextCodec* gbkCodec = QTextCodec::codecForName("gbk");
+
+    QString strUnicode = gbkCodec->toUnicode(strGbk.c_str());
+    QByteArray ByteUtf8 = utf8Codec->fromUnicode(strUnicode);
+
+    strGbk = ByteUtf8.data();
+}
+

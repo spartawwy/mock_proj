@@ -99,7 +99,8 @@ void BatchesBuyTask::HandleQuoteData()
         }
         return -1;
     };
- 
+	 if( is_waitting_removed_ )
+        return;
     int ms_for_wait_lock = 1000;
     if( is_back_test_ ) ms_for_wait_lock = 5000; 
     if( !timed_mutex_wrapper_.try_lock_for(ms_for_wait_lock) )  
