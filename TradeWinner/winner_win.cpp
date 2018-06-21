@@ -239,7 +239,7 @@ void WinnerWin::Init()
 #ifdef USE_MOCK_FLAG
     ret = connect(ui.actionResetMockSys, SIGNAL(triggered(bool)), this->app_, SLOT(SlotResetMockSys(bool)));
 #endif
-    // ndedt
+    // title menu 
 	ret = connect(ui.actionOpenRecordsWin, SIGNAL(triggered(bool)), this, SLOT(SlotOpenRecordsWin(bool)));
     ret = connect(ui.actionOpenCalcWin, SIGNAL(triggered(bool)), this, SLOT(SlotOpenCalcWin(bool)));
     ret = connect(ui.actionAbout, SIGNAL(triggered(bool)), this, SLOT(SlotOpenAbout(bool)));
@@ -322,7 +322,7 @@ void WinnerWin::keyPressEvent(QKeyEvent *event)
 		}
 	}else if( event->key() == Qt::Key_F12 )
 	{
-		
+		SlotOpenRecordsWin(true);
 	}else
     {
         if( ui.le_stock->hasFocus() )

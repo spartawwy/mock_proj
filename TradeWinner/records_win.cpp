@@ -25,15 +25,18 @@ RecordsWin::RecordsWin(WinnerApp *app) : app_(app)
 	QStandardItemModel * model = new QStandardItemModel(0, cst_fills_col_count, this);
     model->setHorizontalHeaderItem(cst_fills_col_index_id, new QStandardItem(QString::fromLocal8Bit("记录号")));
     model->horizontalHeaderItem(cst_fills_col_index_id)->setTextAlignment(Qt::AlignCenter);
-    
+    //model->set
 	model->setHorizontalHeaderItem(cst_fills_col_index_date, new QStandardItem(QString::fromLocal8Bit("日期")));
     model->horizontalHeaderItem(cst_fills_col_index_date)->setTextAlignment(Qt::AlignCenter);
     
 	model->setHorizontalHeaderItem(cst_fills_col_index_time, new QStandardItem(QString::fromLocal8Bit("时间")));
     model->horizontalHeaderItem(cst_fills_col_index_time)->setTextAlignment(Qt::AlignCenter);
 
-	model->setHorizontalHeaderItem(cst_fills_col_index_stock, new QStandardItem(QString::fromLocal8Bit("股票")));
+	model->setHorizontalHeaderItem(cst_fills_col_index_stock, new QStandardItem(QString::fromLocal8Bit("证券代码")));
     model->horizontalHeaderItem(cst_fills_col_index_stock)->setTextAlignment(Qt::AlignCenter);
+
+	model->setHorizontalHeaderItem(cst_fills_col_index_pinyin, new QStandardItem(QString::fromLocal8Bit("证券名称")));
+    model->horizontalHeaderItem(cst_fills_col_index_pinyin)->setTextAlignment(Qt::AlignCenter);
 
 	model->setHorizontalHeaderItem(cst_fills_col_index_buysell, new QStandardItem(QString::fromLocal8Bit("买卖")));
     model->horizontalHeaderItem(cst_fills_col_index_buysell)->setTextAlignment(Qt::AlignCenter);
@@ -51,6 +54,20 @@ RecordsWin::RecordsWin(WinnerApp *app) : app_(app)
     model->horizontalHeaderItem(cst_fills_col_index_fee)->setTextAlignment(Qt::AlignCenter);
 
 	ui.tbview_fills->setModel(model);
+
+	ui.tbview_fills->setColumnWidth(cst_fills_col_index_id, 60);
+	ui.tbview_fills->setColumnWidth(cst_fills_col_index_date, 80);
+	ui.tbview_fills->setColumnWidth(cst_fills_col_index_time, 80);
+	ui.tbview_fills->setColumnWidth(cst_fills_col_index_stock, 60);
+	ui.tbview_fills->setColumnWidth(cst_fills_col_index_pinyin, 60);
+	ui.tbview_fills->setColumnWidth(cst_fills_col_index_buysell, 40);
+	ui.tbview_fills->setColumnWidth(cst_fills_col_index_quantity, 80);
+	ui.tbview_fills->setColumnWidth(cst_fills_col_index_price, 60);
+	ui.tbview_fills->setColumnWidth(cst_fills_col_index_amount, 60);
+	ui.tbview_fills->setColumnWidth(cst_fills_col_index_fee, 60);
+
+	ui.tbview_fills->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
 }
 
 void RecordsWin::ShowUI(const QString &title_str, const QString &str)
@@ -62,15 +79,17 @@ void RecordsWin::UpdateTblviewFills()
 {
 	std::vector<std::shared_ptr<T_FillItem> > records = app_->db_moudle().LoadAllFillRecord();
 
-	std::for_each( std::begin(records), std::end(records), [this](std::shared_ptr<T_FillItem>& entry)
-	{
-		QStandardItemModel * model = (QStandardItemModel*)(this->ui.tbview_fills->model());
+	static auto str_buy = QString::fromLocal8Bit("买");
+	static auto str_sell = QString::fromLocal8Bit("卖");
 
+	QStandardItemModel * model = (QStandardItemModel*)(this->ui.tbview_fills->model());
+	model->removeRows(0, model->rowCount());
+	std::for_each( std::begin(records), std::end(records), [model, this](std::shared_ptr<T_FillItem>& entry)
+	{ 
+		auto align_way = Qt::AlignCenter;
 		model->insertRow(model->rowCount());
 		int row_index = model->rowCount() - 1;
-		 
-		auto align_way = Qt::AlignCenter;
-		
+		  
 		//auto item = new QStandardItem( utility::FormatStr("%d", entry->id).c_str());
 		auto item = new QStandardItem(QString("%1").arg(entry->id));
 		model->setItem(row_index, cst_fills_col_index_id, item);
@@ -84,10 +103,10 @@ void RecordsWin::UpdateTblviewFills()
 		item = new QStandardItem(QString("%1").arg(entry->stock.c_str()));
 		model->setItem(row_index, cst_fills_col_index_stock, item);
 
-		item = new QStandardItem(QString("%1").arg(entry->pinyin.c_str()));
+		item = new QStandardItem( QString("%1").arg(QString::fromLocal8Bit(entry->pinyin.c_str())) );
 		model->setItem(row_index, cst_fills_col_index_pinyin, item);
-
-		item = new QStandardItem(QString("%1").arg(entry->is_buy));
+		
+		item = new QStandardItem(QString("%1").arg(entry->is_buy ? str_buy : str_sell));
 		model->setItem(row_index, cst_fills_col_index_buysell, item);
 
 		item = new QStandardItem(QString("%1").arg(entry->quantity));

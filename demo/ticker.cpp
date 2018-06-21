@@ -12,8 +12,8 @@
 static char cst_hq_server[] = "122.224.66.108";
 static int  cst_hq_port = 7709;
 
- const int cst_result_len = 5*1024;
- const int cst_error_len = 2*1024;
+const int cst_result_len = 5*1024;
+const int cst_error_len = 2*1024;
 
  
  //»ñÈ¡apiº¯Êı

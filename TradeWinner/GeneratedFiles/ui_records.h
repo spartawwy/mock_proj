@@ -47,7 +47,8 @@ public:
         tab_records->setObjectName(QStringLiteral("tab_records"));
         tbview_fills = new QTableView(tab_records);
         tbview_fills->setObjectName(QStringLiteral("tbview_fills"));
-        tbview_fills->setGeometry(QRect(20, 20, 431, 411));
+        tbview_fills->setGeometry(QRect(10, 20, 491, 421));
+        tbview_fills->setSizeIncrement(QSize(2, 2));
         tabWidget->addTab(tab_records, QString());
 
         retranslateUi(RecordsForm);

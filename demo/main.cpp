@@ -9,15 +9,33 @@
 
 #include <TLib/core/tsystem_time.h>
 
+#define TEST_DB 1
+
+#ifdef TEST_DB
+#include <SQLite/sqlite_connection.h>
+#include <TLib/core/tsystem_core_common.h>
+#include <TLib/core/tsystem_sqlite_functions.h>
+#endif
+
 #include "ticker.h"
+ 
+void testDB();
 
 void test();
-
+ 
 void test_time();
+
 int TodayAddDays(int days);
 
+using namespace TSystem;
 int main(int argc, char *argv[])
 { 
+#ifdef TEST_DB
+	testDB();
+#endif
+
+	getchar();
+
 #if 0
     // test();
     test_time();
@@ -45,6 +63,7 @@ int main(int argc, char *argv[])
 	utf8ToGbk(tmp_str);
 
     QApplication a(argc, argv);
+
 #if 1
     demo w;
     w.show();
@@ -59,6 +78,39 @@ int main(int argc, char *argv[])
 
     return a.exec();
 }
+
+void testDB()
+{
+	// save data ---------------------
+	if( 1 )
+	{
+	auto db_conn = std::make_shared<SQLite::SQLiteConnection>();
+
+    std::string db_file = "E:/Dev_wwy/StockTrader/src/mock_proj/build/Win32/Debug/test.db";
+
+    if( db_conn->Open(db_file.c_str(), SQLite::SQLiteConnection::OpenMode::READ_WRITE) != SQLite::SQLiteCode::OK )
+	{
+		printf("test db fail!"); 
+		return;
+	} 
+	
+	std::string name = "¿­µÂÎïÖÊ";
+	gbkToUtf8(name);
+	std::string sql =  utility::FormatStr( "INSERT OR REPLACE INTO stock_name values('%s')", name.c_str());
+	bool ret = db_conn->ExecuteSQL(sql.c_str());
+	}
+
+	// --
+	/*db_conn->ExecuteSQL(sql.c_str(),[&ret, this](int num_cols, char** vals, char** names)->int
+	{ 
+			ret.emplace_back(*vals, *(vals + 1));
+			return 0;
+		});
+		return;
+	});*/
+
+}
+
 
 void test()
 {
