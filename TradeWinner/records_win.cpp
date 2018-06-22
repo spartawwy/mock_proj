@@ -6,7 +6,7 @@
 
 #include "winner_app.h"
 
-const int cst_fills_col_count = 7;
+const int cst_fills_col_count = 10;
 const int cst_fills_col_index_id = 0;
 const int cst_fills_col_index_date = 1;
 const int cst_fills_col_index_time = 2;
@@ -18,10 +18,22 @@ const int cst_fills_col_index_price = 7;
 const int cst_fills_col_index_amount = 8;
 const int cst_fills_col_index_fee = 9;
  
+const int cst_pos_col_count					  = 9;
+const int cst_pos_col_index_stock             =  0; 
+const int cst_pos_col_index_pinyin            =  1;
+const int cst_pos_col_index_pos               =  2;
+const int cst_pos_col_index_ava               =  3;
+const int cst_pos_col_index_cost              =  4;
+const int cst_pos_col_index_curprice          =  5;
+const int cst_pos_col_index_market_value      =  6;
+const int cst_pos_col_index_proflost          =  7;
+const int cst_pos_col_index_proflost_percent  =  8;
+
 RecordsWin::RecordsWin(WinnerApp *app) : app_(app)
 {
 	ui.setupUi(this);
 
+	//QTableView table records -----------------
 	QStandardItemModel * model = new QStandardItemModel(0, cst_fills_col_count, this);
     model->setHorizontalHeaderItem(cst_fills_col_index_id, new QStandardItem(QString::fromLocal8Bit("记录号")));
     model->horizontalHeaderItem(cst_fills_col_index_id)->setTextAlignment(Qt::AlignCenter);
@@ -67,7 +79,49 @@ RecordsWin::RecordsWin(WinnerApp *app) : app_(app)
 	ui.tbview_fills->setColumnWidth(cst_fills_col_index_fee, 60);
 
 	ui.tbview_fills->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	 
+	// table records table position----------------------
+	QStandardItemModel * model_pos = new QStandardItemModel(0, cst_pos_col_count, this); 
+     
+	model_pos->setHorizontalHeaderItem(cst_pos_col_index_stock, new QStandardItem(QString::fromLocal8Bit("证券代码")));
+    model_pos->horizontalHeaderItem(cst_pos_col_index_stock)->setTextAlignment(Qt::AlignCenter);
 
+	model_pos->setHorizontalHeaderItem(cst_pos_col_index_pinyin, new QStandardItem(QString::fromLocal8Bit("证券名称")));
+    model_pos->horizontalHeaderItem(cst_pos_col_index_pinyin)->setTextAlignment(Qt::AlignCenter);
+
+	model_pos->setHorizontalHeaderItem(cst_pos_col_index_pos, new QStandardItem(QString::fromLocal8Bit("证券数量")));
+    model_pos->horizontalHeaderItem(cst_pos_col_index_pos)->setTextAlignment(Qt::AlignCenter);
+
+	model_pos->setHorizontalHeaderItem(cst_pos_col_index_ava, new QStandardItem(QString::fromLocal8Bit("可卖数量")));
+    model_pos->horizontalHeaderItem(cst_pos_col_index_ava)->setTextAlignment(Qt::AlignCenter);
+
+	model_pos->setHorizontalHeaderItem(cst_pos_col_index_cost, new QStandardItem(QString::fromLocal8Bit("参考成本")));
+    model_pos->horizontalHeaderItem(cst_pos_col_index_cost )->setTextAlignment(Qt::AlignCenter);
+
+	model_pos->setHorizontalHeaderItem(cst_pos_col_index_curprice, new QStandardItem(QString::fromLocal8Bit("当前价")));
+    model_pos->horizontalHeaderItem(cst_pos_col_index_curprice)->setTextAlignment(Qt::AlignCenter);
+
+	model_pos->setHorizontalHeaderItem(cst_pos_col_index_market_value, new QStandardItem(QString::fromLocal8Bit("最新市值")));
+    model_pos->horizontalHeaderItem(cst_pos_col_index_market_value)->setTextAlignment(Qt::AlignCenter);
+
+	model_pos->setHorizontalHeaderItem(cst_pos_col_index_proflost, new QStandardItem(QString::fromLocal8Bit("盈亏参考")));
+    model_pos->horizontalHeaderItem(cst_pos_col_index_proflost)->setTextAlignment(Qt::AlignCenter);
+
+	model_pos->setHorizontalHeaderItem(cst_pos_col_index_proflost_percent, new QStandardItem(QString::fromLocal8Bit("盈亏比例")));
+    model_pos->horizontalHeaderItem(cst_pos_col_index_proflost_percent)->setTextAlignment(Qt::AlignCenter);
+	
+	ui.tbview_position->setModel(model_pos);
+	ui.tbview_fills->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+	ui.tbview_fills->setColumnWidth(cst_pos_col_index_stock, 60);
+	ui.tbview_fills->setColumnWidth(cst_pos_col_index_pinyin, 60);
+	ui.tbview_fills->setColumnWidth(cst_pos_col_index_pos, 60);
+	ui.tbview_fills->setColumnWidth(cst_pos_col_index_ava, 60);
+	ui.tbview_fills->setColumnWidth(cst_pos_col_index_cost, 60);
+	ui.tbview_fills->setColumnWidth(cst_pos_col_index_curprice, 60);
+	ui.tbview_fills->setColumnWidth(cst_pos_col_index_market_value, 60);
+	ui.tbview_fills->setColumnWidth(cst_pos_col_index_proflost, 60);
+	ui.tbview_fills->setColumnWidth(cst_pos_col_index_proflost_percent, 60); 
 }
 
 void RecordsWin::ShowUI(const QString &title_str, const QString &str)
