@@ -131,7 +131,7 @@ void RecordsWin::ShowUI(const QString &title_str, const QString &str)
 
 void RecordsWin::UpdateTblviewFills()
 {
-	std::vector<std::shared_ptr<T_FillItem> > records = app_->db_moudle().LoadAllFillRecord();
+	std::list<std::shared_ptr<T_FillItem> > records = app_->db_moudle().LoadAllFillRecord(app_->user_info().id);
 
 	static auto str_buy = QString::fromLocal8Bit("Âò");
 	static auto str_sell = QString::fromLocal8Bit("Âô");

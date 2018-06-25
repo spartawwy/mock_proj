@@ -1277,9 +1277,9 @@ void DBMoudle::DelAllFillRecord()
 #endif
 }
 
-std::vector<std::shared_ptr<T_FillItem> > DBMoudle::LoadAllFillRecord()
+std::list<std::shared_ptr<T_FillItem> > DBMoudle::LoadAllFillRecord(int user_id)
 {  
-	std::vector<std::shared_ptr<T_FillItem> >  fill_item_records;
+	std::list<std::shared_ptr<T_FillItem> >  fill_item_records;
 
     std::shared_ptr<SQLite::SQLiteConnection> db_conn = nullptr;
     Open(db_conn, db_file_path);
@@ -1292,7 +1292,8 @@ std::vector<std::shared_ptr<T_FillItem> > DBMoudle::LoadAllFillRecord()
 		app_->local_logger().LogLocal("error", "DBMoudle::LoadAllFillRecord can't find table fillsRecord");
 		return fill_item_records;
 	}
-     std::string sql = "SELECT id, date, time_stamp, stock, pinyin, is_buy, price, quantity, amount, fee FROM fillsRecord ORDER BY id ";
+     std::string sql = 
+         utility::FormatStr("SELECT id, date, time_stamp, stock, pinyin, is_buy, price, quantity, amount, fee FROM fillsRecord  WHERE user_id=%d ORDER BY id ", user_id);
      db_conn->ExecuteSQL(sql.c_str(),[&fill_item_records, this](int num_cols, char** vals, char** names)->int
      {
 		 auto fill_item = std::make_shared<T_FillItem>();

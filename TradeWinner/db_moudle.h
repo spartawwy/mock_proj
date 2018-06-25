@@ -78,7 +78,7 @@ public:
 
     void AddFillRecord(T_FillItem& fill_item);
     void DelAllFillRecord();
-	std::vector<std::shared_ptr<T_FillItem> > LoadAllFillRecord();
+	std::list<std::shared_ptr<T_FillItem> > LoadAllFillRecord(int user_id);
 
 private:
 
