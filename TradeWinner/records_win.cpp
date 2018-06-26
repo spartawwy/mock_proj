@@ -175,4 +175,37 @@ void RecordsWin::UpdateTblviewFills()
 		item = new QStandardItem(QString("%1").arg(entry->fee));
 		model->setItem(row_index, cst_fills_col_index_fee, item);
 	});
+
+    // position view --------------------
+    model = (QStandardItemModel*)(this->ui.tbview_position->model());
+    model->removeRows(0, model->rowCount());
+    auto records_for_calprofit = app_->db_moudle().LoadFillRecordsForCalProfit(app_->user_info().id);
+    std::for_each( std::begin(records_for_calprofit), std::end(records_for_calprofit), [model, this](T_CodeMapFills::reference entry)
+    {
+        entry.first;
+        double input_amount = 0.0;
+        double mid_get_amount = 0.0;
+        std::for_each( std::begin(entry.second), std::end(entry.second), [model, &input_amount, &mid_get_amount, this](std::shared_ptr<T_FillItem>& in)
+        {
+            if( in->is_buy )
+            {
+                input_amount += in->amount;
+            }else
+            {
+                mid_get_amount += in->amount - in->fee;
+            }
+        });
+        double market_value = 0.0;// cur_price * vol 
+        //double cost_price = input_amount / vol; 
+        double profit = market_value + mid_get_amount - input_amount;
+
+
+        auto align_way = Qt::AlignCenter;
+        model->insertRow(model->rowCount());
+        int row_index = model->rowCount() - 1;
+          
+    });
+     
+        
+
 }

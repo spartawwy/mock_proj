@@ -78,7 +78,8 @@ public:
 
     void AddFillRecord(T_FillItem& fill_item);
     void DelAllFillRecord();
-	std::list<std::shared_ptr<T_FillItem> > LoadAllFillRecord(int user_id);
+    std::list<std::shared_ptr<T_FillItem> > LoadAllFillRecord(int user_id);
+    T_CodeMapFills LoadFillRecordsForCalProfit(int user_id);
 
 private:
 

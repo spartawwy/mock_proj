@@ -416,6 +416,7 @@ public:
 //};
 
 enum class TypeAction : char { NOOP = 0, PREPARE_BUY, PREPARE_SELL, CLEAR};
+typedef std::unordered_map<std::string, std::list<std::shared_ptr<T_FillItem> > > T_CodeMapFills;
 
 TypeMarket GetStockMarketType(const std::string &stock_code);
 

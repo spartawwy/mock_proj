@@ -1324,3 +1324,56 @@ std::list<std::shared_ptr<T_FillItem> > DBMoudle::LoadAllFillRecord(int user_id)
 
 	 return fill_item_records;
 }
+
+T_CodeMapFills DBMoudle::LoadFillRecordsForCalProfit(int user_id)
+{
+    //std::list<std::shared_ptr<T_FillItem> >  fill_item_records;
+    T_CodeMapFills  fill_item_records;
+    std::shared_ptr<SQLite::SQLiteConnection> db_conn = nullptr;
+    Open(db_conn, db_file_path);
+
+    if( !utility::ExistTable("fillsRecord", *db_conn) )
+	{ 
+		app_->local_logger().LogLocal("error", "DBMoudle::LoadFillRecordsForCalProfit can't find table fillsRecord");
+		return fill_item_records;
+	}
+     std::string sql = 
+         utility::FormatStr("SELECT id, date, time_stamp, stock, pinyin, is_buy, price, quantity, amount, fee FROM fillsRecord  WHERE user_id=%d ORDER BY stock, is_buy DESC, date, time_stamp ", user_id);
+     
+     db_conn->ExecuteSQL(sql.c_str(),[&fill_item_records, this](int num_cols, char** vals, char** names)->int
+     { 
+         std::string code = *(vals + 3);
+		 //std::shared_ptr<T_FillItem> fill_item = nullptr;
+         auto iter = fill_item_records.find(code); 
+         if( iter == fill_item_records.end() )
+         { 
+             iter = fill_item_records.insert( std::make_pair(code , std::move(std::list<std::shared_ptr<T_FillItem>>())) ).first;
+         }
+         std::list<std::shared_ptr<T_FillItem> > &fill_item_container = (*iter).second;
+         auto fill_item = std::make_shared<T_FillItem>();
+         try
+         {
+			 fill_item->id = boost::lexical_cast<long long>(*(vals));
+			 fill_item->date = boost::lexical_cast<int>(*(vals + 1));
+			 fill_item->time_stamp = boost::lexical_cast<int>(*(vals + 2));
+			 
+			 fill_item->pinyin = *(vals + 4);
+			 utf8ToGbk(fill_item->pinyin);
+			 fill_item->is_buy = boost::lexical_cast<int>(*(vals + 5));
+			 fill_item->price = boost::lexical_cast<double>(*(vals + 6));
+			 fill_item->quantity = boost::lexical_cast<double>(*(vals + 7));
+			 fill_item->amount = boost::lexical_cast<double>(*(vals + 8));
+			 fill_item->fee = boost::lexical_cast<double>(*(vals + 9));
+
+			 fill_item_container.push_back(std::move(fill_item));
+
+         }catch(boost::exception& )
+         {
+            return 0;
+         } 
+		  
+         return 0;
+     });
+
+	 return fill_item_records;
+}
