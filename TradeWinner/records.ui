@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>535</width>
-    <height>513</height>
+    <width>829</width>
+    <height>567</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,12 +18,12 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>531</width>
-     <height>481</height>
+     <width>811</width>
+     <height>541</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="tab_position">
     <attribute name="title">
@@ -32,10 +32,10 @@
     <widget class="QTableView" name="tbview_position">
      <property name="geometry">
       <rect>
-       <x>20</x>
+       <x>10</x>
        <y>20</y>
-       <width>431</width>
-       <height>411</height>
+       <width>791</width>
+       <height>481</height>
       </rect>
      </property>
     </widget>
@@ -49,8 +49,8 @@
       <rect>
        <x>10</x>
        <y>20</y>
-       <width>491</width>
-       <height>421</height>
+       <width>791</width>
+       <height>481</height>
       </rect>
      </property>
      <property name="sizeIncrement">

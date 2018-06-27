@@ -462,4 +462,6 @@ double CaculateFee(double total, bool is_buy);
 
 int DaysOneMonth(int year, int month);   //返回一个月的天数 
 
+typedef std::unordered_map<std::string, std::shared_ptr<QuotesData> > TCodeMapQuotesData;
+
 #endif

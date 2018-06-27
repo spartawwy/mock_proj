@@ -48,6 +48,8 @@ public:
 
     void TellAllRelTasks(const std::list<unsigned int>& id_list, std::shared_ptr<QuotesData> &data);
 
+	bool GetQuoteDatas(char* stock_codes[], short count, TCodeMapQuotesData &ret_quotes_data);
+
 protected:
       
     TTaskIdMapStrategyTask  registered_tasks_;

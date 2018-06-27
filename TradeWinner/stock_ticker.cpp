@@ -516,6 +516,54 @@ bool IndexTicker::Init()
     return true;
 }
 
+
+bool StockTicker::GetQuoteDatas(char* stock_codes[], short count, TCodeMapQuotesData &ret_quotes_data)
+{
+    assert(ret_quotes_data.empty());
+
+    Buffer Result(cst_result_len);
+    //Buffer ErrInfo(cst_error_len);
+    if( !GetQuotes(stock_codes, count, Result) )
+        return false;
+    auto tp_now = std::chrono::system_clock::now();
+    time_t t_t = std::chrono::system_clock::to_time_t(tp_now); 
+
+    std::string res_str = Result.data();
+    TSystem::utility::replace_all_distinct(res_str, "\n", "\t");
+
+    auto result_array = TSystem::utility::split(res_str, "\t");
+
+    for( int n = 1; n < result_array.size() / 44; ++n )
+    {
+        auto stock_code = result_array.at(1 + n * 44);
+         
+        auto quote_data = std::make_shared<QuotesData>();
+        try
+        {
+            quote_data->cur_price = boost::lexical_cast<double>( result_array.at(3 + n * 44) );
+            quote_data->active_degree = boost::lexical_cast<double>(result_array.at(42 + n * 44));
+
+            quote_data->time_stamp = (__int64)t_t;
+
+            quote_data->price_b_1 = boost::lexical_cast<double>(result_array.at(17 + n * 44));
+            quote_data->price_s_1 = boost::lexical_cast<double>(result_array.at(18 + n * 44));
+            quote_data->price_b_2 = boost::lexical_cast<double>(result_array.at(21 + n * 44));
+            quote_data->price_s_2 = boost::lexical_cast<double>(result_array.at(22 + n * 44));
+            quote_data->price_b_3 = boost::lexical_cast<double>(result_array.at(25 + n * 44));
+            quote_data->price_s_3 = boost::lexical_cast<double>(result_array.at(26 + n * 44));
+            quote_data->price_b_4 = boost::lexical_cast<double>(result_array.at(29 + n * 44));
+            quote_data->price_s_4 = boost::lexical_cast<double>(result_array.at(30 + n * 44));
+            quote_data->price_b_5 = boost::lexical_cast<double>(result_array.at(33 + n * 44));
+            quote_data->price_s_5 = boost::lexical_cast<double>(result_array.at(34 + n * 44));
+        }catch(const boost::exception&)
+        {
+            continue;
+        }
+        ret_quotes_data.insert(std::make_pair(stock_code, std::move(quote_data)));
+    }
+    return true;
+}
+
 // run in index_tick_strand_ 
 void IndexTicker::Procedure()
 { 

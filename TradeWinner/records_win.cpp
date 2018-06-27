@@ -5,6 +5,7 @@
 #include <TLib/core/tsystem_utility_functions.h>
 
 #include "winner_app.h"
+#include "stock_ticker.h"
 
 const int cst_fills_col_count = 10;
 const int cst_fills_col_index_id = 0;
@@ -23,7 +24,7 @@ const int cst_pos_col_index_stock             =  0;
 const int cst_pos_col_index_pinyin            =  1;
 const int cst_pos_col_index_pos               =  2;
 const int cst_pos_col_index_ava               =  3;
-const int cst_pos_col_index_cost              =  4;
+const int cst_pos_col_index_cost_price        =  4;
 const int cst_pos_col_index_curprice          =  5;
 const int cst_pos_col_index_market_value      =  6;
 const int cst_pos_col_index_proflost          =  7;
@@ -95,8 +96,8 @@ RecordsWin::RecordsWin(WinnerApp *app) : app_(app)
 	model_pos->setHorizontalHeaderItem(cst_pos_col_index_ava, new QStandardItem(QString::fromLocal8Bit("可卖数量")));
     model_pos->horizontalHeaderItem(cst_pos_col_index_ava)->setTextAlignment(Qt::AlignCenter);
 
-	model_pos->setHorizontalHeaderItem(cst_pos_col_index_cost, new QStandardItem(QString::fromLocal8Bit("参考成本")));
-    model_pos->horizontalHeaderItem(cst_pos_col_index_cost )->setTextAlignment(Qt::AlignCenter);
+	model_pos->setHorizontalHeaderItem(cst_pos_col_index_cost_price, new QStandardItem(QString::fromLocal8Bit("参考成本价")));
+    model_pos->horizontalHeaderItem(cst_pos_col_index_cost_price )->setTextAlignment(Qt::AlignCenter);
 
 	model_pos->setHorizontalHeaderItem(cst_pos_col_index_curprice, new QStandardItem(QString::fromLocal8Bit("当前价")));
     model_pos->horizontalHeaderItem(cst_pos_col_index_curprice)->setTextAlignment(Qt::AlignCenter);
@@ -107,21 +108,21 @@ RecordsWin::RecordsWin(WinnerApp *app) : app_(app)
 	model_pos->setHorizontalHeaderItem(cst_pos_col_index_proflost, new QStandardItem(QString::fromLocal8Bit("盈亏参考")));
     model_pos->horizontalHeaderItem(cst_pos_col_index_proflost)->setTextAlignment(Qt::AlignCenter);
 
-	model_pos->setHorizontalHeaderItem(cst_pos_col_index_proflost_percent, new QStandardItem(QString::fromLocal8Bit("盈亏比例")));
+	model_pos->setHorizontalHeaderItem(cst_pos_col_index_proflost_percent, new QStandardItem(QString::fromLocal8Bit("盈亏比例(%)")));
     model_pos->horizontalHeaderItem(cst_pos_col_index_proflost_percent)->setTextAlignment(Qt::AlignCenter);
 	
 	ui.tbview_position->setModel(model_pos);
-	ui.tbview_fills->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	ui.tbview_position->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-	ui.tbview_fills->setColumnWidth(cst_pos_col_index_stock, 60);
-	ui.tbview_fills->setColumnWidth(cst_pos_col_index_pinyin, 60);
-	ui.tbview_fills->setColumnWidth(cst_pos_col_index_pos, 60);
-	ui.tbview_fills->setColumnWidth(cst_pos_col_index_ava, 60);
-	ui.tbview_fills->setColumnWidth(cst_pos_col_index_cost, 60);
-	ui.tbview_fills->setColumnWidth(cst_pos_col_index_curprice, 60);
-	ui.tbview_fills->setColumnWidth(cst_pos_col_index_market_value, 60);
-	ui.tbview_fills->setColumnWidth(cst_pos_col_index_proflost, 60);
-	ui.tbview_fills->setColumnWidth(cst_pos_col_index_proflost_percent, 60); 
+	ui.tbview_position->setColumnWidth(cst_pos_col_index_stock, 60);
+	ui.tbview_position->setColumnWidth(cst_pos_col_index_pinyin, 60);
+	ui.tbview_position->setColumnWidth(cst_pos_col_index_pos, 60);
+	ui.tbview_position->setColumnWidth(cst_pos_col_index_ava, 60);
+	ui.tbview_position->setColumnWidth(cst_pos_col_index_cost_price, 60);
+	ui.tbview_position->setColumnWidth(cst_pos_col_index_curprice, 60);
+	ui.tbview_position->setColumnWidth(cst_pos_col_index_market_value, 60);
+	ui.tbview_position->setColumnWidth(cst_pos_col_index_proflost, 60);
+	ui.tbview_position->setColumnWidth(cst_pos_col_index_proflost_percent, 90); 
 }
 
 void RecordsWin::ShowUI(const QString &title_str, const QString &str)
@@ -177,35 +178,87 @@ void RecordsWin::UpdateTblviewFills()
 	});
 
     // position view --------------------
+	auto records_for_calprofit = app_->db_moudle().LoadFillRecordsForCalProfit(app_->user_info().id);
+	char *stock[64] = {0};
+	int i = 0;
+	std::for_each( std::begin(records_for_calprofit), std::end(records_for_calprofit), [&i, &stock](T_CodeMapFills::reference entry)
+	{
+		stock[i++] = const_cast<char*>(entry.first.c_str());
+	});
+	TCodeMapQuotesData  stock_quotes;
+	app_->stock_ticker().GetQuoteDatas(stock, i, stock_quotes);
+
+	auto positions = app_->QueryPosition();
+
     model = (QStandardItemModel*)(this->ui.tbview_position->model());
     model->removeRows(0, model->rowCount());
-    auto records_for_calprofit = app_->db_moudle().LoadFillRecordsForCalProfit(app_->user_info().id);
-    std::for_each( std::begin(records_for_calprofit), std::end(records_for_calprofit), [model, this](T_CodeMapFills::reference entry)
+     
+    std::for_each( std::begin(records_for_calprofit), std::end(records_for_calprofit), [model, &positions, &stock_quotes, this](T_CodeMapFills::reference entry)
     {
-        entry.first;
+		auto iter = stock_quotes.find(entry.first);
+		if( iter == stock_quotes.end() )
+		{
+			// log_error:
+			return; 
+		}
+		double cur_price = iter->second->cur_price;
+		auto pos_iter  = positions.find(entry.first);
+        if( pos_iter == positions.end() )
+		{ // log_error:
+			return; 
+		}
+
+		model->insertRow(model->rowCount());
+		int row_index = model->rowCount() - 1;
+
         double input_amount = 0.0;
         double mid_get_amount = 0.0;
-        std::for_each( std::begin(entry.second), std::end(entry.second), [model, &input_amount, &mid_get_amount, this](std::shared_ptr<T_FillItem>& in)
+        std::for_each( std::begin(entry.second), std::end(entry.second), [model, &input_amount, &mid_get_amount, &entry, this](std::shared_ptr<T_FillItem>& in)
         {
             if( in->is_buy )
             {
-                input_amount += in->amount;
+                input_amount += in->amount + in->fee;
             }else
             {
                 mid_get_amount += in->amount - in->fee;
             }
         });
-        double market_value = 0.0;// cur_price * vol 
-        //double cost_price = input_amount / vol; 
+		double market_value = cur_price * pos_iter->second.total;
         double profit = market_value + mid_get_amount - input_amount;
+		double profit_percent = (profit * 100 / input_amount);
 
+		// 计算公式：成本价=（买入金额-盈亏金额）/持股股数
+		double cost_price = 0.0;
+		if( pos_iter->second.total > 0 )
+			cost_price = (input_amount - profit) / pos_iter->second.total;
+		  
+		auto item = new QStandardItem(QString("%1").arg(entry.first.c_str()));
+		model->setItem(row_index, cst_pos_col_index_stock, item);
 
-        auto align_way = Qt::AlignCenter;
-        model->insertRow(model->rowCount());
-        int row_index = model->rowCount() - 1;
-          
+		item = new QStandardItem( QString("%1").arg(QString::fromLocal8Bit(pos_iter->second.pinyin)) );
+		model->setItem(row_index, cst_pos_col_index_pinyin, item);
+
+		item = new QStandardItem(QString("%1").arg(pos_iter->second.total));
+		model->setItem(row_index, cst_pos_col_index_pos, item); 
+
+		item = new QStandardItem(QString("%1").arg(pos_iter->second.avaliable));
+		model->setItem(row_index, cst_pos_col_index_ava, item);
+		  
+		item = new QStandardItem( QString("%1").arg(cost_price));
+		model->setItem(row_index, cst_pos_col_index_cost_price, item);
+ 
+		item = new QStandardItem( QString("%1").arg(cur_price));
+		model->setItem(row_index, cst_pos_col_index_curprice, item);
+
+		item = new QStandardItem( QString("%1").arg(market_value) );
+		model->setItem(row_index, cst_pos_col_index_market_value, item);
+
+		item = new QStandardItem( QString("%1").arg(profit) );
+		model->setItem(row_index, cst_pos_col_index_proflost, item);
+
+		item = new QStandardItem( QString("%1").arg(profit_percent) );
+		model->setItem(row_index, cst_pos_col_index_proflost_percent, item);
+		    
     });
-     
-        
-
+      
 }

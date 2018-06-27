@@ -33,27 +33,27 @@ public:
     {
         if (RecordsForm->objectName().isEmpty())
             RecordsForm->setObjectName(QStringLiteral("RecordsForm"));
-        RecordsForm->resize(535, 513);
+        RecordsForm->resize(829, 567);
         tabWidget = new QTabWidget(RecordsForm);
         tabWidget->setObjectName(QStringLiteral("tabWidget"));
-        tabWidget->setGeometry(QRect(10, 10, 531, 481));
+        tabWidget->setGeometry(QRect(10, 10, 811, 541));
         tab_position = new QWidget();
         tab_position->setObjectName(QStringLiteral("tab_position"));
         tbview_position = new QTableView(tab_position);
         tbview_position->setObjectName(QStringLiteral("tbview_position"));
-        tbview_position->setGeometry(QRect(20, 20, 431, 411));
+        tbview_position->setGeometry(QRect(10, 20, 791, 481));
         tabWidget->addTab(tab_position, QString());
         tab_records = new QWidget();
         tab_records->setObjectName(QStringLiteral("tab_records"));
         tbview_fills = new QTableView(tab_records);
         tbview_fills->setObjectName(QStringLiteral("tbview_fills"));
-        tbview_fills->setGeometry(QRect(10, 20, 491, 421));
+        tbview_fills->setGeometry(QRect(10, 20, 791, 481));
         tbview_fills->setSizeIncrement(QSize(2, 2));
         tabWidget->addTab(tab_records, QString());
 
         retranslateUi(RecordsForm);
 
-        tabWidget->setCurrentIndex(1);
+        tabWidget->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(RecordsForm);

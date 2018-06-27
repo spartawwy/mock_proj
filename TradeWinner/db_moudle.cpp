@@ -1090,7 +1090,7 @@ void DBMoudle::LoadPositionMock(PositionMocker &position_mock)
 
     auto date_time = CurrentDateTime();
     //// if current position none get pre day position
-    std::string sql = utility::FormatStr("SELECT date, code, avaliable, frozen FROM Position WHERE user_id='%d' ORDER BY date ", USER_ID_TEST);
+    std::string sql = utility::FormatStr("SELECT p.date, p.code, p.avaliable, p.frozen, s.name FROM Position p left join stock s on p.code = s.code WHERE p.user_id='%d' ORDER BY p.date", USER_ID_TEST);
     auto target_iter = position_mock.days_positions_.end();
     db_conn_->ExecuteSQL(sql.c_str(), [&position_mock, &target_iter, this](int cols, char **vals, char **names)
     {
@@ -1103,6 +1103,13 @@ void DBMoudle::LoadPositionMock(PositionMocker &position_mock)
         strcpy_s(pos_data.code, sizeof(pos_data.code), *(vals + 1));
         pos_data.avaliable = boost::lexical_cast<double>(*(vals + 2));
         pos_data.total = pos_data.avaliable + boost::lexical_cast<double>(*(vals + 3));
+		if( *(vals + 4) )
+		{
+			std::string cn_name = *(vals + 4);
+			utf8ToGbk(cn_name);
+			strcpy_s(pos_data.pinyin, sizeof(pos_data.pinyin), cn_name.c_str());
+		}
+
         target_iter->second.insert(std::make_pair(pos_data.code, pos_data));
 
         return 0;

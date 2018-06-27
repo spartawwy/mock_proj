@@ -39,7 +39,7 @@ class T_PositionData
 {
 public:
 	char code[32];
-	char pinyin[32];
+	char pinyin[32];  // is chinese name 
 	double total;
 	double avaliable;
 	double cost;
