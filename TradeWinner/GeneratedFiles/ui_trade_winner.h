@@ -54,11 +54,8 @@ public:
     QWidget *tab_task_list;
     QTableView *tbview_tasks;
     QWidget *tab_buytask;
-    QLabel *label_buytask_alert_price;
     QLabel *label_buytask_stock;
-    QDoubleSpinBox *dbspbox_buytask_alert_percent;
     QComboBox *combox_buy_type;
-    QDoubleSpinBox *dbspbox_buytask_alert_price;
     QLineEdit *le_buytask_stock;
     QLabel *label_buytask_show_pic;
     QPushButton *pbtn_add_buytask;
@@ -88,7 +85,12 @@ public:
     QSpinBox *spinBox_buytask_quantity;
     QLabel *label_19;
     QPushButton *pbtn_buytask_all_quantity;
+    QWidget *wid_buytask_price;
+    QDoubleSpinBox *dbspbox_buytask_alert_price;
+    QDoubleSpinBox *dbspbox_buytask_alert_percent;
     QLabel *label_alert_bfh_2;
+    QLabel *label_buytask_alert_price;
+    QPushButton *pbtn_buy_stock;
     QWidget *tab_sell_task;
     QWidget *wid_ticker;
     QLabel *lab_out_sell2;
@@ -331,31 +333,16 @@ public:
         tabwid_holder->addTab(tab_task_list, QString());
         tab_buytask = new QWidget();
         tab_buytask->setObjectName(QStringLiteral("tab_buytask"));
-        label_buytask_alert_price = new QLabel(tab_buytask);
-        label_buytask_alert_price->setObjectName(QStringLiteral("label_buytask_alert_price"));
-        label_buytask_alert_price->setGeometry(QRect(70, 110, 71, 21));
-        QFont font1;
-        font1.setPointSize(10);
-        label_buytask_alert_price->setFont(font1);
-        label_buytask_alert_price->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         label_buytask_stock = new QLabel(tab_buytask);
         label_buytask_stock->setObjectName(QStringLiteral("label_buytask_stock"));
         label_buytask_stock->setGeometry(QRect(70, 70, 71, 21));
+        QFont font1;
+        font1.setPointSize(10);
         label_buytask_stock->setFont(font1);
         label_buytask_stock->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-        dbspbox_buytask_alert_percent = new QDoubleSpinBox(tab_buytask);
-        dbspbox_buytask_alert_percent->setObjectName(QStringLiteral("dbspbox_buytask_alert_percent"));
-        dbspbox_buytask_alert_percent->setGeometry(QRect(360, 110, 81, 31));
-        dbspbox_buytask_alert_percent->setDecimals(1);
-        dbspbox_buytask_alert_percent->setMaximum(1000);
         combox_buy_type = new QComboBox(tab_buytask);
         combox_buy_type->setObjectName(QStringLiteral("combox_buy_type"));
         combox_buy_type->setGeometry(QRect(80, 20, 441, 31));
-        dbspbox_buytask_alert_price = new QDoubleSpinBox(tab_buytask);
-        dbspbox_buytask_alert_price->setObjectName(QStringLiteral("dbspbox_buytask_alert_price"));
-        dbspbox_buytask_alert_price->setGeometry(QRect(150, 110, 161, 31));
-        dbspbox_buytask_alert_price->setDecimals(2);
-        dbspbox_buytask_alert_price->setMaximum(999.99);
         le_buytask_stock = new QLineEdit(tab_buytask);
         le_buytask_stock->setObjectName(QStringLiteral("le_buytask_stock"));
         le_buytask_stock->setGeometry(QRect(150, 70, 161, 31));
@@ -467,9 +454,30 @@ public:
         pbtn_buytask_all_quantity = new QPushButton(wid_bt_mid_line);
         pbtn_buytask_all_quantity->setObjectName(QStringLiteral("pbtn_buytask_all_quantity"));
         pbtn_buytask_all_quantity->setGeometry(QRect(240, 100, 75, 23));
-        label_alert_bfh_2 = new QLabel(tab_buytask);
+        wid_buytask_price = new QWidget(tab_buytask);
+        wid_buytask_price->setObjectName(QStringLiteral("wid_buytask_price"));
+        wid_buytask_price->setGeometry(QRect(50, 100, 421, 51));
+        dbspbox_buytask_alert_price = new QDoubleSpinBox(wid_buytask_price);
+        dbspbox_buytask_alert_price->setObjectName(QStringLiteral("dbspbox_buytask_alert_price"));
+        dbspbox_buytask_alert_price->setGeometry(QRect(100, 10, 161, 31));
+        dbspbox_buytask_alert_price->setDecimals(2);
+        dbspbox_buytask_alert_price->setMaximum(999.99);
+        dbspbox_buytask_alert_percent = new QDoubleSpinBox(wid_buytask_price);
+        dbspbox_buytask_alert_percent->setObjectName(QStringLiteral("dbspbox_buytask_alert_percent"));
+        dbspbox_buytask_alert_percent->setGeometry(QRect(310, 10, 81, 31));
+        dbspbox_buytask_alert_percent->setDecimals(1);
+        dbspbox_buytask_alert_percent->setMaximum(1000);
+        label_alert_bfh_2 = new QLabel(wid_buytask_price);
         label_alert_bfh_2->setObjectName(QStringLiteral("label_alert_bfh_2"));
-        label_alert_bfh_2->setGeometry(QRect(450, 110, 31, 20));
+        label_alert_bfh_2->setGeometry(QRect(400, 10, 31, 20));
+        label_buytask_alert_price = new QLabel(wid_buytask_price);
+        label_buytask_alert_price->setObjectName(QStringLiteral("label_buytask_alert_price"));
+        label_buytask_alert_price->setGeometry(QRect(20, 10, 71, 21));
+        label_buytask_alert_price->setFont(font1);
+        label_buytask_alert_price->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        pbtn_buy_stock = new QPushButton(tab_buytask);
+        pbtn_buy_stock->setObjectName(QStringLiteral("pbtn_buy_stock"));
+        pbtn_buy_stock->setGeometry(QRect(380, 70, 141, 23));
         tabwid_holder->addTab(tab_buytask, QString());
         tab_sell_task = new QWidget();
         tab_sell_task->setObjectName(QStringLiteral("tab_sell_task"));
@@ -1330,9 +1338,7 @@ public:
         QWidget::setTabOrder(dbspbox_step_range, pbtn_add_task);
         QWidget::setTabOrder(pbtn_add_task, combox_buy_type);
         QWidget::setTabOrder(combox_buy_type, le_buytask_stock);
-        QWidget::setTabOrder(le_buytask_stock, dbspbox_buytask_alert_price);
-        QWidget::setTabOrder(dbspbox_buytask_alert_price, dbspbox_buytask_alert_percent);
-        QWidget::setTabOrder(dbspbox_buytask_alert_percent, spinBox_buytask_continue_time);
+        QWidget::setTabOrder(le_buytask_stock, spinBox_buytask_continue_time);
         QWidget::setTabOrder(spinBox_buytask_continue_time, spinBox_buytask_quantity);
         QWidget::setTabOrder(spinBox_buytask_quantity, pbtn_buytask_all_quantity);
         QWidget::setTabOrder(pbtn_buytask_all_quantity, combox_bt_price_level);
@@ -1371,7 +1377,7 @@ public:
 
         retranslateUi(TradeWinnerClass);
 
-        tabwid_holder->setCurrentIndex(8);
+        tabwid_holder->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(TradeWinnerClass);
@@ -1389,7 +1395,6 @@ public:
         actionResetMockSys->setText(QApplication::translate("TradeWinnerClass", "\351\207\215\347\275\256\346\250\241\346\213\237\347\263\273\347\273\237", 0));
         actionOpenRecordsWin->setText(QApplication::translate("TradeWinnerClass", "\344\272\244\346\230\223\350\256\260\345\275\225(F12)", 0));
         tabwid_holder->setTabText(tabwid_holder->indexOf(tab_task_list), QApplication::translate("TradeWinnerClass", "\344\273\273\345\212\241\345\210\227\350\241\250", 0));
-        label_buytask_alert_price->setText(QApplication::translate("TradeWinnerClass", "\350\202\241\347\245\250\344\275\216\344\272\216:", 0));
         label_buytask_stock->setText(QApplication::translate("TradeWinnerClass", "\350\202\241\347\245\250\344\273\243\347\240\201:", 0));
         label_buytask_show_pic->setText(QApplication::translate("TradeWinnerClass", "TextLabel", 0));
         pbtn_add_buytask->setText(QApplication::translate("TradeWinnerClass", "\346\267\273\345\212\240\344\273\273\345\212\241", 0));
@@ -1409,6 +1414,8 @@ public:
         label_19->setText(QApplication::translate("TradeWinnerClass", "\346\234\200\345\244\247\345\217\257\344\271\260:", 0));
         pbtn_buytask_all_quantity->setText(QApplication::translate("TradeWinnerClass", "\345\205\250\351\203\250", 0));
         label_alert_bfh_2->setText(QApplication::translate("TradeWinnerClass", "%", 0));
+        label_buytask_alert_price->setText(QApplication::translate("TradeWinnerClass", "\350\202\241\347\245\250\344\275\216\344\272\216:", 0));
+        pbtn_buy_stock->setText(QApplication::translate("TradeWinnerClass", "\344\271\260\345\205\245\344\270\213\345\215\225", 0));
         tabwid_holder->setTabText(tabwid_holder->indexOf(tab_buytask), QApplication::translate("TradeWinnerClass", "\344\271\260\345\205\245\344\273\273\345\212\241", 0));
         lab_out_sell2->setText(QApplication::translate("TradeWinnerClass", "sell2", 0));
         label_4->setText(QApplication::translate("TradeWinnerClass", "sell4", 0));

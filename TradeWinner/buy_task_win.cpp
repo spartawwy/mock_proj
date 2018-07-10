@@ -23,6 +23,7 @@
 
 //
  
+static const QString cst_str_direct_buy = QString::fromLocal8Bit("直接买入");
 static const QString cst_str_inflection_buy = QString::fromLocal8Bit("拐点买入");
 static const QString cst_str_breakout_buy = QString::fromLocal8Bit("突破买入");
 static const QString cst_str_batches_buy = QString::fromLocal8Bit("分批买入");
@@ -45,6 +46,7 @@ void WinnerWin::InitBuyTaskWin()
     ui.dbspbox_bt_step_range->setMinimum(0.1);
 
 #endif
+    ui.combox_buy_type->addItem(cst_str_direct_buy);
     ui.combox_buy_type->addItem(cst_str_inflection_buy);
     ui.combox_buy_type->addItem(cst_str_breakout_buy);
     ui.combox_buy_type->addItem(cst_str_batches_buy);
@@ -97,14 +99,20 @@ void WinnerWin::ChangeTabBuyAssistantImg(TypeTask type)
 		break;
     case TypeTask::BREAKUP_BUY: 
         image.load("./img/breakup_buy.png");
+		break; 
+	case TypeTask::DERECT_BUY:
 		break;
 	default:
 		assert(false);
 	}
-     
-    //image.width();
-    ui.label_buytask_show_pic->setPixmap(image);
-    ui.label_buytask_show_pic->show();
+    if( type != TypeTask::DERECT_BUY )
+	{ 
+		ui.label_buytask_show_pic->setPixmap(image);
+		ui.label_buytask_show_pic->show();
+	}else
+	{
+		ui.label_buytask_show_pic->hide();
+	}
 }
 
 void WinnerWin::FillBuyTaskWin(TypeTask type, T_TaskInformation& info)
@@ -123,6 +131,8 @@ void WinnerWin::FillBuyTaskWin(TypeTask type, T_TaskInformation& info)
         ui.combox_buy_type->setCurrentText(cst_str_batches_buy);
         ui.dbspbox_bt_step_range->setValue(info.step);
         ui.spinBox_buytask_times->setValue(info.bs_times);
+		break;
+	case TypeTask::DERECT_BUY:
 		break;
 	default:
 		assert(false);
@@ -168,6 +178,19 @@ void WinnerWin::DoBuyTypeChanged(const QString&str)
     };
 
 	m_bt_list_hint_->hide();
+	if( str == cst_str_direct_buy )
+	{
+		ui.wid_buytask_price->hide();
+		ui.wid_bt_retreat->hide();
+		ui.wid_bt_step_range->hide();
+		ui.pbtn_add_buytask->hide();
+		ui.wid_bt_mid_line->show();
+	}else
+	{
+		ui.pbtn_add_buytask->show();
+		ui.wid_buytask_price->show();
+	}
+
     ResetBuyTabTaskTime();
 
    if( str == cst_str_inflection_buy )
@@ -201,7 +224,7 @@ void WinnerWin::DoBuyTypeChanged(const QString&str)
    {
 	   ChangeTabBuyAssistantImg(TypeTask::BATCHES_BUY);
 	   ui.label_buytask_alert_price->setText(QString::fromLocal8Bit("股票低于:"));
-#if 1 
+
 	   ajust_pos_y(ui.wid_bt_step_range, wid_bt_mid_line_rect.y()); 
        ajust_pos_y(ui.wid_bt_mid_line, wid_bt_mid_line_rect.y() + wid_bt_step_range_rect.height());
         
@@ -209,7 +232,7 @@ void WinnerWin::DoBuyTypeChanged(const QString&str)
 
 	   ui.wid_bt_retreat->hide();
 	   ui.wid_bt_step_range->show();
-#endif
+ 
    }
 }
 

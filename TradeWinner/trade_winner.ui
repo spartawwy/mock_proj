@@ -29,7 +29,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>8</number>
+     <number>1</number>
     </property>
     <property name="iconSize">
      <size>
@@ -59,27 +59,6 @@
      <attribute name="title">
       <string>买入任务</string>
      </attribute>
-     <widget class="QLabel" name="label_buytask_alert_price">
-      <property name="geometry">
-       <rect>
-        <x>70</x>
-        <y>110</y>
-        <width>71</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>股票低于:</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_buytask_stock">
       <property name="geometry">
        <rect>
@@ -101,22 +80,6 @@
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
      </widget>
-     <widget class="QDoubleSpinBox" name="dbspbox_buytask_alert_percent">
-      <property name="geometry">
-       <rect>
-        <x>360</x>
-        <y>110</y>
-        <width>81</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>1</number>
-      </property>
-      <property name="maximum">
-       <double>1000.000000000000000</double>
-      </property>
-     </widget>
      <widget class="QComboBox" name="combox_buy_type">
       <property name="geometry">
        <rect>
@@ -125,22 +88,6 @@
         <width>441</width>
         <height>31</height>
        </rect>
-      </property>
-     </widget>
-     <widget class="QDoubleSpinBox" name="dbspbox_buytask_alert_price">
-      <property name="geometry">
-       <rect>
-        <x>150</x>
-        <y>110</y>
-        <width>161</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="decimals">
-       <number>2</number>
-      </property>
-      <property name="maximum">
-       <double>999.990000000000009</double>
       </property>
      </widget>
      <widget class="QLineEdit" name="le_buytask_stock">
@@ -576,17 +523,93 @@
        </property>
       </widget>
      </widget>
-     <widget class="QLabel" name="label_alert_bfh_2">
+     <widget class="QWidget" name="wid_buytask_price" native="true">
       <property name="geometry">
        <rect>
-        <x>450</x>
-        <y>110</y>
-        <width>31</width>
-        <height>20</height>
+        <x>50</x>
+        <y>100</y>
+        <width>421</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <widget class="QDoubleSpinBox" name="dbspbox_buytask_alert_price">
+       <property name="geometry">
+        <rect>
+         <x>100</x>
+         <y>10</y>
+         <width>161</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="decimals">
+        <number>2</number>
+       </property>
+       <property name="maximum">
+        <double>999.990000000000009</double>
+       </property>
+      </widget>
+      <widget class="QDoubleSpinBox" name="dbspbox_buytask_alert_percent">
+       <property name="geometry">
+        <rect>
+         <x>310</x>
+         <y>10</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <double>1000.000000000000000</double>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_alert_bfh_2">
+       <property name="geometry">
+        <rect>
+         <x>400</x>
+         <y>10</y>
+         <width>31</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>%</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_buytask_alert_price">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>10</y>
+         <width>71</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>股票低于:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QPushButton" name="pbtn_buy_stock">
+      <property name="geometry">
+       <rect>
+        <x>380</x>
+        <y>70</y>
+        <width>141</width>
+        <height>23</height>
        </rect>
       </property>
       <property name="text">
-       <string>%</string>
+       <string>买入下单</string>
       </property>
      </widget>
     </widget>
@@ -3884,8 +3907,6 @@ background-color: rgb(255, 255,255);</string>
   <tabstop>pbtn_add_task</tabstop>
   <tabstop>combox_buy_type</tabstop>
   <tabstop>le_buytask_stock</tabstop>
-  <tabstop>dbspbox_buytask_alert_price</tabstop>
-  <tabstop>dbspbox_buytask_alert_percent</tabstop>
   <tabstop>spinBox_buytask_continue_time</tabstop>
   <tabstop>spinBox_buytask_quantity</tabstop>
   <tabstop>pbtn_buytask_all_quantity</tabstop>

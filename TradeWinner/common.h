@@ -101,6 +101,7 @@ enum class TypeTask : char
 	EQUAL_SECTION,
     INDEX_RISKMAN, // 8
 	ADVANCE_SECTION,
+	DERECT_BUY,
 };
 
 enum class TypeQuoteLevel : char
