@@ -77,12 +77,12 @@ void WinnerWin::InitBuyTaskWin()
      
     ret = QObject::connect(ui.dbspbox_buytask_alert_percent, SIGNAL(valueChanged(double)), this, SLOT(DoBuyAlertPercentChanged(double)));
 
-    DoBuyTypeChanged(cst_str_inflection_buy);
+    DoBuyTypeChanged(cst_str_direct_buy);
     ret = QObject::connect(ui.combox_buy_type, SIGNAL(currentTextChanged(const QString&)), SLOT(DoBuyTypeChanged(const QString&)));
  
     ret = QObject::connect(ui.pbtn_buytask_all_quantity, SIGNAL(clicked()), this, SLOT(DoQueryQtyCanBuy()));
     ret = QObject::connect(ui.pbtn_add_buytask, SIGNAL(clicked()), this, SLOT(DoAddBuyTask())); 
- 
+	ret = QObject::connect(ui.pbtn_buy_stock, SIGNAL(clicked()), this, SLOT(DoBuyStock()));
 }
 
 
@@ -180,15 +180,26 @@ void WinnerWin::DoBuyTypeChanged(const QString&str)
 	m_bt_list_hint_->hide();
 	if( str == cst_str_direct_buy )
 	{
+		ui.label_buytask_show_pic->hide();
 		ui.wid_buytask_price->hide();
 		ui.wid_bt_retreat->hide();
 		ui.wid_bt_step_range->hide();
+		ui.wid_buytask_continue_time->hide();
+		ui.wid_buytask_time->hide();
 		ui.pbtn_add_buytask->hide();
-		ui.wid_bt_mid_line->show();
+		 
+		ui.pbtn_buy_stock->show();
 	}else
 	{
-		ui.pbtn_add_buytask->show();
+		ui.label_buytask_show_pic->show();
 		ui.wid_buytask_price->show();
+		ui.wid_bt_retreat->show();
+		ui.wid_bt_step_range->show();
+		ui.wid_buytask_continue_time->show();
+		ui.wid_buytask_time->show();
+		ui.pbtn_add_buytask->show();
+		 
+		ui.pbtn_buy_stock->hide();
 	}
 
     ResetBuyTabTaskTime();
@@ -416,6 +427,75 @@ void WinnerWin::DoQueryQtyCanBuy()
 
     ui.spinBox_buytask_quantity->setValue(handles * 100);
     ui.label_buytask_total_num->setText( QString("%1").arg(handles * 100) );
+}
+
+double GetQuoteTargetPrice(TypeQuoteLevel quote_level, const QuotesData& data, bool is_buy)
+{
+    switch(quote_level)
+    {
+    case TypeQuoteLevel::PRICE_CUR: return data.cur_price;
+         
+    case TypeQuoteLevel::PRICE_BUYSELL_1: return is_buy ? data.price_s_1 : data.price_b_1;
+    case TypeQuoteLevel::PRICE_BUYSELL_2: return is_buy ? data.price_s_2 : data.price_b_2;
+    case TypeQuoteLevel::PRICE_BUYSELL_3: return is_buy ? data.price_s_3 : data.price_b_3;
+    case TypeQuoteLevel::PRICE_BUYSELL_4: return is_buy ? data.price_s_4 : data.price_b_4;
+    case TypeQuoteLevel::PRICE_BUYSELL_5: return is_buy ? data.price_s_5 : data.price_b_5;
+    default: return data.cur_price; 
+    }
+}
+
+void WinnerWin::DoBuyStock()
+{
+	QString::SectionFlag flag = QString::SectionSkipEmpty;
+	QString stock_str = ui.le_buytask_stock->text().trimmed();
+	QString stock_pinyin = stock_str.section('/', 1, 1, flag);
+
+	std::string std_stock = stock_str.section('/', 0, 0, flag).toLocal8Bit().data();
+    std::string std_stock_pinyin = stock_str.section('/', 1, 1, flag).toLocal8Bit().data();
+	
+	if( std_stock.size() != 6 || !IsStrNum(std_stock) )
+	{
+		app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("股票代码有误!"));
+		return;
+	}
+
+	auto market_type = GetStockMarketType(std_stock);
+	 
+	char result[1024] = {0};
+    char error_info[1024] = {0};
+	            
+	int qty = ui.spinBox_buytask_quantity->value(); 
+    // to choice price to buy
+    auto price = 0.0;
+	char *stock_codes[1] = {0};
+	stock_codes[0] = const_cast<char*>(std_stock.c_str());
+	short count = 1;
+	TCodeMapQuotesData ret_quotes_data; 
+	if( !app_->stock_ticker().GetQuoteDatas(stock_codes, 1, ret_quotes_data)
+		|| ret_quotes_data.find(stock_codes[0]) == ret_quotes_data.end() )
+	{
+		app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("无法获取此股报价!"));
+		return;
+	}
+
+	TypeQuoteLevel quote_level = static_cast<TypeQuoteLevel>(ui.combox_bt_price_level->currentData().toInt());
+	price = GetQuoteTargetPrice(quote_level, *ret_quotes_data[std_stock], true);
+	// buy the stock
+    this->app_->trade_agent().SendOrder(this->app_->trade_client_id(), (int)TypeOrderCategory::BUY, 0
+		, const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type))->shared_holder_code, const_cast<char*>(std_stock.c_str())
+        , price, qty
+        , result, error_info); 
+
+	char buf[1024] = {0};
+	if( strlen(error_info) == 0 )
+	{ 
+		sprintf(buf, "买入%s %d 成功!", stock_str.toLocal8Bit().data(), qty);
+	}else
+	{
+		sprintf(buf, "买入%s %d 失败: %s!", stock_str.toLocal8Bit().data(), qty, error_info);
+	}
+	app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit(buf));
+	app_->AppendLog2Ui(buf);
 }
 
 void WinnerWin::ResetBuyTabTaskTime()

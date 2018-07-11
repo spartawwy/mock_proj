@@ -78,6 +78,7 @@ public slots:
 	void DoBuyTypeChanged(const QString&);
     void DoAddBuyTask();
     void DoQueryQtyCanBuy();
+	void DoBuyStock();
 
 	void ResetBuyTabTaskTime();
 	void InsertIntoBktestTbvTask(T_TaskInformation &task_info);
