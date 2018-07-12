@@ -23,8 +23,10 @@
     </rect>
    </property>
    <property name="text">
-    <string>TradeWinner mock 股票模拟交易软件. 版权(2018-2030)归 汪文原所有
-Email:249564063@qq.com</string>
+    <string>TradeWinner mock 股票实盘行情.模拟交易软件. 版权(2018-2030)归 汪文原所有
+Email:249564063@qq.com
+QQ:249564063
+微信:spartaiswy</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

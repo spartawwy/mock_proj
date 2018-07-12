@@ -446,6 +446,28 @@ double GetQuoteTargetPrice(TypeQuoteLevel quote_level, const QuotesData& data, b
 
 void WinnerWin::DoBuyStock()
 {
+	static auto add_fill2db = [this](std::string &stock, std::string &stock_pinyin, double price, double qty, bool is_buy)
+	{
+		T_FillItem fill_item;
+		fill_item.user_id = app_->user_info().id;
+		auto date_time = CurrentDateIntTime();
+
+		if( !app_->exchange_calendar().IsTradeDate(std::get<0>(date_time)) )
+			fill_item.date = app_->exchange_calendar().NextTradeDate(std::get<0>(date_time), 1);
+		else
+			fill_item.date = std::get<0>(date_time);
+		fill_item.time_stamp = std::get<1>(date_time);
+		fill_item.stock = stock;
+		fill_item.pinyin = stock_pinyin;
+		fill_item.price = price;
+		fill_item.quantity = qty;
+		fill_item.is_buy = is_buy;
+		fill_item.amount = price * qty;
+		fill_item.fee = CaculateFee(price * qty, is_buy);
+		app_->db_moudle().AddFillRecord(fill_item);
+	};
+
+
 	QString::SectionFlag flag = QString::SectionSkipEmpty;
 	QString stock_str = ui.le_buytask_stock->text().trimmed();
 	QString stock_pinyin = stock_str.section('/', 1, 1, flag);
@@ -489,10 +511,11 @@ void WinnerWin::DoBuyStock()
 	char buf[1024] = {0};
 	if( strlen(error_info) == 0 )
 	{ 
-		sprintf(buf, "买入%s %d 成功!", stock_str.toLocal8Bit().data(), qty);
+		sprintf(buf, "买入%s %d股 价格:%.2f 成功!", stock_str.toLocal8Bit().data(), qty, price);
+		add_fill2db(std_stock, std_stock_pinyin, price, qty, true);
 	}else
 	{
-		sprintf(buf, "买入%s %d 失败: %s!", stock_str.toLocal8Bit().data(), qty, error_info);
+		sprintf(buf, "买入%s %d股 价格:%.2f 失败: %s!", stock_str.toLocal8Bit().data(), qty, price, error_info);
 	}
 	app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit(buf));
 	app_->AppendLog2Ui(buf);
