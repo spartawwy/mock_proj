@@ -19,6 +19,7 @@ public:
     {
         int max_task_id;
         long long max_fill_id;
+		int latest_date_tag;
         //std::string name;
     };
 
@@ -27,6 +28,8 @@ public:
      
     TRetCookie Init();
     
+	void latest_date_tag(int val) { assert(data_); data_->latest_date_tag = val; }
+	int latest_date_tag() { assert(data_); return data_->latest_date_tag; }
    /* void max_task_id(int id) { assert(data_); data_->max_task_id = id; }
     int max_task_id() { assert(data_); return data_->max_task_id; }*/
     T_DataAccess *data_;
@@ -41,7 +44,6 @@ private:
 
      DWORD mmf_size_;
      size_t view_size_;
-      
 };
 
 #endif

@@ -39,7 +39,7 @@
 #define USE_MOCK_FLAG 
 
 #define CAPITAL_SYMBOL "CNY"
-#define CAPITAL_ORI_TOTAL  300000.0
+#define CAPITAL_ORI_TOTAL  1000000.0//300000.0
 
 #if 0
 std::vector<std::string> split(const std::string& line, const std::string& seperator = " ", 

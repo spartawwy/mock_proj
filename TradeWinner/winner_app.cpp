@@ -806,12 +806,15 @@ void WinnerApp::DoShowLongUi(std::string* str, bool flash_taskbar)
 void WinnerApp::DoNormalTimer()
 { 
     assert(position_mocker_);
-    bool is_date_change = false;
-	ticker_enable_flag_ = IsNowTradeTime(&is_date_change);
-    if( is_date_change )
-    {
-       UpdatePositionMock();
-    }
+    //bool is_date_change = false;
+	ticker_enable_flag_ = IsNowTradeTime();
+
+	if( IsDateChange() )
+	{
+		UpdateLatestDateTag(TSystem::Today());
+		  
+		UpdatePositionMock();
+	}
 
 	if( ticker_enable_flag_ )
 	{
@@ -1067,8 +1070,22 @@ std::vector<int> WinnerApp::GetSpanTradeDates(int date_begin, int date_end)
 void WinnerApp::UpdatePositionMock()
 {
     auto today = TSystem::Today();
-    if( exchange_calendar_.IsTradeDate(today) )
-        position_mocker_->DoEnterNewTradeDate(today);
-    else
-        position_mocker_->UnFreezePosition();
+	//if( IsDateChange() )
+	{
+		//UpdateLatestDateTag(today);
+		if( exchange_calendar_.IsTradeDate(today) )
+			position_mocker_->DoEnterNewTradeDate(today);
+		else
+			position_mocker_->UnFreezePosition();
+	}
+}
+
+bool WinnerApp::IsDateChange()
+{ 
+	return TSystem::Today() != cookie_.latest_date_tag();
+}
+
+void WinnerApp::UpdateLatestDateTag(int date)
+{
+	cookie_.latest_date_tag(date);
 }

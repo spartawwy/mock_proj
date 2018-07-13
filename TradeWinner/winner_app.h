@@ -160,6 +160,8 @@ private:
     
     // position mock relate
     void UpdatePositionMock();
+	bool IsDateChange();
+	void UpdateLatestDateTag(int date);
 
     TaskStrand  tick_strand_;
     TaskStrand  index_tick_strand_; 

@@ -478,6 +478,7 @@ void WinnerWin::DoBuyStock()
 	if( std_stock.size() != 6 || !IsStrNum(std_stock) )
 	{
 		app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("股票代码有误!"));
+		ui.le_buytask_stock->setFocus();
 		return;
 	}
 
@@ -487,6 +488,12 @@ void WinnerWin::DoBuyStock()
     char error_info[1024] = {0};
 	            
 	int qty = ui.spinBox_buytask_quantity->value(); 
+	if( qty < 100 )
+	{
+		app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("股票数量有误!"));
+		ui.spinBox_buytask_quantity->setFocus();
+		return;
+	}
     // to choice price to buy
     auto price = 0.0;
 	char *stock_codes[1] = {0};
@@ -497,6 +504,7 @@ void WinnerWin::DoBuyStock()
 		|| ret_quotes_data.find(stock_codes[0]) == ret_quotes_data.end() )
 	{
 		app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("无法获取此股报价!"));
+		ui.le_buytask_stock->setFocus();
 		return;
 	}
 

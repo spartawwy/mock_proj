@@ -244,6 +244,7 @@ bool IsNowTradeTime(bool *is_day_change)
     static time_t sec_rest_end = 0;
     static time_t sec_end = 0;
      
+	 
     time_t rawtime = 0;
     struct tm * timeinfo = nullptr;
 	time( &rawtime );
