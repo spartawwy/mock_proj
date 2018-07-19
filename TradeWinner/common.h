@@ -417,7 +417,18 @@ public:
 //};
 
 enum class TypeAction : char { NOOP = 0, PREPARE_BUY, PREPARE_SELL, CLEAR};
+
+typedef struct _t_profit
+{
+    std::string stock;
+	double market_value;
+	double cost_price;
+    double profit;
+    double profit_percent;
+}T_PROFIT;
+
 typedef std::unordered_map<std::string, std::list<std::shared_ptr<T_FillItem> > > T_CodeMapFills;
+typedef std::unordered_map<std::string, T_PROFIT> T_CodeMapProfit;
 
 TypeMarket GetStockMarketType(const std::string &stock_code);
 

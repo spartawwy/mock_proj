@@ -121,6 +121,8 @@ public:
     WinnerWin& winner_win() { return  winner_win_; }
     ExchangeCalendar &exchange_calendar() { return exchange_calendar_; }
 
+	T_CodeMapProfit CalcProfit();
+
     // back test related ----------
     std::shared_ptr<BackTester> & back_tester(){ return back_tester_; }
     T_StockPriceInfo * GetStockPriceInfo(const std::string& code, bool is_lazy=true);

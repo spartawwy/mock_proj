@@ -974,6 +974,70 @@ bool WinnerApp::SellAllPosition(IndexTask * task)
     return true;
 }
 
+T_CodeMapProfit  WinnerApp::CalcProfit()
+{
+	T_CodeMapProfit  code_profit;
+	auto records_for_calprofit = db_moudle().LoadFillRecordsForCalProfit(user_info().id);
+	char *stock[64] = {0};
+	int i = 0;
+	std::for_each( std::begin(records_for_calprofit), std::end(records_for_calprofit), [&i, &stock](T_CodeMapFills::reference entry)
+	{
+		stock[i++] = const_cast<char*>(entry.first.c_str());
+	});
+	TCodeMapQuotesData  stock_quotes;
+	stock_ticker().GetQuoteDatas(stock, i, stock_quotes);
+
+	auto positions = QueryPosition();
+     
+    std::for_each( std::begin(records_for_calprofit), std::end(records_for_calprofit), [&code_profit, &positions, &stock_quotes, this](T_CodeMapFills::reference entry)
+    {
+		auto iter = stock_quotes.find(entry.first);
+		if( iter == stock_quotes.end() )
+		{
+			// log_error:
+			return; 
+		}
+		double cur_price = iter->second->cur_price;
+		auto pos_iter  = positions.find(entry.first);
+        if( pos_iter == positions.end() )
+		{ // log_error:
+			return; 
+		}
+		 
+        double input_amount = 0.0;
+        double mid_get_amount = 0.0;
+        std::for_each( std::begin(entry.second), std::end(entry.second), [&input_amount, &mid_get_amount, &entry, this](std::shared_ptr<T_FillItem>& in)
+        {
+            if( in->is_buy )
+            {
+                input_amount += in->amount + in->fee;
+            }else
+            {
+                mid_get_amount += in->amount - in->fee;
+            }
+        });
+		double market_value = cur_price * pos_iter->second.total;
+        double profit = market_value + mid_get_amount - input_amount;
+		double profit_percent = (profit * 100 / input_amount);
+
+		// 计算公式：成本价=（买入金额-盈亏金额）/持股股数
+		double cost_price = 0.0;
+		if( pos_iter->second.total > 0 )
+			cost_price = (input_amount - profit) / pos_iter->second.total;
+		
+		auto item = code_profit.insert( std::make_pair(entry.first, T_PROFIT()) ).first;  
+		item->second.stock = entry.first;
+		item->second.market_value = market_value;
+		item->second.cost_price = cost_price;
+		item->second.profit = profit;
+		item->second.profit_percent = profit_percent;
+
+    });
+
+	return code_profit;
+      
+}
+
 void WinnerApp::StopAllStockTasks()
 {
     ticker_strand().PostTask([this]()

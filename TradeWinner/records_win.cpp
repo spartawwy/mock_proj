@@ -177,6 +177,7 @@ void RecordsWin::UpdateTblviewFills()
 		model->setItem(row_index, cst_fills_col_index_fee, item);
 	});
 
+#if 0 
     // position view --------------------
 	auto records_for_calprofit = app_->db_moudle().LoadFillRecordsForCalProfit(app_->user_info().id);
 	char *stock[64] = {0};
@@ -260,5 +261,12 @@ void RecordsWin::UpdateTblviewFills()
 		model->setItem(row_index, cst_pos_col_index_proflost_percent, item);
 		    
     });
-      
+#else
+
+	T_CodeMapProfit profits = app_->CalcProfit();
+
+	for(
+#endif
+
+
 }
