@@ -25,11 +25,12 @@
     </property>
     <property name="font">
      <font>
-      <pointsize>12</pointsize>
+      <family>新宋体</family>
+      <pointsize>11</pointsize>
      </font>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>5</number>
     </property>
     <property name="iconSize">
      <size>
@@ -2183,6 +2184,9 @@
       <string>资产信息</string>
      </attribute>
      <widget class="QPlainTextEdit" name="pte_capital">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
         <x>20</x>
@@ -2190,6 +2194,12 @@
         <width>681</width>
         <height>481</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>新宋体</family>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <property name="styleSheet">
        <string notr="true">
@@ -2221,6 +2231,9 @@ background-color: rgb(255, 255,255);</string>
       <string>日志记录</string>
      </attribute>
      <widget class="QPlainTextEdit" name="pte_log">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
         <x>0</x>
@@ -2228,6 +2241,14 @@ background-color: rgb(255, 255,255);</string>
         <width>911</width>
         <height>541</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>新宋体</family>
+        <pointsize>11</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
       </property>
      </widget>
     </widget>
@@ -3816,7 +3837,7 @@ background-color: rgb(255, 255,255);</string>
      <x>0</x>
      <y>0</y>
      <width>917</width>
-     <height>18</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_system">

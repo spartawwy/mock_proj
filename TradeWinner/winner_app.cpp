@@ -26,6 +26,7 @@
 #include "index_task.h"
 #include "back_tester.h"
 
+#define   DEBUG_TRADE do{local_logger().LogLocal(utility::FormatStr("%s line: %d", __FUNCTION__, __LINE__));}while(0);
 static bool SetCurrentEnvPath();
 
 //static void AjustTickFlag(bool & enable_flag);
@@ -66,6 +67,7 @@ WinnerApp::WinnerApp(int argc, char* argv[])
     , exchange_calendar_()
     , position_mocker_(nullptr)
     , back_tester_(std::make_shared<BackTester>(this))
+    , codes_name_(5000)
 {   
 	connect(strategy_tasks_timer_.get(), SIGNAL(timeout()), this, SLOT(DoStrategyTasksTimeout()));
 	connect(normal_timer_.get(), SIGNAL(timeout()), this, SLOT(DoNormalTimer()));
@@ -82,6 +84,7 @@ WinnerApp::~WinnerApp()
 
 bool WinnerApp::Init()
 {
+    DEBUG_TRADE
 	option_dir_type(AppBase::DirType::STAND_ALONE_APP);
 	option_validate_app(false);
 
@@ -100,14 +103,17 @@ bool WinnerApp::Init()
 		}
 		return false;
 	}
-     
+    DEBUG_TRADE 
     for (int i = 0; i < 2; ++ i)
     {
         task_pool_.AddWorker();
     }
-     
+    DEBUG_TRADE
 	db_moudle_.Init();
-	    
+    db_moudle_.LoadTradeDate(&exchange_calendar_);
+    DEBUG_TRADE
+    db_moudle_.LoadCodesName(codes_name_);
+	//-----------------------------login window show --------------------  
 	login_win_.Init(); 
 	ret = login_win_.exec(); 
 	if( ret != QDialog::Accepted )
@@ -115,6 +121,7 @@ bool WinnerApp::Init()
 		Stop();
 		return false;
 	}
+    //-------------------------------end---------------------------------
 #if 0
 	db_moudle_.LoadAllUserBrokerInfo();
 
@@ -123,10 +130,9 @@ bool WinnerApp::Init()
 	assert(p_user_account_info_ && p_user_broker_info_);
 
 #endif
-    db_moudle_.LoadTradeDate(&exchange_calendar_);
-
+   
 #ifndef  USE_MOCK_FLAG
-
+    //---------------broker config window show --------------------
 	BrokerCfgWin  bcf_win(this);
 	bcf_win.Init();
 	ret = bcf_win.exec();
@@ -150,20 +156,29 @@ bool WinnerApp::Init()
 	local_logger().LogLocal(result.data());
 
 	trade_agent_.SetupAccountInfo(result.data());
-#endif
-    
-    db_moudle_.LoadAllTaskInfo(task_infos_);
-
+#else
+    DEBUG_TRADE
     position_mocker_ = std::make_shared<PositionMocker>(user_info_.id, &db_moudle_, &exchange_calendar_);
+    DEBUG_TRADE
     db_moudle_.LoadPositionMock(*position_mocker_);
+    DEBUG_TRADE
     UpdatePositionMock();
-    trade_agent_.Init(user_info_.id, &db_moudle_, position_mocker_);
-    
-    back_tester_->Init();
-	//------------------------ create tasks ------------------
+
+#endif
    
+    DEBUG_TRADE
+    db_moudle_.LoadAllTaskInfo(task_infos_);
+    DEBUG_TRADE
+    trade_agent_.Init(user_info_.id, &db_moudle_, position_mocker_);
+    DEBUG_TRADE
+    back_tester_->Init();
+	//------------------------ winner window ------------------
+    DEBUG_TRADE 
 	winner_win_.Init(); // inner use task_info
+    DEBUG_TRADE
 	winner_win_.show();
+    //------------------------end------------------------------
+
 	bool ret1 = QObject::connect(this, SIGNAL(SigTaskStatChange(StrategyTask*, int)), &winner_win_, SLOT(DoTaskStatChangeSignal(StrategyTask*, int)));
 
 	ret1 = QObject::connect(this, SIGNAL(SigRemoveTask(int)), &winner_win_, SLOT(RemoveByTaskId(int)));
@@ -173,13 +188,18 @@ bool WinnerApp::Init()
     ret1 = QObject::connect(this, SIGNAL(SigShowLongUi(std::string *, bool)), this, SLOT(DoShowLongUi(std::string *, bool)));
  
 #if 1 
-
+    DEBUG_TRADE
 	stock_ticker_ = std::make_shared<StockTicker>(this->local_logger());
+    DEBUG_TRADE
 	stock_ticker_->Init();
-	 
+	DEBUG_TRADE 
 	if( !index_ticker_->Init() )
 		return false;
+    //------------------------ create tasks ------------------
+    DEBUG_TRADE
 	TaskFactory::CreateAllTasks(task_infos_, strategy_tasks_, this);
+    DEBUG_TRADE
+
 #ifndef USE_MOCK_FLAG
 	QueryPosition();
 #endif
@@ -250,19 +270,19 @@ void WinnerApp::Cookie_MaxTaskId(int task_id)
 	cookie_.data_->max_task_id = task_id;
 }
 
-int WinnerApp::Cookie_NextFillId()
+__int64 WinnerApp::Cookie_NextFillId()
 {
     std::lock_guard<std::mutex> locker(cookie_fill_mutex_);
     return ++ cookie_.data_->max_fill_id;
 }
 
-int WinnerApp::Cookie_MaxFillId()
+__int64 WinnerApp::Cookie_MaxFillId()
 {
     std::lock_guard<std::mutex> locker(cookie_fill_mutex_);
     return cookie_.data_->max_fill_id;
 }
 
-void WinnerApp::Cookie_MaxFillId(int fill_id)
+void WinnerApp::Cookie_MaxFillId(__int64 fill_id)
 {
     std::lock_guard<std::mutex> locker(cookie_fill_mutex_);
     cookie_.data_->max_fill_id = fill_id;
@@ -686,8 +706,7 @@ void WinnerApp::SlotStopAllTasks(bool)
 }
 
 void WinnerApp::SlotResetMockSys(bool)
-{
-    
+{ 
     assert(position_mocker_);
     auto ret_button = QMessageBox::question(nullptr, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("重置系统将删除所有模拟交易数据.确定要重置?"),
         QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel);
@@ -700,8 +719,7 @@ void WinnerApp::SlotResetMockSys(bool)
         position_mocker_->Reset();
         db_moudle_.DelAllFillRecord();
     });
-
-    
+    winner_win_.ClearLog(); 
 }
 
 void WinnerApp::DoStrategyTasksTimeout()
@@ -841,8 +859,16 @@ void WinnerApp::DoNormalTimer()
 	if( ++count_query % (30000 / cst_normal_timer_interval) == 0 )
 	{
 		trade_strand().PostTask([this]()
-		{
+		{ 
 			this->QueryPosition();
+#ifdef USE_MOCK_FLAG
+            // query to keep api online 
+            char *stock_codes[1] = {"000001"}; 
+
+            TCodeMapQuotesData ret_quotes_data; 
+            this->stock_ticker().GetQuoteDatas(stock_codes, 1, ret_quotes_data);
+#endif
+            return;
 		});
 	}
 }
@@ -1017,8 +1043,8 @@ T_CodeMapProfit  WinnerApp::CalcProfit()
             }
         });
 		double market_value = cur_price * pos_iter->second.total;
-        double profit = market_value + mid_get_amount - input_amount;
-		double profit_percent = (profit * 100 / input_amount);
+        double profit = input_amount < 0.000001 ? 0.0 : (market_value + mid_get_amount - input_amount);
+		double profit_percent = input_amount < 0.000001 ? 0.0 : (profit * 100 / input_amount);
 
 		// 计算公式：成本价=（买入金额-盈亏金额）/持股股数
 		double cost_price = 0.0;
@@ -1028,7 +1054,8 @@ T_CodeMapProfit  WinnerApp::CalcProfit()
 		auto item = code_profit.insert( std::make_pair(entry.first, T_PROFIT()) ).first;  
 		item->second.stock = entry.first;
 		item->second.market_value = market_value;
-		item->second.cost_price = cost_price;
+        item->second.cur_price = cur_price;
+        item->second.cost_price = cost_price;
 		item->second.profit = profit;
 		item->second.profit_percent = profit_percent;
 
@@ -1140,7 +1167,9 @@ void WinnerApp::UpdatePositionMock()
 		if( exchange_calendar_.IsTradeDate(today) )
 			position_mocker_->DoEnterNewTradeDate(today);
 		else
+        {
 			position_mocker_->UnFreezePosition();
+        }
 	}
 }
 

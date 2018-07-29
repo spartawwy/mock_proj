@@ -33,6 +33,8 @@ public:
 
     virtual void keyPressEvent(QKeyEvent *event) override;
 
+    void ClearLog();
+
 public slots:
 
     void DoQueryCapital();

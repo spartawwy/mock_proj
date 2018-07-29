@@ -415,7 +415,39 @@ void WinnerWin::DoAddBuyTask()
 void WinnerWin::DoQueryQtyCanBuy()
 {
     auto capital = app_->QueryCapital();
-    double price = ui.dbspbox_buytask_alert_price->value();
+    double price = 0.0;
+    if( ui.combox_buy_type->currentText() == cst_str_direct_buy )
+    { 
+        QString::SectionFlag flag = QString::SectionSkipEmpty;
+        QString stock_str = ui.le_buytask_stock->text().trimmed(); 
+
+        std::string std_stock = stock_str.section('/', 0, 0, flag).toLocal8Bit().data(); 
+        if( std_stock.size() != 6 || !IsStrNum(std_stock) )
+            return;
+         
+       /* char result[1024] = {0};
+        char error_info[1024] = {0};*/
+        char *stock_codes[1] = {0};
+        stock_codes[0] = const_cast<char*>(std_stock.c_str());
+        
+        TCodeMapQuotesData ret_quotes_data; 
+        if( !app_->stock_ticker().GetQuoteDatas(stock_codes, 1, ret_quotes_data) )
+            return;
+        auto iter = ret_quotes_data.find(stock_codes[0]);
+        if( iter == ret_quotes_data.end() )
+            return;
+        if( iter->second->cur_price < 0.0001 )
+            return;
+
+        if( iter->second->price_s_1 > 0.0001 )
+            price = iter->second->price_s_1;
+        else if( iter->second->price_b_1 > 0.0001 )
+            price = iter->second->price_b_1;
+        else
+            return;
+    }
+    else
+        price = ui.dbspbox_buytask_alert_price->value();
 
     if( price < 0 || Equal(price, 0.0) )
         return;
@@ -508,15 +540,22 @@ void WinnerWin::DoBuyStock()
 		return;
 	}
 
+    char buf[1024] = {0};
 	TypeQuoteLevel quote_level = static_cast<TypeQuoteLevel>(ui.combox_bt_price_level->currentData().toInt());
 	price = GetQuoteTargetPrice(quote_level, *ret_quotes_data[std_stock], true);
+    if( price < 0.0001 )
+    {
+        sprintf(buf, "股票:%s 无对应目标档价格!", stock_str.toLocal8Bit().data());
+        app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit(buf));
+        return;
+    }
 	// buy the stock
     this->app_->trade_agent().SendOrder(this->app_->trade_client_id(), (int)TypeOrderCategory::BUY, 0
 		, const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type))->shared_holder_code, const_cast<char*>(std_stock.c_str())
         , price, qty
         , result, error_info); 
 
-	char buf[1024] = {0};
+	
 	if( strlen(error_info) == 0 )
 	{ 
 		sprintf(buf, "买入%s %d股 价格:%.2f 成功!", stock_str.toLocal8Bit().data(), qty, price);

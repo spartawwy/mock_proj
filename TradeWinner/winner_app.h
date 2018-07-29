@@ -69,9 +69,9 @@ public:
     int Cookie_MaxTaskId();
     void Cookie_MaxTaskId(int task_id);
 
-    int Cookie_NextFillId();
-    int Cookie_MaxFillId();
-    void Cookie_MaxFillId(int fill_id);
+    __int64 Cookie_NextFillId();
+    __int64 Cookie_MaxFillId();
+    void Cookie_MaxFillId(__int64 fill_id);
 
     DBMoudle& db_moudle() { return db_moudle_; }
     DBMoudle* db_moudle_address() { return &db_moudle_; }
@@ -86,6 +86,8 @@ public:
     T_UserAccountInfo *user_account_info() { return p_user_account_info_; }
     T_BrokerInfo *user_broker_info() { return p_user_broker_info_; }
     void user_broker_info(T_BrokerInfo* p_val) { p_user_broker_info_ = p_val; }
+
+    std::unordered_map<std::string, std::string>& codes_name() { return codes_name_; }
 
     void AppendTaskInfo(int, std::shared_ptr<T_TaskInformation>& info);
     void AppendStrategyTask(std::shared_ptr<StrategyTask> &task);
@@ -223,7 +225,7 @@ private:
     // position mock relate
     std::shared_ptr<PositionMocker>  position_mocker_;
     //std::mutex  stocks_position_mutex_;
-
+    std::unordered_map<std::string, std::string> codes_name_;
     friend class IndexTask;
 };
 #endif

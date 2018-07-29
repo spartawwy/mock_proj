@@ -30,6 +30,9 @@ int TodayAddDays(int days);
 using namespace TSystem;
 int main(int argc, char *argv[])
 { 
+    do 
+    {
+    } while (0);
 #ifdef TEST_DB
 	testDB();
 #endif
@@ -50,7 +53,13 @@ int main(int argc, char *argv[])
       ch_val = TodayAddDays(-40);
     getchar();
 #endif
+
 	QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+    QCoreApplication::addLibraryPath("D:\\Qt\\qt5.2.1_win32\\bin\\plugins");
+ 
+    QCoreApplication::addLibraryPath(".");
+    QCoreApplication::addLibraryPath("./plugins");
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
 
 	//-----------------------
 	std::string  tmp_str = "中兴通信";

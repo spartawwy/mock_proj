@@ -224,8 +224,8 @@ std::tuple<int, int> CurrentDateIntTime()
 
 bool IsNowTradeTime(bool *is_day_change)
 { 
-#ifdef USE_MOCK_FLAG
-
+//#ifdef USE_MOCK_FLAG
+#ifdef _DEBUG
 	return true;
 #endif
     static auto get_date = []()

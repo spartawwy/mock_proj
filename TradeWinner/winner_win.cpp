@@ -141,6 +141,10 @@ WinnerWin::WinnerWin(WinnerApp *app, QWidget *parent)
 
     //------------------------
     oneceshot_timer_contain_ = std::make_shared<TimerContainner>(true);
+#ifdef USE_MOCK_FLAG
+    //ui.pbtn_add_indtrd_task->setDisabled(true);
+    ui.pbtn_start_backtest->setDisabled(true);
+#endif
 }
 
 WinnerWin::~WinnerWin()
@@ -341,30 +345,65 @@ void WinnerWin::keyPressEvent(QKeyEvent *event)
     }
 }
 
+void WinnerWin::ClearLog()
+{
+    ui.pte_log->clear();
+}
 
 void WinnerWin::DoQueryCapital()
 { 
     ui.pte_capital->clear();
     T_CodeMapPosition pos_map = app_->QueryPosition();
+    T_CodeMapProfit profit_map = app_->CalcProfit();
+    QString contents;
+    
     T_Capital captital = app_->QueryCapital();
-    ui.pte_capital->appendPlainText(QString::fromLocal8Bit(utility::FormatStr("总资产:\t%.2f\n", captital.total).c_str())); 
+    double total_assets = captital.total;
+
+   /* ui.pte_capital->appendPlainText(QString::fromLocal8Bit(utility::FormatStr("总资产:\t%.2f\n", captital.total).c_str())); 
     ui.pte_capital->appendPlainText(QString::fromLocal8Bit("资金:\n"));
     ui.pte_capital->appendPlainText(QString::fromLocal8Bit(utility::FormatStr("可用:\t%.2f\n", captital.available).c_str()));
     ui.pte_capital->appendPlainText(QString::fromLocal8Bit(utility::FormatStr("余额:\t%.2f\n\n", captital.remain).c_str()));
+*/
+    
+    contents += QString::fromLocal8Bit("资金:\n");
+    contents += QString::fromLocal8Bit(utility::FormatStr("可用:\t%.2f\n", captital.available).c_str());
+    contents += QString::fromLocal8Bit(utility::FormatStr("余额:\t%.2f\n\n", captital.remain).c_str());
+    
 
-    //ui.pte_capital->appendPlainText(QString::fromLocal8Bit("资金:\n"));
-
-    ui.pte_capital->appendPlainText(QString::fromLocal8Bit("股票: \t\t总数\t可用\t浮动盈亏\t盈亏比例\n"));
-    std::for_each(std::begin(pos_map), std::end(pos_map), [this]( std::unordered_map<std::string, T_PositionData>::reference entry)
+    //ui.pte_capital->appendPlainText(QString::fromLocal8Bit("股票: \t\t总数\t可用\t浮动盈亏\t盈亏比例\n"));
+    contents += QString::fromLocal8Bit("股票: \t\t总数\t可用\t浮动盈亏\t盈亏比例\n");
+    std::for_each(std::begin(pos_map), std::end(pos_map), [&contents, &profit_map, &total_assets, this]( std::unordered_map<std::string, T_PositionData>::reference entry)
     {  
         auto code_name = QTextCodec::codecForName( "utf-8" )->toUnicode(app_->db_moudle().GetStockName(entry.first).c_str());
+        
+#ifndef USE_MOCK_FLAG
         auto str = QString::fromLocal8Bit(
             utility::FormatStr("%s\t %s\t %.2f\t %.2f\t %.2f\t %.2f\n", entry.first.c_str(), code_name.toLocal8Bit().data()
-                , entry.second.total, entry.second.avaliable, entry.second.profit, entry.second.profit_percent).c_str()  );
-        qDebug() << str << " -------\n";
-        ui.pte_capital->appendPlainText(str);
+            , entry.second.total, entry.second.avaliable, entry.second.profit, entry.second.profit_percent).c_str()  );
+#else
+        double profit = 0.0;
+        double profit_percent = 0.0;
+        //double stock_capital = 0.0;
+        auto profit_item = profit_map.find(entry.first); 
+        if( profit_item != profit_map.end() )
+        {
+            profit = profit_item->second.profit;
+            profit_percent = profit_item->second.profit_percent;
+            total_assets += profit_item->second.cur_price * entry.second.total;
+        }
+        contents += QString::fromLocal8Bit(
+            utility::FormatStr("%s\t %s\t %.2f\t %.2f\t %.2f\t %.2f\n", entry.first.c_str(), code_name.toLocal8Bit().data()
+                , entry.second.total, entry.second.avaliable, profit, profit_percent).c_str()  );
+  
+#endif
+        //qDebug() << str << " -------\n"; 
          
     });
+
+    QString pre_contents = QString::fromLocal8Bit(utility::FormatStr("总资产:\t%.2f\n", total_assets).c_str());
+    ui.pte_capital->appendPlainText(pre_contents);
+    ui.pte_capital->appendPlainText(contents);
 }
 
 void WinnerWin::SlotAppendLog(char *p_chars)
