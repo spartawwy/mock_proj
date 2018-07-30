@@ -177,9 +177,6 @@ void RecordsWin::UpdateTblviewFills()
 		model->setItem(row_index, cst_fills_col_index_fee, item);
 	});
 
-    model = (QStandardItemModel*)(this->ui.tbview_position->model());
-    model->removeRows(0, model->rowCount());
-
 #if 0 
     // position view --------------------
 	auto records_for_calprofit = app_->db_moudle().LoadFillRecordsForCalProfit(app_->user_info().id);
@@ -193,7 +190,10 @@ void RecordsWin::UpdateTblviewFills()
 	app_->stock_ticker().GetQuoteDatas(stock, i, stock_quotes);
 
 	auto positions = app_->QueryPosition();
-	 
+
+    model = (QStandardItemModel*)(this->ui.tbview_position->model());
+    model->removeRows(0, model->rowCount());
+     
     std::for_each( std::begin(records_for_calprofit), std::end(records_for_calprofit), [model, &positions, &stock_quotes, this](T_CodeMapFills::reference entry)
     {
 		auto iter = stock_quotes.find(entry.first);
@@ -265,43 +265,7 @@ void RecordsWin::UpdateTblviewFills()
 
 	T_CodeMapProfit profits = app_->CalcProfit();
 
-	std::for_each( std::begin(profits), std::end(profits), [&model, this](T_CodeMapProfit::reference entry)
-	{
-		auto p_pos = this->app_->QueryPosition_LazyMode(entry.first);
-		if( !p_pos )
-			return;
-
-		model->insertRow(model->rowCount());
-		int row_index = model->rowCount() - 1;
-
-		auto item = new QStandardItem(QString("%1").arg(entry.first.c_str()));
-		model->setItem(row_index, cst_pos_col_index_stock, item);
-
-		item = new QStandardItem( QString("%1").arg(QString::fromLocal8Bit(p_pos->pinyin)) );
-		model->setItem(row_index, cst_pos_col_index_pinyin, item);
-
-		item = new QStandardItem(QString("%1").arg(p_pos->total));
-		model->setItem(row_index, cst_pos_col_index_pos, item); 
-
-		item = new QStandardItem(QString("%1").arg(p_pos->avaliable));
-		model->setItem(row_index, cst_pos_col_index_ava, item);
-		  
-		item = new QStandardItem( QString("%1").arg(entry.second.cost_price));
-		model->setItem(row_index, cst_pos_col_index_cost_price, item);
- 
-		item = new QStandardItem( QString("%1").arg(entry.second.cur_price));
-		model->setItem(row_index, cst_pos_col_index_curprice, item);
-
-		item = new QStandardItem( QString("%1").arg(entry.second.market_value) );
-		model->setItem(row_index, cst_pos_col_index_market_value, item);
-
-		item = new QStandardItem( QString("%1").arg(entry.second.profit) );
-		model->setItem(row_index, cst_pos_col_index_proflost, item);
-
-		item = new QStandardItem( QString("%1").arg(entry.second.profit_percent) );
-		model->setItem(row_index, cst_pos_col_index_proflost_percent, item);
-	});
-
+	for(
 #endif
 
 

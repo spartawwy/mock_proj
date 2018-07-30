@@ -422,7 +422,6 @@ typedef struct _t_profit
 {
     std::string stock;
 	double market_value;
-	double cur_price;
 	double cost_price;
     double profit;
     double profit_percent;

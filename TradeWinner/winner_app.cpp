@@ -1028,7 +1028,6 @@ T_CodeMapProfit  WinnerApp::CalcProfit()
 		auto item = code_profit.insert( std::make_pair(entry.first, T_PROFIT()) ).first;  
 		item->second.stock = entry.first;
 		item->second.market_value = market_value;
-		item->second.cur_price = cur_price;
 		item->second.cost_price = cost_price;
 		item->second.profit = profit;
 		item->second.profit_percent = profit_percent;
