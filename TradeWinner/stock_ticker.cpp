@@ -90,14 +90,20 @@ bool StockTicker::Init()
     Buffer Result(cst_result_len);
     Buffer ErrInfo(cst_error_len);
     
-    bool bool1 = TdxHq_Connect(cst_hq_server, cst_hq_port, Result.data(), ErrInfo.data());
-    if (!bool1)
-    { 
-        qDebug() << ErrInfo.data() << "\n";//连接失败
-        logger_.LogLocal(std::string("StockTicker::Init TdxHq_Connect fail:") + Result.data());
-        return false;
+    bool bool1 = false;
+    for( int i = 0; i < 3 && !bool1; ++i )
+    //if (!bool1)
+    {  
+        bool1 = TdxHq_Connect(cst_hq_server, cst_hq_port, Result.data(), ErrInfo.data());
+        if( !bool1 )
+        {
+            qDebug() << ErrInfo.data() << "\n";//连接失败
+            logger_.LogLocal(utility::FormatStr("StockTicker::Init try %d TdxHq_Connect fail:", i, Result.data()));
+        } 
     }
-    qDebug() << Result.data() << endl;
+    if( !bool1 )
+         return false;
+    //qDebug() << Result.data() << endl;
     logger_.LogLocal(std::string("StockTicker::Init") + Result.data());
     return true;
 }

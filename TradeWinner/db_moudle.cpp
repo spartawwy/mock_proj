@@ -173,7 +173,7 @@ void DBMoudle::Init()
         ThrowTException( CoreErrorCategory::ErrorCode::BAD_CONTENT
         , "DBMoudle::Init"
         , "can't find table FillsRecord");
-    sql = "SELECT max(id) FROM FillsRecord ";
+    sql = "SELECT id FROM FillsRecord ORDER BY id DESC"; 
     db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
     {
         if( !(*vals) )
@@ -181,7 +181,7 @@ void DBMoudle::Init()
         try
         {
             //this->max_task_id_ = boost::lexical_cast<int>(*(vals));
-            int max_fill_id = boost::lexical_cast<int>(*(vals));
+            __int64 max_fill_id = boost::lexical_cast<__int64>(*(vals));
             if( max_fill_id > app_->Cookie_MaxFillId() )
                 app_->Cookie_MaxFillId(max_fill_id);
 
@@ -448,6 +448,27 @@ void DBMoudle::LoadTradeDate(void *exchange_calendar)
         } 
         return 0;
     }); 
+}
+
+void DBMoudle::LoadCodesName(std::unordered_map<std::string, std::string> &codes_name)
+{
+    if( !db_conn_ )
+    {
+        Open(db_conn_, db_file_path);
+    }
+   
+    std::string sql; 
+    if( !utility::ExistTable("stock", *db_conn_) )
+        return;
+    sql = utility::FormatStr("SELECT code, name from stock ORDER BY code");
+    db_conn_->ExecuteSQL(sql.c_str(),[&codes_name, this](int num_cols, char** vals, char** names)->int
+    {  
+        std::string cn_name = *(vals + 1);
+        utf8ToGbk(cn_name);
+        codes_name.insert(std::make_pair(*vals, cn_name)); 
+        return 0;
+    });
+    return;
 }
 
 T_UserAccountInfo * DBMoudle::FindUserAccountInfo(int user_id)
@@ -1210,6 +1231,7 @@ void DBMoudle::AddOnePositionMock(PositionMocker &position_mock, const std::stri
         std::string sql = utility::FormatStr("INSERT OR REPLACE INTO Position VALUES('%d', '%s', '%d', %.2f, %.2f)"
             , user_id, pos_iter->second.code, date, pos_iter->second.avaliable, pos_iter->second.total - pos_iter->second.avaliable);
         bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
+        ret == ret;
 #ifdef USE_DB_STRAND
     }); 
 #endif
@@ -1251,18 +1273,16 @@ void DBMoudle::AddFillRecord(T_FillItem& fill_item)
 #ifdef USE_DB_STRAND
     strand_->PostTask([fill_item, this]()
     { 
-#endif
-		//fill_item.pinyin = "科斯伍德";
-		//fill_item.pinyin = QString::fromLocal8Bit("科斯伍德1").toLocal8Bit().data() ; // tmp code for test
-		/*gbkToUtf8(fill_item.pinyin);
-		utf8ToGbk(fill_item.pinyin);*/
-		gbkToUtf8(fill_item.pinyin);
-    std::string sql = utility::FormatStr("INSERT INTO FillsRecord VALUES('%d', '%d', %d, %d, '%s', '%s',%d, %.2f, %.2f, %.2f, %.2f)"
-        , app_->Cookie_NextFillId(), fill_item.user_id, fill_item.date, fill_item.time_stamp
-		, fill_item.stock.c_str(), fill_item.pinyin.c_str(), static_cast<int>(fill_item.is_buy), fill_item.price
+#endif  
+    char val_buf[64] = {0};
+    sprintf_s(val_buf, sizeof(val_buf), "%ld\0", app_->Cookie_NextFillId());
+    std::string sql = utility::FormatStr("INSERT INTO FillsRecord VALUES('%s', '%d', %d, %d, '%s', %d, %.2f, %.2f, %.2f, %.2f)"
+        , val_buf, fill_item.user_id, fill_item.date, fill_item.time_stamp
+		, fill_item.stock.c_str(), static_cast<int>(fill_item.is_buy), fill_item.price
         , fill_item.quantity, fill_item.amount, fill_item.fee);
     bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
     ret = ret;
+ 
 #ifdef USE_DB_STRAND
     });
 #endif
@@ -1300,7 +1320,7 @@ std::list<std::shared_ptr<T_FillItem> > DBMoudle::LoadAllFillRecord(int user_id)
 		return fill_item_records;
 	}
      std::string sql = 
-         utility::FormatStr("SELECT id, date, time_stamp, stock, pinyin, is_buy, price, quantity, amount, fee FROM fillsRecord  WHERE user_id=%d ORDER BY id ", user_id);
+         utility::FormatStr("SELECT id, date, time_stamp, stock, is_buy, price, quantity, amount, fee FROM fillsRecord  WHERE user_id=%d ORDER BY date, time_stamp ", user_id);
      db_conn->ExecuteSQL(sql.c_str(),[&fill_item_records, this](int num_cols, char** vals, char** names)->int
      {
 		 auto fill_item = std::make_shared<T_FillItem>();
@@ -1311,13 +1331,13 @@ std::list<std::shared_ptr<T_FillItem> > DBMoudle::LoadAllFillRecord(int user_id)
 			 fill_item->date = boost::lexical_cast<int>(*(vals + 1));
 			 fill_item->time_stamp = boost::lexical_cast<int>(*(vals + 2));
 			 fill_item->stock = *(vals + 3);
-			 fill_item->pinyin = *(vals + 4);
-			 utf8ToGbk(fill_item->pinyin);
-			 fill_item->is_buy = boost::lexical_cast<int>(*(vals + 5));
-			 fill_item->price = boost::lexical_cast<double>(*(vals + 6));
-			 fill_item->quantity = boost::lexical_cast<double>(*(vals + 7));
-			 fill_item->amount = boost::lexical_cast<double>(*(vals + 8));
-			 fill_item->fee = boost::lexical_cast<double>(*(vals + 9));
+			 //fill_item->pinyin = *(vals + 4);
+			 //utf8ToGbk(fill_item->pinyin);
+			 fill_item->is_buy = boost::lexical_cast<int>(*(vals + 4));
+			 fill_item->price = boost::lexical_cast<double>(*(vals + 5));
+			 fill_item->quantity = boost::lexical_cast<double>(*(vals + 6));
+			 fill_item->amount = boost::lexical_cast<double>(*(vals + 7));
+			 fill_item->fee = boost::lexical_cast<double>(*(vals + 8));
 
 			 fill_item_records.push_back(fill_item);
 
@@ -1345,7 +1365,7 @@ T_CodeMapFills DBMoudle::LoadFillRecordsForCalProfit(int user_id)
 		return fill_item_records;
 	}
      std::string sql = 
-         utility::FormatStr("SELECT id, date, time_stamp, stock, pinyin, is_buy, price, quantity, amount, fee FROM fillsRecord  WHERE user_id=%d ORDER BY stock, is_buy DESC, date, time_stamp ", user_id);
+         utility::FormatStr("SELECT id, date, time_stamp, stock, is_buy, price, quantity, amount, fee FROM fillsRecord  WHERE user_id=%d ORDER BY stock, is_buy DESC, date, time_stamp ", user_id);
      
      db_conn->ExecuteSQL(sql.c_str(),[&fill_item_records, this](int num_cols, char** vals, char** names)->int
      { 
@@ -1364,13 +1384,13 @@ T_CodeMapFills DBMoudle::LoadFillRecordsForCalProfit(int user_id)
 			 fill_item->date = boost::lexical_cast<int>(*(vals + 1));
 			 fill_item->time_stamp = boost::lexical_cast<int>(*(vals + 2));
 			 
-			 fill_item->pinyin = *(vals + 4);
-			 utf8ToGbk(fill_item->pinyin);
-			 fill_item->is_buy = boost::lexical_cast<int>(*(vals + 5));
-			 fill_item->price = boost::lexical_cast<double>(*(vals + 6));
-			 fill_item->quantity = boost::lexical_cast<double>(*(vals + 7));
-			 fill_item->amount = boost::lexical_cast<double>(*(vals + 8));
-			 fill_item->fee = boost::lexical_cast<double>(*(vals + 9));
+			 //fill_item->pinyin = *(vals + 4);
+			 //utf8ToGbk(fill_item->pinyin);
+			 fill_item->is_buy = boost::lexical_cast<int>(*(vals + 4));
+			 fill_item->price = boost::lexical_cast<double>(*(vals + 5));
+			 fill_item->quantity = boost::lexical_cast<double>(*(vals + 6));
+			 fill_item->amount = boost::lexical_cast<double>(*(vals + 7));
+			 fill_item->fee = boost::lexical_cast<double>(*(vals + 8));
 
 			 fill_item_container.push_back(std::move(fill_item));
 

@@ -323,7 +323,8 @@ public:
         tabwid_holder->setObjectName(QStringLiteral("tabwid_holder"));
         tabwid_holder->setGeometry(QRect(0, 10, 911, 561));
         QFont font;
-        font.setPointSize(12);
+        font.setFamily(QString::fromUtf8("\346\226\260\345\256\213\344\275\223"));
+        font.setPointSize(11);
         tabwid_holder->setFont(font);
         tabwid_holder->setIconSize(QSize(32, 32));
         tab_task_list = new QWidget();
@@ -739,7 +740,9 @@ public:
         label_raise_percent_bfh = new QLabel(tab_eq_section_trd);
         label_raise_percent_bfh->setObjectName(QStringLiteral("label_raise_percent_bfh"));
         label_raise_percent_bfh->setGeometry(QRect(250, 110, 31, 21));
-        label_raise_percent_bfh->setFont(font);
+        QFont font2;
+        font2.setPointSize(12);
+        label_raise_percent_bfh->setFont(font2);
         label_raise_percent_bfh->setAlignment(Qt::AlignCenter);
         label_raise_percent_sell = new QLabel(tab_eq_section_trd);
         label_raise_percent_sell->setObjectName(QStringLiteral("label_raise_percent_sell"));
@@ -749,7 +752,7 @@ public:
         label_raise_percent_bfh_2 = new QLabel(tab_eq_section_trd);
         label_raise_percent_bfh_2->setObjectName(QStringLiteral("label_raise_percent_bfh_2"));
         label_raise_percent_bfh_2->setGeometry(QRect(250, 150, 31, 21));
-        label_raise_percent_bfh_2->setFont(font);
+        label_raise_percent_bfh_2->setFont(font2);
         label_raise_percent_bfh_2->setAlignment(Qt::AlignCenter);
         label_fall_percent = new QLabel(tab_eq_section_trd);
         label_fall_percent->setObjectName(QStringLiteral("label_fall_percent"));
@@ -881,7 +884,12 @@ public:
         tab_capital->setObjectName(QStringLiteral("tab_capital"));
         pte_capital = new QPlainTextEdit(tab_capital);
         pte_capital->setObjectName(QStringLiteral("pte_capital"));
+        pte_capital->setEnabled(false);
         pte_capital->setGeometry(QRect(20, 20, 681, 481));
+        QFont font3;
+        font3.setFamily(QString::fromUtf8("\346\226\260\345\256\213\344\275\223"));
+        font3.setPointSize(10);
+        pte_capital->setFont(font3);
         pte_capital->setStyleSheet(QLatin1String("\n"
 "background-color: rgb(255, 255,255);"));
         pte_capital->setFrameShape(QFrame::Panel);
@@ -894,7 +902,14 @@ public:
         tab_log->setObjectName(QStringLiteral("tab_log"));
         pte_log = new QPlainTextEdit(tab_log);
         pte_log->setObjectName(QStringLiteral("pte_log"));
+        pte_log->setEnabled(false);
         pte_log->setGeometry(QRect(0, 0, 911, 541));
+        QFont font4;
+        font4.setFamily(QString::fromUtf8("\346\226\260\345\256\213\344\275\223"));
+        font4.setPointSize(11);
+        font4.setBold(false);
+        font4.setWeight(50);
+        pte_log->setFont(font4);
         tabwid_holder->addTab(tab_log, QString());
         tab_stkindex_task = new QWidget();
         tab_stkindex_task->setObjectName(QStringLiteral("tab_stkindex_task"));
@@ -1063,7 +1078,7 @@ public:
         label_raise_percent_bfh_3 = new QLabel(wid_bktest_eqsec);
         label_raise_percent_bfh_3->setObjectName(QStringLiteral("label_raise_percent_bfh_3"));
         label_raise_percent_bfh_3->setGeometry(QRect(170, 100, 31, 21));
-        label_raise_percent_bfh_3->setFont(font);
+        label_raise_percent_bfh_3->setFont(font2);
         label_raise_percent_bfh_3->setAlignment(Qt::AlignCenter);
         lab_bktest_eqsec_quantity = new QLabel(wid_bktest_eqsec);
         lab_bktest_eqsec_quantity->setObjectName(QStringLiteral("lab_bktest_eqsec_quantity"));
@@ -1073,7 +1088,7 @@ public:
         label_raise_percent_bfh_4 = new QLabel(wid_bktest_eqsec);
         label_raise_percent_bfh_4->setObjectName(QStringLiteral("label_raise_percent_bfh_4"));
         label_raise_percent_bfh_4->setGeometry(QRect(170, 131, 31, 21));
-        label_raise_percent_bfh_4->setFont(font);
+        label_raise_percent_bfh_4->setFont(font2);
         label_raise_percent_bfh_4->setAlignment(Qt::AlignCenter);
         lab_bktest_max_quantity = new QLabel(wid_bktest_eqsec);
         lab_bktest_max_quantity->setObjectName(QStringLiteral("lab_bktest_max_quantity"));
@@ -1145,7 +1160,7 @@ public:
         label_raise_percent_bfh_5 = new QLabel(wid_bktest_eqsec);
         label_raise_percent_bfh_5->setObjectName(QStringLiteral("label_raise_percent_bfh_5"));
         label_raise_percent_bfh_5->setGeometry(QRect(200, 50, 31, 21));
-        label_raise_percent_bfh_5->setFont(font);
+        label_raise_percent_bfh_5->setFont(font2);
         label_raise_percent_bfh_5->setAlignment(Qt::AlignCenter);
         dbspbox_bktest_max_price = new QDoubleSpinBox(wid_bktest_eqsec);
         dbspbox_bktest_max_price->setObjectName(QStringLiteral("dbspbox_bktest_max_price"));
@@ -1178,7 +1193,7 @@ public:
         label_raise_percent_rebounce = new QLabel(wid_bktest_eqsec);
         label_raise_percent_rebounce->setObjectName(QStringLiteral("label_raise_percent_rebounce"));
         label_raise_percent_rebounce->setGeometry(QRect(170, 170, 31, 21));
-        label_raise_percent_rebounce->setFont(font);
+        label_raise_percent_rebounce->setFont(font2);
         label_raise_percent_rebounce->setAlignment(Qt::AlignCenter);
         le_bktest_stock = new QLineEdit(tab_back_test);
         le_bktest_stock->setObjectName(QStringLiteral("le_bktest_stock"));
@@ -1286,14 +1301,14 @@ public:
         label_raise_percent_rebounce_2 = new QLabel(wid_bktest_adv_sec);
         label_raise_percent_rebounce_2->setObjectName(QStringLiteral("label_raise_percent_rebounce_2"));
         label_raise_percent_rebounce_2->setGeometry(QRect(210, 140, 31, 21));
-        label_raise_percent_rebounce_2->setFont(font);
+        label_raise_percent_rebounce_2->setFont(font2);
         label_raise_percent_rebounce_2->setAlignment(Qt::AlignCenter);
         pbtn_bktest_need_capital = new QPushButton(wid_bktest_adv_sec);
         pbtn_bktest_need_capital->setObjectName(QStringLiteral("pbtn_bktest_need_capital"));
         pbtn_bktest_need_capital->setGeometry(QRect(240, 220, 111, 23));
-        QFont font2;
-        font2.setPointSize(11);
-        pbtn_bktest_need_capital->setFont(font2);
+        QFont font5;
+        font5.setPointSize(11);
+        pbtn_bktest_need_capital->setFont(font5);
         wid_bktest_task_tbview = new QWidget(tab_back_test);
         wid_bktest_task_tbview->setObjectName(QStringLiteral("wid_bktest_task_tbview"));
         wid_bktest_task_tbview->setGeometry(QRect(420, 370, 431, 101));
@@ -1311,7 +1326,7 @@ public:
         TradeWinnerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(TradeWinnerClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 917, 18));
+        menuBar->setGeometry(QRect(0, 0, 917, 23));
         menu_system = new QMenu(menuBar);
         menu_system->setObjectName(QStringLiteral("menu_system"));
         menu_help = new QMenu(menuBar);
@@ -1385,7 +1400,7 @@ public:
 
         retranslateUi(TradeWinnerClass);
 
-        tabwid_holder->setCurrentIndex(1);
+        tabwid_holder->setCurrentIndex(5);
 
 
         QMetaObject::connectSlotsByName(TradeWinnerClass);

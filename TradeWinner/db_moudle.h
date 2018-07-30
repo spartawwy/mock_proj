@@ -38,6 +38,7 @@ public:
     void LoadAllUserBrokerInfo();
     void LoadAllTaskInfo(std::unordered_map<int, std::shared_ptr<T_TaskInformation> > &taskinfos);
     void LoadTradeDate(void *exchange_calendar);
+    void LoadCodesName(std::unordered_map<std::string, std::string> &codes_pinyin);
 
     T_UserAccountInfo * FindUserAccountInfo(int user_id);
     T_BrokerInfo * FindUserBrokerByUser(int user_id);

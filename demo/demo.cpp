@@ -1,6 +1,7 @@
 
 #include <qdebug.h>
 
+#include <TLib/core/tsystem_utility_functions.h>
 //#include <qt_Windows.h>
 
 #include "demo.h"
@@ -92,6 +93,14 @@ demo::demo(QWidget *parent)
 
 void demo::DoTest()
 {
+    __int64 val = 1000;
+    std::string stock = "000026";
+    char buf[1024] = {0};
+    char ldstr[64] = {0};
+    sprintf_s(ldstr, sizeof(ldstr), "%ld", val);
+    //sprintf(buf, "%ld , '%s' ", val, "000026");
+    sprintf(buf, "%s , '%s' ", ldstr, "000026");
+    auto str = TSystem::utility::FormatStr("%ld , '%s' ", val, "000026");
     ui.pbt_test->setDisabled(true);
      
     one_shot_timers_->InsertTimer(2000, [this]()

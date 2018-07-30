@@ -47,9 +47,7 @@ void PositionMocker::DoEnterNewTradeDate(int date)
      auto iter = days_positions_.find(date);
      if( iter == days_positions_.end() )
      {
-         // create today 's position and save to db------------ 
-         /*if( last_position_date_ == 0 ) 
-             last_position_date_ = date;*/
+         // create today 's position and save to db------------  
          auto item = days_positions_.find(last_position_date_ == 0 ? date : last_position_date_);
          if( item == days_positions_.end() ) 
          {
@@ -113,7 +111,11 @@ T_PositionData * PositionMocker::ReadPosition(int date, const std::string& code)
         return nullptr;
     int target_date = date;
     if( !exchange_calendar_->IsTradeDate(date) )
-        target_date = exchange_calendar_->PreTradeDate(date, 1);
+    {
+       /* target_date = exchange_calendar_->PreTradeDate(date, 1);
+        if( target_date > last_position_date_ )*/
+            target_date = last_position_date_;
+    }
     auto iter = days_positions_.find(target_date);
     if( iter != days_positions_.end() )
     {
@@ -132,7 +134,11 @@ T_CodeMapPosition PositionMocker::ReadAllStockPosition(int date)
         return T_CodeMapPosition();
     int target_date = date;
     if( !exchange_calendar_->IsTradeDate(date) )
-        target_date = exchange_calendar_->PreTradeDate(date, 1);
+    {
+        /*target_date = exchange_calendar_->PreTradeDate(date, 1);
+        if( target_date > last_position_date_ )*/
+            target_date = last_position_date_;
+    }
     auto iter = days_positions_.find(target_date);
     if( iter != days_positions_.end() )
     { 

@@ -6,6 +6,7 @@
 
 #include "winner_app.h"
 #include "stock_ticker.h"
+#include "common_base.h"
 
 const int cst_fills_col_count = 10;
 const int cst_fills_col_index_id = 0;
@@ -118,11 +119,13 @@ RecordsWin::RecordsWin(WinnerApp *app) : app_(app)
 	ui.tbview_position->setColumnWidth(cst_pos_col_index_pinyin, 60);
 	ui.tbview_position->setColumnWidth(cst_pos_col_index_pos, 60);
 	ui.tbview_position->setColumnWidth(cst_pos_col_index_ava, 60);
-	ui.tbview_position->setColumnWidth(cst_pos_col_index_cost_price, 60);
+	ui.tbview_position->setColumnWidth(cst_pos_col_index_cost_price, 70);
 	ui.tbview_position->setColumnWidth(cst_pos_col_index_curprice, 60);
 	ui.tbview_position->setColumnWidth(cst_pos_col_index_market_value, 60);
 	ui.tbview_position->setColumnWidth(cst_pos_col_index_proflost, 60);
 	ui.tbview_position->setColumnWidth(cst_pos_col_index_proflost_percent, 90); 
+
+    bool res = connect(ui.pbtn_refresh, SIGNAL(clicked()), this, SLOT(UpdateTblviewFills()));
 }
 
 void RecordsWin::ShowUI(const QString &title_str, const QString &str)
@@ -158,7 +161,11 @@ void RecordsWin::UpdateTblviewFills()
 		item = new QStandardItem(QString("%1").arg(entry->stock.c_str()));
 		model->setItem(row_index, cst_fills_col_index_stock, item);
 
-		item = new QStandardItem( QString("%1").arg(QString::fromLocal8Bit(entry->pinyin.c_str())) );
+        std::string cn_name;
+        auto cn_iter = app_->codes_name().find(entry->stock);
+        if( cn_iter != app_->codes_name().end() )
+            cn_name = cn_iter->second;
+		item = new QStandardItem( QString("%1").arg(QString::fromLocal8Bit(cn_name.c_str())) );
 		model->setItem(row_index, cst_fills_col_index_pinyin, item);
 		
 		item = new QStandardItem(QString("%1").arg(entry->is_buy ? str_buy : str_sell));
@@ -177,96 +184,50 @@ void RecordsWin::UpdateTblviewFills()
 		model->setItem(row_index, cst_fills_col_index_fee, item);
 	});
 
-#if 0 
-    // position view --------------------
-	auto records_for_calprofit = app_->db_moudle().LoadFillRecordsForCalProfit(app_->user_info().id);
-	char *stock[64] = {0};
-	int i = 0;
-	std::for_each( std::begin(records_for_calprofit), std::end(records_for_calprofit), [&i, &stock](T_CodeMapFills::reference entry)
-	{
-		stock[i++] = const_cast<char*>(entry.first.c_str());
-	});
-	TCodeMapQuotesData  stock_quotes;
-	app_->stock_ticker().GetQuoteDatas(stock, i, stock_quotes);
-
-	auto positions = app_->QueryPosition();
-
+    // set position tab --------------
     model = (QStandardItemModel*)(this->ui.tbview_position->model());
     model->removeRows(0, model->rowCount());
-     
-    std::for_each( std::begin(records_for_calprofit), std::end(records_for_calprofit), [model, &positions, &stock_quotes, this](T_CodeMapFills::reference entry)
-    {
-		auto iter = stock_quotes.find(entry.first);
-		if( iter == stock_quotes.end() )
-		{
-			// log_error:
-			return; 
-		}
-		double cur_price = iter->second->cur_price;
-		auto pos_iter  = positions.find(entry.first);
-        if( pos_iter == positions.end() )
-		{ // log_error:
-			return; 
-		}
-
-		model->insertRow(model->rowCount());
-		int row_index = model->rowCount() - 1;
-
-        double input_amount = 0.0;
-        double mid_get_amount = 0.0;
-        std::for_each( std::begin(entry.second), std::end(entry.second), [model, &input_amount, &mid_get_amount, &entry, this](std::shared_ptr<T_FillItem>& in)
-        {
-            if( in->is_buy )
-            {
-                input_amount += in->amount + in->fee;
-            }else
-            {
-                mid_get_amount += in->amount - in->fee;
-            }
-        });
-		double market_value = cur_price * pos_iter->second.total;
-        double profit = market_value + mid_get_amount - input_amount;
-		double profit_percent = (profit * 100 / input_amount);
-
-		// 计算公式：成本价=（买入金额-盈亏金额）/持股股数
-		double cost_price = 0.0;
-		if( pos_iter->second.total > 0 )
-			cost_price = (input_amount - profit) / pos_iter->second.total;
-		  
-		auto item = new QStandardItem(QString("%1").arg(entry.first.c_str()));
-		model->setItem(row_index, cst_pos_col_index_stock, item);
-
-		item = new QStandardItem( QString("%1").arg(QString::fromLocal8Bit(pos_iter->second.pinyin)) );
-		model->setItem(row_index, cst_pos_col_index_pinyin, item);
-
-		item = new QStandardItem(QString("%1").arg(pos_iter->second.total));
-		model->setItem(row_index, cst_pos_col_index_pos, item); 
-
-		item = new QStandardItem(QString("%1").arg(pos_iter->second.avaliable));
-		model->setItem(row_index, cst_pos_col_index_ava, item);
-		  
-		item = new QStandardItem( QString("%1").arg(cost_price));
-		model->setItem(row_index, cst_pos_col_index_cost_price, item);
  
-		item = new QStandardItem( QString("%1").arg(cur_price));
-		model->setItem(row_index, cst_pos_col_index_curprice, item);
-
-		item = new QStandardItem( QString("%1").arg(market_value) );
-		model->setItem(row_index, cst_pos_col_index_market_value, item);
-
-		item = new QStandardItem( QString("%1").arg(profit) );
-		model->setItem(row_index, cst_pos_col_index_proflost, item);
-
-		item = new QStandardItem( QString("%1").arg(profit_percent) );
-		model->setItem(row_index, cst_pos_col_index_proflost_percent, item);
-		    
-    });
-#else
-
 	T_CodeMapProfit profits = app_->CalcProfit();
+     
+	std::for_each( std::begin(profits), std::end(profits), [&model, this](T_CodeMapProfit::reference entry)
+    {
+        auto p_pos = this->app_->QueryPosition_LazyMode(entry.second.stock);
+        if( p_pos->total < 0.0001 )
+            return;
+        model->insertRow(model->rowCount());
+        int row_index = model->rowCount() - 1;
 
-	for(
-#endif
+        auto item = new QStandardItem(QString("%1").arg(entry.second.stock.c_str()));
+        model->setItem(row_index, cst_pos_col_index_stock, item);
+        std::string cn_name;
+        auto cn_iter = app_->codes_name().find(entry.second.stock);
+        if( cn_iter != app_->codes_name().end() )
+            cn_name = cn_iter->second;
+        item = new QStandardItem( QString("%1").arg(QString::fromLocal8Bit(cn_name.c_str())) );
+        model->setItem(row_index, cst_pos_col_index_pinyin, item);
 
+        item = new QStandardItem(QString("%1").arg(p_pos->total));
+        model->setItem(row_index, cst_pos_col_index_pos, item); 
 
+        item = new QStandardItem(QString("%1").arg(p_pos->avaliable));
+        model->setItem(row_index, cst_pos_col_index_ava, item);
+
+        item = new QStandardItem( QString("%1").arg(entry.second.cost_price));
+        model->setItem(row_index, cst_pos_col_index_cost_price, item);
+
+        item = new QStandardItem( QString("%1").arg(entry.second.cur_price ));
+        model->setItem(row_index, cst_pos_col_index_curprice, item);
+
+        item = new QStandardItem( QString("%1").arg(entry.second.market_value) );
+        model->setItem(row_index, cst_pos_col_index_market_value, item);
+
+        item = new QStandardItem( QString("%1").arg(entry.second.profit) );
+        model->setItem(row_index, cst_pos_col_index_proflost, item);
+
+        item = new QStandardItem( QString("%1").arg(entry.second.profit_percent) );
+        model->setItem(row_index, cst_pos_col_index_proflost_percent, item);
+             
+    });
+   
 }
