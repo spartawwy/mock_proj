@@ -166,7 +166,7 @@ bool BackTester::ConnectHisHqServer()
     char result[1024] = {0};
     char error[1024] = {0};
     if( !stricmp(TSystem::utility::host().c_str(), "hzdev103") )
-        ret_val = ((WinnerHisHq_ConnectDelegate)WinnerHisHq_Connect)("128.1.1.3", 50010, result, error);
+        ret_val = ((WinnerHisHq_ConnectDelegate)WinnerHisHq_Connect)("128.1.4.156", 50010, result, error);
     else
         ret_val = ((WinnerHisHq_ConnectDelegate)WinnerHisHq_Connect)("192.168.1.5", 50010, result, error);
 

@@ -143,7 +143,7 @@ WinnerWin::WinnerWin(WinnerApp *app, QWidget *parent)
     oneceshot_timer_contain_ = std::make_shared<TimerContainner>(true);
 #ifdef USE_MOCK_FLAG
     //ui.pbtn_add_indtrd_task->setDisabled(true);
-    ui.pbtn_start_backtest->setDisabled(true);
+    //ui.pbtn_start_backtest->setDisabled(true);
 #endif
 }
 

@@ -1175,6 +1175,8 @@ void DBMoudle::UpdatePositionMock(PositionMocker &position_mock, int date, int u
              bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
              /*if( ret && date > position_mock.last_position_date_ )
                  position_mock.last_position_date_ = date;*/
+			 
+			 app_->local_logger().LogLocal("UpPos", "UpdatePositionMock " + sql);
              return 0; 
          });
          return;
@@ -1202,6 +1204,7 @@ void DBMoudle::UpdateOnePositionMock(PositionMocker &position_mock, const std::s
         std::string sql = utility::FormatStr("INSERT OR REPLACE INTO Position VALUES('%d', '%s', '%d', %.2f, %.2f)"
             , user_id, pos_iter->second.code, date, pos_iter->second.avaliable, pos_iter->second.total - pos_iter->second.avaliable);
         bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
+		//app_->local_logger().LogLocal("UpPos", "UpdateOnePositionMock " + sql);
 #ifdef USE_DB_STRAND       
     }); 
 #endif
@@ -1231,6 +1234,7 @@ void DBMoudle::AddOnePositionMock(PositionMocker &position_mock, const std::stri
         std::string sql = utility::FormatStr("INSERT OR REPLACE INTO Position VALUES('%d', '%s', '%d', %.2f, %.2f)"
             , user_id, pos_iter->second.code, date, pos_iter->second.avaliable, pos_iter->second.total - pos_iter->second.avaliable);
         bool ret = this->db_conn_->ExecuteSQL(sql.c_str());
+		//app_->local_logger().LogLocal("UpPos", "AddOnePositionMock " + sql);
         ret == ret;
 #ifdef USE_DB_STRAND
     }); 

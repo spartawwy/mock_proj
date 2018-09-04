@@ -230,10 +230,11 @@ void TradeAgent::SendOrder(int ClientID, int Category, int PriceType, char* /*Gd
         auto capital_pos = position_mocker_->ReadPosition(today, CAPITAL_SYMBOL);
         assert(capital_pos);
         auto fee = CaculateFee(Price * Quantity, false); 
-        capital_pos->avaliable += Price * Quantity - fee;
-        capital_pos->total += capital_pos->avaliable;
+		double delta_capital = Price * Quantity - fee;
+        capital_pos->avaliable += delta_capital;
+        capital_pos->total += delta_capital;
     }
-    // save to db
+    // save to db  
     if( today == date )
     {
         p_db_moudle_->UpdateOnePositionMock(*position_mocker_, Zqdm, date, user_id_);
