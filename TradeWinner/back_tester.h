@@ -26,7 +26,8 @@ public:
     void AddBackTestItem(std::shared_ptr<StrategyTask> &task, std::shared_ptr<T_TaskInformation> &task_info, std::shared_ptr<T_MockStrategyPara> &para);
     void ClearTestItems(){ id_backtest_items_.clear(); cur_max_task_id_ = 0; }
     int AllocTaskId() { return ++ cur_max_task_id_; }
-
+    void ResetItemResult(int task_id);
+    void ResetAllitemResult();
     void StartTest(int start_date, int end_date);
 
     TTaskIdMapBackTestItem & id_backtest_items() { return id_backtest_items_; }

@@ -84,7 +84,7 @@ WinnerApp::~WinnerApp()
 
 bool WinnerApp::Init()
 {
-    DEBUG_TRADE
+    //DEBUG_TRADE
 	option_dir_type(AppBase::DirType::STAND_ALONE_APP);
 	option_validate_app(false);
 
@@ -102,16 +102,15 @@ bool WinnerApp::Init()
 		default: QMessageBox::information(nullptr, "alert", QString::fromLocal8Bit("cookie“Ï≥£!")); break;
 		}
 		return false;
-	}
-    DEBUG_TRADE 
+	} 
     for (int i = 0; i < 2; ++ i)
     {
         task_pool_.AddWorker();
     }
-    DEBUG_TRADE
+
 	db_moudle_.Init();
     db_moudle_.LoadTradeDate(&exchange_calendar_);
-    DEBUG_TRADE
+
     db_moudle_.LoadCodesName(codes_name_);
 	//-----------------------------login window show --------------------  
 	login_win_.Init(); 
@@ -157,25 +156,22 @@ bool WinnerApp::Init()
 
 	trade_agent_.SetupAccountInfo(result.data());
 #else
-    DEBUG_TRADE
+    ///DEBUG_TRADE
     position_mocker_ = std::make_shared<PositionMocker>(user_info_.id, &db_moudle_, &exchange_calendar_);
-    DEBUG_TRADE
+
     db_moudle_.LoadPositionMock(*position_mocker_);
-    DEBUG_TRADE
+
     UpdatePositionMock();
 
 #endif
    
-    DEBUG_TRADE
     db_moudle_.LoadAllTaskInfo(task_infos_);
-    DEBUG_TRADE
     trade_agent_.Init(user_info_.id, &db_moudle_, position_mocker_);
-    DEBUG_TRADE
+
     back_tester_->Init();
 	//------------------------ winner window ------------------
-    DEBUG_TRADE 
-	winner_win_.Init(); // inner use task_info
-    DEBUG_TRADE
+      
+	winner_win_.Init();  
 	winner_win_.show();
     //------------------------end------------------------------
 
@@ -188,23 +184,19 @@ bool WinnerApp::Init()
     ret1 = QObject::connect(this, SIGNAL(SigShowLongUi(std::string *, bool)), this, SLOT(DoShowLongUi(std::string *, bool)));
  
 #if 1 
-    DEBUG_TRADE
 	stock_ticker_ = std::make_shared<StockTicker>(this->local_logger());
-    DEBUG_TRADE
 	stock_ticker_->Init();
-	DEBUG_TRADE 
+
 	if( !index_ticker_->Init() )
 		return false;
     //------------------------ create tasks ------------------
-    DEBUG_TRADE
 	TaskFactory::CreateAllTasks(task_infos_, strategy_tasks_, this);
-    DEBUG_TRADE
 
 #ifndef USE_MOCK_FLAG
 	QueryPosition();
 #endif
-    ticker_enable_flag_ = IsNowTradeTime(); 
 
+    ticker_enable_flag_ = IsNowTradeTime(); 
 	//-----------ticker main loop----------
 	task_pool().PostTask([this]()
 	{
@@ -249,7 +241,6 @@ void WinnerApp::RemoveTask(unsigned int task_id, TypeTask task_type)
 {
 	DelTaskById(task_id, task_type);
 	EmitSigRemoveTask(task_id);
-	 
 }
 
 int WinnerApp::Cookie_NextTaskId()
@@ -731,7 +722,7 @@ void WinnerApp::DoStrategyTasksTimeout()
 	
     auto cur_time = QTime::currentTime();
     //qDebug() << "DoStrategyTasksTimeout: " << cur_time.toString() << "\n";
-	// register 
+	// register --------------
 	ReadLock locker(strategy_tasks_mutex_);
 	std::for_each( std::begin(strategy_tasks_), std::end(strategy_tasks_), [&cur_time, this](std::shared_ptr<StrategyTask>& entry)
 	{
@@ -743,13 +734,14 @@ void WinnerApp::DoStrategyTasksTimeout()
             {
                 if( entry->task_info().type == TypeTask::INDEX_RISKMAN )
                 {
-                    // ticker register 
+                    // index ticker register 
 					this->index_tick_strand_.PostTask([entry, this]()
 			        {
 						this->index_ticker_->Register(entry);
 			        });
                 }else
                 {
+                    // stock ticker register
                     this->tick_strand_.PostTask([entry, this]()
 			        {
 				        this->stock_ticker_->Register(entry);
@@ -763,7 +755,7 @@ void WinnerApp::DoStrategyTasksTimeout()
             }
         }else if( entry->cur_state() > TaskCurrentState::WAITTING ) // state:  registered
         {
-            if( !is_in_task_time(cur_time, entry->tp_start(), entry->tp_end()) )
+            if( !is_in_task_time(cur_time, entry->tp_start(), entry->tp_end()) ) // in task time
             {
                 if( entry->task_info().type == TypeTask::INDEX_RISKMAN )
                 {
@@ -778,7 +770,7 @@ void WinnerApp::DoStrategyTasksTimeout()
 
             }else if( entry->cur_state() != TaskCurrentState::REST )
             {
-                if( !IsNowTradeTime() )
+                if( !IsNowTradeTime() ) // not in rest time
                 {
                     entry->cur_state(TaskCurrentState::REST); 
 				    this->Emit(entry.get(), static_cast<int>(TaskStatChangeType::CUR_STATE_CHANGE));
@@ -799,8 +791,7 @@ void WinnerApp::DoStrategyTasksTimeout()
 	});
 
 }
-
-//void WinnerApp::DoShowUi(std::shared_ptr<std::string> str)
+ 
 void WinnerApp::DoShowUi(std::string* str, bool flash_taskbar)
 {
 	assert(str);

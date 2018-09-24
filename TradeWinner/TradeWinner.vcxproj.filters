@@ -224,6 +224,9 @@
     <ClCompile Include="records_win.cpp">
       <Filter>win</Filter>
     </ClCompile>
+    <ClCompile Include="detail_file.cpp">
+      <Filter>moudle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="trade_winner.ui">
@@ -276,6 +279,9 @@
     </CustomBuild>
     <CustomBuild Include="records_win.h">
       <Filter>win</Filter>
+    </CustomBuild>
+    <CustomBuild Include="bktest_order_detail.ui">
+      <Filter>Form Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -389,6 +395,12 @@
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_records.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_bktest_order_detail.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="detail_file.h">
+      <Filter>moudle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

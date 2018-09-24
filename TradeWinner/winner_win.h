@@ -112,6 +112,7 @@ public slots:
     void DoAdveqGetNeedCapital();
     void DoBktestAddTask();
     void DoBktestClearTask();
+    void DoBktestShowOrderDetail();
     //------------------
 	
     void ChangeTabBuyAssistantImg(TypeTask type);

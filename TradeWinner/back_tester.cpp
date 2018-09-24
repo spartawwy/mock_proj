@@ -166,7 +166,7 @@ bool BackTester::ConnectHisHqServer()
     char result[1024] = {0};
     char error[1024] = {0};
     if( !stricmp(TSystem::utility::host().c_str(), "hzdev103") )
-        ret_val = ((WinnerHisHq_ConnectDelegate)WinnerHisHq_Connect)("128.1.4.156", 50010, result, error);
+        ret_val = ((WinnerHisHq_ConnectDelegate)WinnerHisHq_Connect)("128.1.1.3", 50010, result, error);
     else
         ret_val = ((WinnerHisHq_ConnectDelegate)WinnerHisHq_Connect)("192.168.1.5", 50010, result, error);
 
@@ -186,6 +186,26 @@ void BackTester::AddBackTestItem(std::shared_ptr<StrategyTask> &task, std::share
     id_backtest_items_.insert(std::make_pair(task->task_id(), std::make_tuple(task, task_info, para)));
 }
 
+void BackTester::ResetItemResult(int task_id)
+{
+    auto item = id_backtest_items_.find(task_id);
+    if( item == id_backtest_items_.end() )
+        return;
+    auto tuple_item = item->second;
+    std::shared_ptr<T_MockStrategyPara>  &mock_para = std::get<2>(tuple_item);
+    mock_para->avaliable_position = 0;
+    mock_para->frozon_position = 0;
+    mock_para->capital = mock_para->ori_capital;
+}
+
+void BackTester::ResetAllitemResult()
+{
+    std::for_each( std::begin(id_backtest_items_), std::end(id_backtest_items_), [this](TTaskIdMapBackTestItem::reference entry)
+    {
+        this->ResetItemResult(entry.first);
+    });
+}
+
 void BackTester::StartTest(int start_date, int end_date)
 {
     if( !ConnectHisHqServer() )
@@ -196,8 +216,10 @@ void BackTester::StartTest(int start_date, int end_date)
     auto iter = id_backtest_items_.begin();
     if( iter == id_backtest_items_.end() )
         return;
-
+    ResetItemResult(iter->first);
     auto strategy_task = std::get<0>(iter->second);
+    strategy_task->ResetBktestResult();
+    
     auto get_his_fenbi_data_batch = ((WinnerHisHq_GetHisFenbiDataBatchDelegate)WinnerHisHq_GetHisFenbiDataBatch);
 
     get_his_fenbi_data_batch( const_cast<char*>(strategy_task->stock_code()), start_date, end_date, (T_FenbiCallBack*)p_fenbi_callback_obj_, error);

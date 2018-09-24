@@ -30,7 +30,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>5</number>
+     <number>6</number>
     </property>
     <property name="iconSize">
      <size>
@@ -2232,7 +2232,7 @@ background-color: rgb(255, 255,255);</string>
      </attribute>
      <widget class="QPlainTextEdit" name="pte_log">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
@@ -2249,6 +2249,9 @@ background-color: rgb(255, 255,255);</string>
         <weight>50</weight>
         <bold>false</bold>
        </font>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
       </property>
      </widget>
     </widget>
@@ -3819,6 +3822,19 @@ background-color: rgb(255, 255,255);</string>
       <property name="geometry">
        <rect>
         <x>510</x>
+        <y>350</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>清空任务</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pbtn_bktest_order_detail">
+      <property name="geometry">
+       <rect>
+        <x>600</x>
         <y>350</y>
         <width>75</width>
         <height>23</height>

@@ -70,6 +70,7 @@ bool WinnerWin::InitBacktestWin()
     ret = connect(this->app_, SIGNAL(SigEnableBtnBackTest()), this, SLOT(DoEnableBtnBackTest()));
     ret = connect(ui.pbtn_bktest_add_task, SIGNAL(clicked(bool)), this, SLOT(DoBktestAddTask()));
     ret = connect(ui.pbtn_bktest_clear_task, SIGNAL(clicked(bool)), this, SLOT(DoBktestClearTask()));
+    ret = connect(ui.pbtn_bktest_order_detail, SIGNAL(clicked(bool)), this, SLOT(DoBktestShowOrderDetail()));
     auto cur_date = std::get<0>(CurrentDateIntTime());
     auto begin_date = app_->exchange_calendar().TodayAddDays(-30);
     ui.de_bktest_begin->setDate(QDate(begin_date/10000, begin_date % 10000 / 100, begin_date % 100));
@@ -283,13 +284,13 @@ void WinnerWin::DoBktestAddTask()
     char result[1024] = {0};
     char error[1024] = {0};
     if( !stricmp(TSystem::utility::host().c_str(), "hzdev103") )
-        ret_val = WinnerHisHq_Connect("128.1.4.156", 50010, result, error);
+        ret_val = WinnerHisHq_Connect("128.1.1.3", 50010, result, error);
     else
         ret_val = WinnerHisHq_Connect("192.168.1.5", 50010, result, error);
 
     if( ret_val != 0 ) 
     {
-        ui.pbtn_start_backtest->setEnabled(true);
+        //ui.pbtn_start_backtest->setEnabled(true);
         this->DoStatusBar("服务器未连接!");
         return;
     }
@@ -349,6 +350,7 @@ void WinnerWin::DoBktestAddTask()
         double cur_stock_price = tmp_price ? tmp_price->cur_price : 2.0;
         mock_para->avaliable_position = ui.spinBox_bktest_start_pos->value();
         mock_para->capital = ui.dbspbox_bktest_start_capital->value() + cur_stock_price * mock_para->avaliable_position;
+        mock_para->ori_capital = mock_para->capital;
     }else if( task_info->type == TypeTask::ADVANCE_SECTION )
     {
         task_info->advance_section_task.is_original = true;   
@@ -389,6 +391,7 @@ void WinnerWin::DoBktestAddTask()
 
         mock_para->avaliable_position = 0;
         mock_para->capital = (top_price + bottom_price) * task_info->quantity * ui.spb_bktest_adv_section_count->value() / 2;
+        mock_para->ori_capital = mock_para->capital;
     }
 
 #ifdef USE_LOCAL_STATIC     
@@ -463,6 +466,11 @@ void WinnerWin::DoBktestClearTask()
 
     app_->back_tester()->ClearTestItems();
 	this->DoStatusBar("清除成功!");
+}
+
+void WinnerWin::DoBktestShowOrderDetail()
+{
+
 }
 
 void WinnerWin::DoAdveqGetNeedCapital()

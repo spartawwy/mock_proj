@@ -17,15 +17,20 @@ struct T_MockStrategyPara
 {
     int  avaliable_position;
     int  frozon_position;
-    double capital;
-    T_MockStrategyPara() : avaliable_position(0), frozon_position(0), capital(0.0){}
-    T_MockStrategyPara(const T_MockStrategyPara &lh) : avaliable_position(lh.avaliable_position), frozon_position(lh.frozon_position), capital(lh.capital){}
+    double  ori_capital;
+    double  capital;
+    void  *detail_file;
+    T_MockStrategyPara() : avaliable_position(0), frozon_position(0), ori_capital(0.0), capital(0.0), detail_file(nullptr){}
+    T_MockStrategyPara(const T_MockStrategyPara &lh) : avaliable_position(lh.avaliable_position), frozon_position(lh.frozon_position)
+        , ori_capital(lh.ori_capital), capital(lh.capital), detail_file(lh.detail_file){}
     T_MockStrategyPara & operator = (const T_MockStrategyPara &lh) 
     {
         if( this == &lh ) return *this;
         avaliable_position = lh.avaliable_position;
         frozon_position = lh.frozon_position;
+        ori_capital = lh.ori_capital;
         capital = lh.capital; 
+        detail_file = lh.detail_file;
         return *this;
     }
 };
@@ -84,6 +89,7 @@ public:
     
     void has_bktest_result_fetched(bool val) { has_bktest_result_fetched_ = val; }
     bool has_bktest_result_fetched() const { return has_bktest_result_fetched_; }
+    void ResetBktestResult(){ ori_bktest_para_ = bktest_para_; }
     //-------------------------------
 
     unsigned int life_count_; 
