@@ -169,6 +169,7 @@ bool WinnerApp::Init()
     trade_agent_.Init(user_info_.id, &db_moudle_, position_mocker_);
 
     back_tester_->Init();
+     
 	//------------------------ winner window ------------------
       
 	winner_win_.Init();  

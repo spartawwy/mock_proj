@@ -31,6 +31,7 @@ format: section0_type$section0_price#section1_type$section1_price
 
 #include "winner_app.h"
 
+#include "detail_file.h"
  
 static const int cst_max_sec = 5;
 static const double cst_max_stock_price = MAX_STOCK_PRICE;
@@ -554,6 +555,9 @@ BEFORE_TRADE:
                 this->app_->EmitSigShowUi(ret_str, true);
             }else
             { 
+                DetailFile *p_detail = (DetailFile*)(this->bktest_para_.detail_file);
+                p_detail->Write(*ret_str);
+
                 this->app_->AppendLog2Ui(ret_str->c_str());
                 DO_LOG_BKTST(TagOfCurTask(), *ret_str);
                 delete ret_str;

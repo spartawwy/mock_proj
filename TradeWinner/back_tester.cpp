@@ -1,12 +1,13 @@
 #include "back_tester.h"
 
 #include <qt_windows.h>
+#include <qdebug.h>
+
+#include <io.h>
 
 #include <algorithm>
 
 #include <TLib/core/tsystem_utility_functions.h>
-
-#include <qdebug.h>
 
 #include "winner_hq_api.h"
 #include "winner_app.h"
@@ -102,6 +103,7 @@ BackTester::BackTester(WinnerApp *app)
     , WinnerHisHq_GetHisFenbiDataBatch(nullptr)
     , p_fenbi_callback_obj_(nullptr)
     , id_backtest_items_(64)
+    , detail_file_dir_()
 {
     cur_max_task_id_ = 0;
 }
@@ -114,6 +116,12 @@ BackTester::~BackTester()
 
 bool BackTester::Init()
 {
+    detail_file_dir_ = TSystem::AppDir(*app_) + "/BackTestDetail";
+    if( _access(detail_file_dir_.c_str(), 0) != 0 )
+    {
+        TSystem::utility::CreateDir(detail_file_dir_);
+    }
+
     p_fenbi_callback_obj_ = new T_FenbiCallBack;
     ((T_FenbiCallBack*)p_fenbi_callback_obj_)->call_back_func = FenbiCallBackFunc;
     ((T_FenbiCallBack*)p_fenbi_callback_obj_)->para = this;

@@ -287,6 +287,7 @@ public:
     QTableView *tbview_bktest_tasks;
     QPushButton *pbtn_bktest_add_task;
     QPushButton *pbtn_bktest_clear_task;
+    QPushButton *pbtn_bktest_order_detail;
     QMenuBar *menuBar;
     QMenu *menu_system;
     QMenu *menu_help;
@@ -902,7 +903,7 @@ public:
         tab_log->setObjectName(QStringLiteral("tab_log"));
         pte_log = new QPlainTextEdit(tab_log);
         pte_log->setObjectName(QStringLiteral("pte_log"));
-        pte_log->setEnabled(false);
+        pte_log->setEnabled(true);
         pte_log->setGeometry(QRect(0, 0, 911, 541));
         QFont font4;
         font4.setFamily(QString::fromUtf8("\346\226\260\345\256\213\344\275\223"));
@@ -910,6 +911,7 @@ public:
         font4.setBold(false);
         font4.setWeight(50);
         pte_log->setFont(font4);
+        pte_log->setReadOnly(true);
         tabwid_holder->addTab(tab_log, QString());
         tab_stkindex_task = new QWidget();
         tab_stkindex_task->setObjectName(QStringLiteral("tab_stkindex_task"));
@@ -1322,6 +1324,9 @@ public:
         pbtn_bktest_clear_task = new QPushButton(tab_back_test);
         pbtn_bktest_clear_task->setObjectName(QStringLiteral("pbtn_bktest_clear_task"));
         pbtn_bktest_clear_task->setGeometry(QRect(510, 350, 75, 23));
+        pbtn_bktest_order_detail = new QPushButton(tab_back_test);
+        pbtn_bktest_order_detail->setObjectName(QStringLiteral("pbtn_bktest_order_detail"));
+        pbtn_bktest_order_detail->setGeometry(QRect(600, 350, 75, 23));
         tabwid_holder->addTab(tab_back_test, QString());
         TradeWinnerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(TradeWinnerClass);
@@ -1400,7 +1405,7 @@ public:
 
         retranslateUi(TradeWinnerClass);
 
-        tabwid_holder->setCurrentIndex(5);
+        tabwid_holder->setCurrentIndex(6);
 
 
         QMetaObject::connectSlotsByName(TradeWinnerClass);
@@ -1569,6 +1574,7 @@ public:
         pbtn_bktest_need_capital->setText(QApplication::translate("TradeWinnerClass", "\350\256\241\347\256\227\346\273\241\344\273\223\350\265\204\351\207\221", 0));
         pbtn_bktest_add_task->setText(QApplication::translate("TradeWinnerClass", "\346\267\273\345\212\240\344\273\273\345\212\241", 0));
         pbtn_bktest_clear_task->setText(QApplication::translate("TradeWinnerClass", "\346\270\205\347\251\272\344\273\273\345\212\241", 0));
+        pbtn_bktest_order_detail->setText(QApplication::translate("TradeWinnerClass", "\346\270\205\347\251\272\344\273\273\345\212\241", 0));
         tabwid_holder->setTabText(tabwid_holder->indexOf(tab_back_test), QApplication::translate("TradeWinnerClass", "\345\233\236\346\265\213", 0));
         menu_system->setTitle(QApplication::translate("TradeWinnerClass", "\347\263\273\347\273\237", 0));
         menu_help->setTitle(QApplication::translate("TradeWinnerClass", "\345\270\256\345\212\251", 0));

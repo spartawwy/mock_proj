@@ -34,6 +34,9 @@ public:
 
     void * p_fenbi_callback_obj() { return p_fenbi_callback_obj_; } //FuncFenbiCallback_;
 
+    std::string detail_file_dir() { return detail_file_dir_; }
+    void detail_file_dir(const std::string &val) { detail_file_dir_= val; }
+
 private:
      
     WinnerApp * app_;
@@ -51,7 +54,7 @@ private:
     TTaskIdMapTaskInfo  id_task_infos_; 
     TTaskIdMapMockPara  id_mock_strategy_para_;*/
     //static std::vector<std::shared_ptr<T_FenbiCallBack> > callback_vector;
-      
+    std::string detail_file_dir_;
 };
 
 #endif // BACK_TESTER_SDF7ERETR_H_

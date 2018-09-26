@@ -9,6 +9,8 @@
 #include "strategy_task.h"
 #include "equal_section_task.h"
 
+#include "detail_file.h"
+
 void WinnerWin::InitEqSectionTaskWin()
 {
     // reset some widget ------------
