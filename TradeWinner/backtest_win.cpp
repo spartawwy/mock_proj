@@ -352,14 +352,7 @@ void WinnerWin::DoBktestAddTask()
         mock_para->avaliable_position = ui.spinBox_bktest_start_pos->value();
         mock_para->capital = ui.dbspbox_bktest_start_capital->value() + cur_stock_price * mock_para->avaliable_position;
         mock_para->ori_capital = mock_para->capital;
-
-       /* TSystem::AppDir(*app_) + ;
-        TSystem::utility::CreateDir(*/
-        //this->app_->applicationDirPath();
-        
-        auto shd_detail_f = std::make_shared<DetailFile>(this->app_->back_tester()->detail_file_dir() + "/bktst_0.txt");
-
-        mock_para->detail_file = shd_detail_f.get();
+        mock_para->detail_file = std::make_shared<DetailFile>(this->app_->back_tester()->detail_file_dir() + "/bktst_0.txt");
 
     }else if( task_info->type == TypeTask::ADVANCE_SECTION )
     {
@@ -402,6 +395,7 @@ void WinnerWin::DoBktestAddTask()
         mock_para->avaliable_position = 0;
         mock_para->capital = (top_price + bottom_price) * task_info->quantity * ui.spb_bktest_adv_section_count->value() / 2;
         mock_para->ori_capital = mock_para->capital;
+        mock_para->detail_file = std::make_shared<DetailFile>(this->app_->back_tester()->detail_file_dir() + "/bktst_adveq_0.txt");
     }else
         return;
 

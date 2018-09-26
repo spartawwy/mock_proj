@@ -10,16 +10,20 @@
 #include <TLib/core/tsystem_task_service.h>
 
 #include "common.h"
+#include "detail_file.h"
 
 #define DO_LOG_BKTST(tag, b)  do{ app_->local_logger().LogLocal((tag), (is_back_test_ ? DateTimeString(iter->time_stamp) : "") + " " + b); }while(0);
+#define DO_BKTST_DETAIL(b)  do{ this->WriteDetail((is_back_test_ ? DateTimeString(iter->time_stamp) : "") + " " + b); }while(0);
 
-struct T_MockStrategyPara 
+ 
+class T_MockStrategyPara 
 {
+public:
     int  avaliable_position;
     int  frozon_position;
     double  ori_capital;
     double  capital;
-    void  *detail_file;
+    std::shared_ptr<DetailFile> detail_file;
     T_MockStrategyPara() : avaliable_position(0), frozon_position(0), ori_capital(0.0), capital(0.0), detail_file(nullptr){}
     T_MockStrategyPara(const T_MockStrategyPara &lh) : avaliable_position(lh.avaliable_position), frozon_position(lh.frozon_position)
         , ori_capital(lh.ori_capital), capital(lh.capital), detail_file(lh.detail_file){}
@@ -90,6 +94,7 @@ public:
     void has_bktest_result_fetched(bool val) { has_bktest_result_fetched_ = val; }
     bool has_bktest_result_fetched() const { return has_bktest_result_fetched_; }
     void ResetBktestResult(){ ori_bktest_para_ = bktest_para_; }
+    void WriteDetail(const std::string &content);
     //-------------------------------
 
     unsigned int life_count_; 

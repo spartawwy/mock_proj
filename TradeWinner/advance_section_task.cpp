@@ -10,7 +10,6 @@
 #include <TLib/core/tsystem_time.h>
 
 #include "winner_app.h"
-//#include <cmath>
 
 AdvanceSectionTask::Portion::Portion(int index,double bottom, double top, PortionState state) 
 	: index_(index)
@@ -323,16 +322,17 @@ BEFORE_TRADE:
             if( order_type == TypeOrderCategory::BUY )
             {
                 if( bktest_para_.capital < price * qty + CaculateFee(price*qty, order_type == TypeOrderCategory::BUY) )
-                    strcpy_s(error_info, "capital not enough!");
-                else
                 {
-                    DO_LOG_BKTST(TagOfCurTask(), utility::FormatStr("Order Data Buy %d %.2f", qty, price));
+                    strcpy_s(error_info, "capital not enough!");
+                    DO_BKTST_DETAIL(utility::FormatStr("port:%d Order Data Buy %d %.2f fail:%s", cur_index, qty, price, error_info));
+                }else{
+                    DO_BKTST_DETAIL(utility::FormatStr("port:%d Order Data Buy %d %.2f", cur_index, qty, price));
                     bktest_para_.frozon_position += qty;
                     bktest_para_.capital -= price * qty + CaculateFee(price*qty, order_type == TypeOrderCategory::BUY);
                 }
             }else
             { 
-                DO_LOG_BKTST(TagOfCurTask(), utility::FormatStr("Order Data Sell %d %.2f", qty, price));
+                DO_BKTST_DETAIL(utility::FormatStr("port:%d Order Data Sell %d %.2f", cur_index, qty, price));
                 assert(bktest_para_.avaliable_position >= qty);
                 bktest_para_.avaliable_position -= qty;
                 bktest_para_.capital += price * qty - CaculateFee(price*qty, order_type == TypeOrderCategory::SELL);
@@ -358,10 +358,13 @@ BEFORE_TRADE:
         // judge result 
         if( strlen(error_info) == 0 ) // trade success
         {
-            auto ret_str = new std::string(utility::FormatStr("贝塔任务:%d %s %s %.2f %d 成功!", para_.id, cn_order_str.c_str(), para_.stock.c_str(), price, qty));
-            this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str);
-            this->app_->EmitSigShowUi(ret_str, true);
-
+            if( !is_back_test_ )
+            {
+                auto ret_str = new std::string(utility::FormatStr("贝塔任务:%d %s %s %.2f %d 成功!", para_.id, cn_order_str.c_str(), para_.stock.c_str(), price, qty));
+                this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str);
+                this->app_->EmitSigShowUi(ret_str, true);
+            }
+           
             para_.advance_section_task.is_original = false;
             para_.advance_section_task.pre_trade_price = price;
 

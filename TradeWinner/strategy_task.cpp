@@ -6,6 +6,7 @@
 #include "common.h"
 
 #include "winner_app.h"
+#include "detail_file.h"
 
 const unsigned int cst_max_data_count = 60 * 60 * 4;
  
@@ -159,6 +160,12 @@ double StrategyTask::GetMockAssets(double price)
 double StrategyTask::GetOriMockAssets()
 {
     return  (ori_bktest_para_.avaliable_position + ori_bktest_para_.frozon_position) * ori_bktest_price_ + ori_bktest_para_.capital;
+}
+
+void StrategyTask::WriteDetail(const std::string &content)
+{
+    if( is_back_test_ && bktest_para_.detail_file)
+        bktest_para_.detail_file->Write(content);
 }
 
 // notice: called in trade_strand

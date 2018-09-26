@@ -116,7 +116,7 @@ BackTester::~BackTester()
 
 bool BackTester::Init()
 {
-    detail_file_dir_ = TSystem::AppDir(*app_) + "/BackTestDetail";
+    detail_file_dir_ = TSystem::AppDir(*app_) + "BackTestDetail";
     if( _access(detail_file_dir_.c_str(), 0) != 0 )
     {
         TSystem::utility::CreateDir(detail_file_dir_);

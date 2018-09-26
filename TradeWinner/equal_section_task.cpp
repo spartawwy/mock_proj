@@ -555,9 +555,7 @@ BEFORE_TRADE:
                 this->app_->EmitSigShowUi(ret_str, true);
             }else
             { 
-                DetailFile *p_detail = (DetailFile*)(this->bktest_para_.detail_file);
-                p_detail->Write(*ret_str);
-
+                WriteDetail(*ret_str);
                 this->app_->AppendLog2Ui(ret_str->c_str());
                 DO_LOG_BKTST(TagOfCurTask(), *ret_str);
                 delete ret_str;
