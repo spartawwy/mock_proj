@@ -32,7 +32,10 @@ AdvanceSectionTask::AdvanceSectionTask(T_TaskInformation &task_info, WinnerApp *
     assert(para_.advance_section_task.portion_sections.size() > 2 );
     assert(para_.rebounce > 0.0);
      
+    Reset(false);
+#if 0 
 	// setup portions_  ------------------
+    portions_.clear();
     auto str_portion_vector = utility::split(para_.advance_section_task.portion_sections, ";");
     if( str_portion_vector.size() && str_portion_vector.at(str_portion_vector.size()-1) == "" )
         str_portion_vector.pop_back();
@@ -91,7 +94,7 @@ AdvanceSectionTask::AdvanceSectionTask(T_TaskInformation &task_info, WinnerApp *
             return;
         } 
     }
-    
+#endif
 }
 
 void AdvanceSectionTask::HandleQuoteData()
@@ -548,4 +551,76 @@ std::tuple<int, double, bool> AdvanceSectionTask::judge_any_pos2sell(double cur_
 std::string AdvanceSectionTask::TagOfCurTask()
 { 
     return TSystem::utility::FormatStr("AdvSec_%d_%s_%d", para_.id, para_.stock.c_str(), TSystem::Today());
+}
+
+
+void AdvanceSectionTask::Reset(bool is_mock)
+{
+    // setup portions_  ------------------
+    portions_.clear();
+    if( is_mock )
+        para_.advance_section_task.is_original = true;
+    reb_bottom_price_ = MAX_STOCK_PRICE;
+    reb_top_price_ = MIN_STOCK_PRICE;
+
+    has_set_ori_bktest_price_ = false;
+
+    auto str_portion_vector = utility::split(para_.advance_section_task.portion_sections, ";");
+    if( str_portion_vector.size() && str_portion_vector.at(str_portion_vector.size()-1) == "" )
+        str_portion_vector.pop_back();
+     
+    if( str_portion_vector.size() < 2 )
+    {
+        ShowError(utility::FormatStr("error: AdvanceSectionTask %d str_portion_vector.size() < 2", para_.id));
+        is_waitting_removed_ = true;
+        return;
+    }
+    std::vector<double> price_vector;
+    for( int i = 0 ; i < str_portion_vector.size(); ++i ) 
+        price_vector.push_back(std::stod(str_portion_vector[i]));
+
+    std::vector<std::string> str_portion_stat_vector = utility::split(para_.advance_section_task.portion_states, ";");
+
+    int portion_num = 0;
+    if( !para_.advance_section_task.is_original )
+    {  
+        if( str_portion_stat_vector.size() != str_portion_vector.size() )
+        {
+            ShowError(utility::FormatStr("error: AdvanceSectionTask %d portion_states.size != portion_sections.size", para_.id));
+            is_waitting_removed_ = true;
+            return;
+        }
+        try
+        { 
+            for( portion_num = 0; portion_num < str_portion_vector.size() - 1; ++portion_num ) 
+            {  
+                portions_.emplace_back(portion_num, price_vector[portion_num]
+                         , price_vector[portion_num + 1]
+                         , (PortionState)std::stoi(str_portion_stat_vector[portion_num]));
+            }
+        }
+        catch (...)
+        {
+            ShowError(utility::FormatStr("error: AdvanceSectionTask %d illegal content in portion_sections or portion_states", para_.id));
+            is_waitting_removed_ = true;
+            return;
+        } 
+    }else // original
+    { 
+        try
+        { 
+            for( portion_num = 0; portion_num < str_portion_vector.size() - 1; ++portion_num ) 
+            {  
+                portions_.emplace_back(portion_num, price_vector[portion_num]
+                    , price_vector[portion_num + 1]
+                    , PortionState::UNKNOW);
+            }
+        }
+        catch (...)
+        {
+            ShowError(utility::FormatStr("error: AdvanceSectionTask %d illegal content in portion_sections or portion_states", para_.id));
+            is_waitting_removed_ = true;
+            return;
+        } 
+    }
 }

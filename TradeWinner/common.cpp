@@ -44,6 +44,25 @@ QString ToQString(TypeTask val)
     return "";
 }
 
+std::string ToEngString(TypeTask val)
+{
+    switch(val)
+    {
+    case TypeTask::INFLECTION_BUY:  return "inflect_buy";
+    case TypeTask::BREAKUP_BUY:     return "breakup_buy";
+    case TypeTask::BATCHES_BUY:     return "batches_buy";
+    case TypeTask::INFLECTION_SELL:  return "inflect_sell"; 
+    case TypeTask::BREAK_SELL:      return "break_sell";
+    case TypeTask::FOLLOW_SELL:     return "follow_sell"; 
+    case TypeTask::BATCHES_SELL:    return "batches_sell";
+    case TypeTask::EQUAL_SECTION:   return "equal_section";
+	case TypeTask::ADVANCE_SECTION: return "advance_section";
+	case TypeTask::INDEX_RISKMAN:   return "index_riskman"; 
+    default: assert(0);
+    }
+    return "";
+}
+
 QString ToQString(TypeQuoteLevel val)
 {
     switch(val)

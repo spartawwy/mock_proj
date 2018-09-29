@@ -570,7 +570,7 @@ BEFORE_TRADE:
                 is_to_clear = true;
          
             if( !is_to_clear )
-            {  // re calculate
+            {   // re calculate
                 CalculateSections(iter->cur_price, para_, sections_, "EqualSectionTask::HandleQuoteData 572");
                 PrintSections();
 			    // for rebouce -------

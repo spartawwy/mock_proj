@@ -57,4 +57,6 @@ private:
     std::string detail_file_dir_;
 };
 
+std::string GenDetailFileName(const T_TaskInformation &);
+
 #endif // BACK_TESTER_SDF7ERETR_H_

@@ -232,5 +232,32 @@ void BackTester::StartTest(int start_date, int end_date)
 
     get_his_fenbi_data_batch( const_cast<char*>(strategy_task->stock_code()), start_date, end_date, (T_FenbiCallBack*)p_fenbi_callback_obj_, error);
 
+}
 
+std::string GenDetailFileName(const T_TaskInformation &info)
+{
+    switch(info.type)
+    {
+    case TypeTask::INFLECTION_BUY:
+        {
+            return utility::FormatStr("inflect_buy_%s_%.2f_%.2f_%d", info.stock.c_str(), info.alert_price, info.rebounce, info.quantity);
+        }
+    case TypeTask::BREAKUP_BUY:     return "breakup_buy";
+    case TypeTask::BATCHES_BUY:     return "batches_buy";
+    case TypeTask::INFLECTION_SELL:  return "inflect_sell"; 
+    case TypeTask::BREAK_SELL:      return "break_sell";
+    case TypeTask::FOLLOW_SELL:     return "follow_sell"; 
+    case TypeTask::BATCHES_SELL:    return "batches_sell";
+    case TypeTask::EQUAL_SECTION:   return "equal_section";
+	case TypeTask::ADVANCE_SECTION: 
+        {
+            auto str_portion_vector = utility::split(info.advance_section_task.portion_sections, ";");
+            if( str_portion_vector.size() < 2 )
+                return "advance_section_" + info.stock;
+            return utility::FormatStr("advance_section_%s_%.2f_%d_%d", info.stock.c_str(), info.rebounce, info.quantity, (str_portion_vector.size() - 1));
+        } 
+	case TypeTask::INDEX_RISKMAN:   return "index_riskman"; 
+    default: assert(0);
+    }
+    return "";
 }

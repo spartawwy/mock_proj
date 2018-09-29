@@ -352,6 +352,7 @@ void WinnerWin::DoBktestAddTask()
         mock_para->avaliable_position = ui.spinBox_bktest_start_pos->value();
         mock_para->capital = ui.dbspbox_bktest_start_capital->value() + cur_stock_price * mock_para->avaliable_position;
         mock_para->ori_capital = mock_para->capital;
+        ToEngString(task_info->type);
         mock_para->detail_file = std::make_shared<DetailFile>(this->app_->back_tester()->detail_file_dir() + "/bktst_0.txt");
 
     }else if( task_info->type == TypeTask::ADVANCE_SECTION )

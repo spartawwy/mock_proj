@@ -437,6 +437,8 @@ QString ToQString(TypeTask val);
 QString ToQString(TypeQuoteLevel val);
 QString ToQString(TaskCurrentState val);
 QString ToQString(TindexTaskType val);
+
+std::string ToEngString(TypeTask val);
 std::string ToString(TypeEqSection val);
 std::string ToString(TypeAction val);
 

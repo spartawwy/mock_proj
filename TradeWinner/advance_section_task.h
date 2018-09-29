@@ -34,6 +34,8 @@ public:
 	virtual ~AdvanceSectionTask(){}
 	virtual void HandleQuoteData() override;
 
+    void Reset(bool is_mock=false);
+
 protected:
 
 private:
@@ -44,7 +46,7 @@ private:
 
     std::string TagOfCurTask();
     //void ResetRebBottomPrice(){ reb_bottom_price_ = MAX_STOCK_PRICE;};
-
+     
 private:
 
     WinnerApp *app_;
