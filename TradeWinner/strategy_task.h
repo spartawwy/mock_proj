@@ -86,6 +86,7 @@ public:
     QTime tp_end() { return tp_end_; }
      
     // ---------for mock ------------ 
+    virtual void Reset(bool is_mock) {}
     void do_mock_date_change(int date);
     double GetMockAssets(double price);
     double GetOriMockAssets();

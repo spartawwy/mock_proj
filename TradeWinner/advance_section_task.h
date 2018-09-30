@@ -34,7 +34,7 @@ public:
 	virtual ~AdvanceSectionTask(){}
 	virtual void HandleQuoteData() override;
 
-    void Reset(bool is_mock=false);
+    virtual void Reset(bool is_mock) override;
 
 protected:
 

@@ -204,6 +204,8 @@ void BackTester::ResetItemResult(int task_id)
     mock_para->avaliable_position = 0;
     mock_para->frozon_position = 0;
     mock_para->capital = mock_para->ori_capital;
+
+    //mock_para->detail_file; // ndedt
 }
 
 void BackTester::ResetAllitemResult()
@@ -227,7 +229,7 @@ void BackTester::StartTest(int start_date, int end_date)
     ResetItemResult(iter->first);
     auto strategy_task = std::get<0>(iter->second);
     strategy_task->ResetBktestResult();
-    
+    strategy_task->Reset(true);
     auto get_his_fenbi_data_batch = ((WinnerHisHq_GetHisFenbiDataBatchDelegate)WinnerHisHq_GetHisFenbiDataBatch);
 
     get_his_fenbi_data_batch( const_cast<char*>(strategy_task->stock_code()), start_date, end_date, (T_FenbiCallBack*)p_fenbi_callback_obj_, error);
@@ -248,13 +250,27 @@ std::string GenDetailFileName(const T_TaskInformation &info)
     case TypeTask::BREAK_SELL:      return "break_sell";
     case TypeTask::FOLLOW_SELL:     return "follow_sell"; 
     case TypeTask::BATCHES_SELL:    return "batches_sell";
-    case TypeTask::EQUAL_SECTION:   return "equal_section";
+    case TypeTask::EQUAL_SECTION:   
+        {
+            //info.secton_task.is_original ? info.alert_price
+            //info.secton_task;
+            	double raise_percent;
+	double fall_percent;
+	double raise_infection;
+	double fall_infection; 
+        {
+            return utility::FormatStr("equal_section_%s_%.2f_%u_%.2f_%.2f_%.2f_%.2f", info.stock.c_str(), info.alert_price
+                , info.quantity, info.secton_task.raise_percent, info.secton_task.raise_infection, info.secton_task.fall_percent, info.secton_task.fall_infection);
+        }
 	case TypeTask::ADVANCE_SECTION: 
         {
             auto str_portion_vector = utility::split(info.advance_section_task.portion_sections, ";");
-            if( str_portion_vector.size() < 2 )
+            if( str_portion_vector.size() < 2 ) 
                 return "advance_section_" + info.stock;
-            return utility::FormatStr("advance_section_%s_%.2f_%d_%d", info.stock.c_str(), info.rebounce, info.quantity, (str_portion_vector.size() - 1));
+            // code_portions_top_down_quantity_rebounce
+            return utility::FormatStr("advance_section_%s_%d_%s_%s_%u_%.2f", info.stock.c_str(), (str_portion_vector.size() - 1)
+                , str_portion_vector[0].c_str(), str_portion_vector[str_portion_vector.size() - 1].c_str()
+                , info.quantity, info.rebounce);
         } 
 	case TypeTask::INDEX_RISKMAN:   return "index_riskman"; 
     default: assert(0);
