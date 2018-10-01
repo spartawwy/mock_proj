@@ -1316,7 +1316,7 @@ public:
         wid_bktest_task_tbview->setGeometry(QRect(420, 370, 431, 101));
         tbview_bktest_tasks = new QTableView(wid_bktest_task_tbview);
         tbview_bktest_tasks->setObjectName(QStringLiteral("tbview_bktest_tasks"));
-        tbview_bktest_tasks->setGeometry(QRect(10, 10, 401, 81));
+        tbview_bktest_tasks->setGeometry(QRect(-10, 10, 441, 81));
         tbview_bktest_tasks->setContextMenuPolicy(Qt::CustomContextMenu);
         pbtn_bktest_add_task = new QPushButton(tab_back_test);
         pbtn_bktest_add_task->setObjectName(QStringLiteral("pbtn_bktest_add_task"));
@@ -1405,7 +1405,7 @@ public:
 
         retranslateUi(TradeWinnerClass);
 
-        tabwid_holder->setCurrentIndex(6);
+        tabwid_holder->setCurrentIndex(8);
 
 
         QMetaObject::connectSlotsByName(TradeWinnerClass);

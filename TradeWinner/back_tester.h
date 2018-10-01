@@ -6,12 +6,8 @@
 
 #include "strategy_task.h"
   
-
-//// (taskid , mock strategepara)
-//typedef std::unordered_map<int, std::shared_ptr<T_MockStrategyPara> >  TTaskIdMapMockPara;
-//// (taskid , taskinfo)
-//typedef std::unordered_map<int, std::shared_ptr<T_TaskInformation> >  TTaskIdMapTaskInfo;
-
+ 
+// (task_id, <StrategyTask, T_TaskInformation>)
 typedef std::unordered_map<int, std::tuple<std::shared_ptr<StrategyTask>, std::shared_ptr<T_TaskInformation>, std::shared_ptr<T_MockStrategyPara> > > TTaskIdMapBackTestItem;
  
 class BackTester
@@ -37,6 +33,8 @@ public:
     std::string detail_file_dir() { return detail_file_dir_; }
     void detail_file_dir(const std::string &val) { detail_file_dir_= val; }
 
+    bool GetDetailFileContent(const std::string &file_tag,  std::string &content);
+
 private:
      
     WinnerApp * app_;
@@ -56,7 +54,5 @@ private:
     //static std::vector<std::shared_ptr<T_FenbiCallBack> > callback_vector;
     std::string detail_file_dir_;
 };
-
-std::string GenDetailFileName(const T_TaskInformation &);
 
 #endif // BACK_TESTER_SDF7ERETR_H_

@@ -87,6 +87,7 @@ public:
      
     // ---------for mock ------------ 
     virtual void Reset(bool is_mock) {}
+    int bktest_mock_date() { return bktest_mock_date_; }
     void do_mock_date_change(int date);
     double GetMockAssets(double price);
     double GetOriMockAssets();
@@ -94,7 +95,7 @@ public:
     
     void has_bktest_result_fetched(bool val) { has_bktest_result_fetched_ = val; }
     bool has_bktest_result_fetched() const { return has_bktest_result_fetched_; }
-    void ResetBktestResult(){ ori_bktest_para_ = bktest_para_; }
+    void ResetBktestResult(){ bktest_para_ = ori_bktest_para_; }
     void WriteDetail(const std::string &content);
     //-------------------------------
 

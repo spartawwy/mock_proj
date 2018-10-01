@@ -19,7 +19,8 @@ class WinnerApp;
 class HintList;
 class RecordsWin;
 class CalcWin;
-
+class T_MockStrategyPara;
+class DetailWin;
 class WinnerWin : public QMainWindow
 {
     Q_OBJECT
@@ -83,7 +84,7 @@ public slots:
 	void DoBuyStock();
 
 	void ResetBuyTabTaskTime();
-	void InsertIntoBktestTbvTask(T_TaskInformation &task_info);
+	void InsertIntoBktestTbvTask(T_TaskInformation &task_info, T_MockStrategyPara &mock_para, int date_begin, int date_end);
 
     //---------------eqsection task related----
 	void DoAddEqSectionTask();
@@ -112,7 +113,7 @@ public slots:
     void DoAdveqGetNeedCapital();
     void DoBktestAddTask();
     void DoBktestClearTask();
-    void DoBktestShowOrderDetail();
+    void DoBktestShowOrderDetail(const QModelIndex &); 
     //------------------
 	
     void ChangeTabBuyAssistantImg(TypeTask type);
@@ -163,10 +164,11 @@ private:
     // back test related 
     bool InitBacktestWin();
 	void UnInstallBacktest();
+    void ShowBktestOrderDetail(const std::string& content);
     //-------------------
     Ui::TradeWinnerClass ui;
     AboutSoftWin  about_win_;
-
+    DetailWin     *detail_win_;
     WinnerApp *app_;
     QMenu *tbv_tasks_popMenu_;
 

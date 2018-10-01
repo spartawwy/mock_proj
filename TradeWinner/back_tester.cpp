@@ -28,7 +28,6 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
         double ori_assets = strategy_task->GetOriMockAssets();
         double assets = strategy_task->GetMockAssets(price);
 
-        
         if( is_end )
         {
             auto profit = (assets - ori_assets) / ori_assets * 100;
@@ -57,14 +56,16 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
     data->time_stamp= quote_data->time;
     data->cur_price = quote_data->price;
     //qDebug() << p_callback_obj->serial++ 
-     
+    std::string stock_code = quote_data->code;
     struct tm * timeinfo = localtime(&quote_data->time);
     int long_date = (timeinfo->tm_year + 1900) * 10000 + (timeinfo->tm_mon + 1) * 100 + timeinfo->tm_mday;
      
-    std::for_each(back_tester.id_backtest_items().begin(), back_tester.id_backtest_items().end(), [&data, &back_tester, is_end, long_date](TTaskIdMapBackTestItem::reference entry)
+    std::for_each(back_tester.id_backtest_items().begin(), back_tester.id_backtest_items().end(), [&stock_code, &data, &back_tester, is_end, long_date](TTaskIdMapBackTestItem::reference entry)
     {
         auto task_id = entry.first;
         std::shared_ptr<StrategyTask> strategy_task = std::get<0>(entry.second);
+        if( stock_code != strategy_task->stock_code() )
+            return;
         //std::shared_ptr<T_TaskInformation> task_info = std::get<1>(entry.second);
         //std::shared_ptr<T_MockStrategyPara> mock_para = std::get<2>(entry.second);
 
@@ -73,21 +74,21 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
 
         if( strategy_task->has_bktest_result_fetched() )
             return;
-        if( long_date != p_callback_obj->date )
+        if( long_date != strategy_task->bktest_mock_date() )
         { 
-            p_callback_obj->date = long_date; 
+            //p_callback_obj->date = long_date; 
             strategy_task->do_mock_date_change(long_date);
         }
         strategy_task->ObtainData(data);
-
+        
         if( strategy_task->is_waitting_removed() )
         {
             strategy_task->has_bktest_result_fetched(true);
-            show_result(strategy_task, p_callback_obj->date, data->cur_price, is_end);  
+            show_result(strategy_task, strategy_task->bktest_mock_date(), data->cur_price, is_end);  
 
         }else if( is_end ) 
         {
-            show_result(strategy_task, p_callback_obj->date, data->cur_price, is_end);  
+            show_result(strategy_task, strategy_task->bktest_mock_date(), data->cur_price, is_end);  
             strategy_task->app()->Emit_SigEnableBtnBackTest();
         }
     });
@@ -112,6 +113,11 @@ BackTester::~BackTester()
 {
     if( p_fenbi_callback_obj_ )
         delete p_fenbi_callback_obj_;
+    if( st_api_handle )
+    {
+        ((WinnerHisHq_DisconnectDelegate)WinnerHisHq_DisConnect)();
+        //FreeLibrary((HMODULE)st_api_handle); // hash it cause api is destroying 
+    }
 }
 
 bool BackTester::Init()
@@ -213,6 +219,9 @@ void BackTester::ResetAllitemResult()
     std::for_each( std::begin(id_backtest_items_), std::end(id_backtest_items_), [this](TTaskIdMapBackTestItem::reference entry)
     {
         this->ResetItemResult(entry.first);
+        auto strategy_task = std::get<0>(entry.second);
+        strategy_task->ResetBktestResult();
+        strategy_task->Reset(true);
     });
 }
 
@@ -226,54 +235,31 @@ void BackTester::StartTest(int start_date, int end_date)
     auto iter = id_backtest_items_.begin();
     if( iter == id_backtest_items_.end() )
         return;
-    ResetItemResult(iter->first);
+    ResetAllitemResult();
     auto strategy_task = std::get<0>(iter->second);
-    strategy_task->ResetBktestResult();
-    strategy_task->Reset(true);
+    
     auto get_his_fenbi_data_batch = ((WinnerHisHq_GetHisFenbiDataBatchDelegate)WinnerHisHq_GetHisFenbiDataBatch);
 
+    // will invoker FenbiCallBackFunc
     get_his_fenbi_data_batch( const_cast<char*>(strategy_task->stock_code()), start_date, end_date, (T_FenbiCallBack*)p_fenbi_callback_obj_, error);
 
 }
 
-std::string GenDetailFileName(const T_TaskInformation &info)
-{
-    switch(info.type)
-    {
-    case TypeTask::INFLECTION_BUY:
-        {
-            return utility::FormatStr("inflect_buy_%s_%.2f_%.2f_%d", info.stock.c_str(), info.alert_price, info.rebounce, info.quantity);
-        }
-    case TypeTask::BREAKUP_BUY:     return "breakup_buy";
-    case TypeTask::BATCHES_BUY:     return "batches_buy";
-    case TypeTask::INFLECTION_SELL:  return "inflect_sell"; 
-    case TypeTask::BREAK_SELL:      return "break_sell";
-    case TypeTask::FOLLOW_SELL:     return "follow_sell"; 
-    case TypeTask::BATCHES_SELL:    return "batches_sell";
-    case TypeTask::EQUAL_SECTION:   
-        {
-            //info.secton_task.is_original ? info.alert_price
-            //info.secton_task;
-            	double raise_percent;
-	double fall_percent;
-	double raise_infection;
-	double fall_infection; 
-        {
-            return utility::FormatStr("equal_section_%s_%.2f_%u_%.2f_%.2f_%.2f_%.2f", info.stock.c_str(), info.alert_price
-                , info.quantity, info.secton_task.raise_percent, info.secton_task.raise_infection, info.secton_task.fall_percent, info.secton_task.fall_infection);
-        }
-	case TypeTask::ADVANCE_SECTION: 
-        {
-            auto str_portion_vector = utility::split(info.advance_section_task.portion_sections, ";");
-            if( str_portion_vector.size() < 2 ) 
-                return "advance_section_" + info.stock;
-            // code_portions_top_down_quantity_rebounce
-            return utility::FormatStr("advance_section_%s_%d_%s_%s_%u_%.2f", info.stock.c_str(), (str_portion_vector.size() - 1)
-                , str_portion_vector[0].c_str(), str_portion_vector[str_portion_vector.size() - 1].c_str()
-                , info.quantity, info.rebounce);
-        } 
-	case TypeTask::INDEX_RISKMAN:   return "index_riskman"; 
-    default: assert(0);
-    }
-    return "";
+bool BackTester::GetDetailFileContent(const std::string &file_tag,  std::string &content)
+{ 
+   bool ret = false;
+   content.clear();
+   std::string tmp_str;
+   auto get_full_file_path = [this](const std::string &fl_tag, int ind) ->std::string
+   {
+       return detail_file_dir() + "/" + fl_tag + DetailFile::FileEndStr(ind);
+   };
+
+   int index = 0;   
+   while( GetFileContent(get_full_file_path(file_tag, index++), tmp_str) )
+   {
+       content += tmp_str; 
+       ret = true;
+   }
+   return ret;
 }

@@ -441,6 +441,7 @@ QString ToQString(TindexTaskType val);
 std::string ToEngString(TypeTask val);
 std::string ToString(TypeEqSection val);
 std::string ToString(TypeAction val);
+std::string ToString(const T_TaskInformation &);
 
 void Delay(__int64 mseconds);
 
@@ -476,6 +477,8 @@ double Get2DownRebouncePercent(double base, double top, double cur);
 double CaculateFee(double total, bool is_buy);
 
 int DaysOneMonth(int year, int month);   //返回一个月的天数 
+
+bool GetFileContent(const std::string &file_full_path,  std::string &content);
 
 typedef std::unordered_map<std::string, std::shared_ptr<QuotesData> > TCodeMapQuotesData;
 

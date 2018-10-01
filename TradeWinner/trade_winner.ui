@@ -30,7 +30,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>6</number>
+     <number>8</number>
     </property>
     <property name="iconSize">
      <size>
@@ -3794,9 +3794,9 @@ background-color: rgb(255, 255,255);</string>
       <widget class="QTableView" name="tbview_bktest_tasks">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>-10</x>
          <y>10</y>
-         <width>401</width>
+         <width>441</width>
          <height>81</height>
         </rect>
        </property>

@@ -17,35 +17,29 @@
 
 #include "back_tester.h"
 #include "detail_file.h"
+#include "detail_win.h"
 
-//#define USE_LOCAL_STATIC
+#define TMPDEBUG  //nddel 
 
 typedef std::tuple<std::shared_ptr<StrategyTask>, std::shared_ptr<T_TaskInformation> > T_Task_Inf_Pair;
-
  
-#ifdef USE_LOCAL_STATIC
-static void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para);
-
-static HMODULE st_api_handle = nullptr;
-static WinnerHisHq_ConnectDelegate WinnerHisHq_Connect = nullptr;
-static WinnerHisHq_DisconnectDelegate WinnerHisHq_DisConnect = nullptr;
-static WinnerHisHq_GetHisFenbiDataDelegate WinnerHisHq_GetHisFenbiData  = nullptr;
-static WinnerHisHq_GetHisFenbiDataBatchDelegate WinnerHisHq_GetHisFenbiDataBatch  = nullptr;
-#endif
-
 static const std::string cst_back_test_tag = "bktest";
 
 static const char cst_str_eqsec_bktest[] = {"区间交易回测"};
 static const char cst_str_advancesec_bktest[] = {"贝塔交易回测"};
 static const char cst_str_batchbuy_bktest[] = {"分批买入回测"};
 
-static const int cst_bktest_tbview_col_count = 6;
-static const int cst_bktest_tbview_rowindex_task_id = 0;
-static const int cst_bktest_tbview_rowindex_task_type = 1;
-static const int cst_bktest_tbview_rowindex_task_qty = 2;
-static const int cst_bktest_tbview_rowindex_task_inflect = 3; 
-static const int cst_bktest_tbview_rowindex_top_price = 4;
-static const int cst_bktest_tbview_rowindex_clear_price = 5;
+static const int cst_bktest_tbview_col_count = 10;
+static const int cst_bktest_tbview_rowindex_result = 0;
+static const int cst_bktest_tbview_rowindex_task_id = 1;
+static const int cst_bktest_tbview_rowindex_task_type = 2;
+static const int cst_bktest_tbview_rowindex_task_qty = 3;
+static const int cst_bktest_tbview_rowindex_task_inflect = 4; 
+static const int cst_bktest_tbview_rowindex_top_price = 5;
+static const int cst_bktest_tbview_rowindex_clear_price = 6;
+static const int cst_bktest_tbview_rowindex_date_begin = 7;
+static const int cst_bktest_tbview_rowindex_date_end = 8;
+static const int cst_bktest_tbview_rowindex_detail_f = 9;
 
 bool WinnerWin::InitBacktestWin()
 {
@@ -72,12 +66,22 @@ bool WinnerWin::InitBacktestWin()
     ret = connect(ui.pbtn_bktest_add_task, SIGNAL(clicked(bool)), this, SLOT(DoBktestAddTask()));
     ret = connect(ui.pbtn_bktest_clear_task, SIGNAL(clicked(bool)), this, SLOT(DoBktestClearTask()));
     ret = connect(ui.pbtn_bktest_order_detail, SIGNAL(clicked(bool)), this, SLOT(DoBktestShowOrderDetail()));
+#ifdef TMPDEBUG
+    auto cur_date = 20180705;
+    auto begin_date = 20180702;
+    ui.de_bktest_begin->setDate(QDate(begin_date/10000, begin_date % 10000 / 100, begin_date % 100));
+    ui.de_bktest_end->setDate(QDate(cur_date/10000, cur_date % 10000 / 100, cur_date % 100));
+#else
     auto cur_date = std::get<0>(CurrentDateIntTime());
     auto begin_date = app_->exchange_calendar().TodayAddDays(-30);
     ui.de_bktest_begin->setDate(QDate(begin_date/10000, begin_date % 10000 / 100, begin_date % 100));
     ui.de_bktest_end->setDate(QDate(cur_date/10000, cur_date % 10000 / 100, cur_date % 100));
+#endif
     // ----------tbview_bktest_tasks----------------------
     QStandardItemModel * model = new QStandardItemModel(0, cst_bktest_tbview_col_count, ui.wid_bktest_task_tbview);
+    model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_result, new QStandardItem(QString::fromLocal8Bit("交易明细")));
+    //model->horizontalHeaderItem(cst_bktest_tbview_rowindex_result)->setTextAlignment(Qt::AlignCenter);
+
     model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_task_id, new QStandardItem(QString::fromLocal8Bit("任务号")));
     model->horizontalHeaderItem(cst_bktest_tbview_rowindex_task_id)->setTextAlignment(Qt::AlignCenter);
      
@@ -96,57 +100,32 @@ bool WinnerWin::InitBacktestWin()
 	model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_clear_price, new QStandardItem(QString::fromLocal8Bit("清仓价格")));
 	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_clear_price)->setTextAlignment(Qt::AlignCenter);
 
+    model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_date_begin, new QStandardItem(QString::fromLocal8Bit("起始日期")));
+    model->horizontalHeaderItem(cst_bktest_tbview_rowindex_date_begin)->setTextAlignment(Qt::AlignCenter);
+    
+    model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_date_end, new QStandardItem(QString::fromLocal8Bit("结束日期")));
+    model->horizontalHeaderItem(cst_bktest_tbview_rowindex_date_end)->setTextAlignment(Qt::AlignCenter);
+
+    model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_detail_f, new QStandardItem(QString::fromLocal8Bit("结束日期")));
+
     ui.tbview_bktest_tasks->setModel(model);
     ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_task_type, 5);
+    ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_detail_f, 0);
 
     ui.tbview_bktest_tasks->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
+    ret = connect(ui.tbview_bktest_tasks, SIGNAL(clicked(const QModelIndex &)), this, SLOT(DoBktestShowOrderDetail(const QModelIndex &)) );
     // ---------------------------------------------------
-#ifdef USE_LOCAL_STATIC   
-    /*HMODULE*/ st_api_handle = LoadLibrary("winner_api.dll");
-    if( !st_api_handle )
-    {
-        std::cout << "LoadLibrary winner_api.dll fail" << std::endl;
-        return false;
-    }
-    //ui.pbtn_start_backtest->setDisabled(true);
-    WinnerHisHq_Connect = (WinnerHisHq_ConnectDelegate)GetProcAddress(st_api_handle, "WinnerHisHq_Connect"); 
-    if ( !WinnerHisHq_Connect )
-    {
-        std::cout << " GetProcAddress WinnerHisHq_Connect fail " << std::endl;
-        return false;
-    }
-     
-    WinnerHisHq_DisConnect =  (WinnerHisHq_DisconnectDelegate)GetProcAddress(st_api_handle, "WinnerHisHq_Disconnect"); 
 
-    WinnerHisHq_GetHisFenbiData 
-        = (WinnerHisHq_GetHisFenbiDataDelegate)GetProcAddress(st_api_handle, "WinnerHisHq_GetHisFenbiData"); 
-    if( !WinnerHisHq_GetHisFenbiData )
-    {
-        std::cout << " GetProcAddress WinnerHisHq_GetHisFenbiData fail " << std::endl;
-        return false;
-    }
-    WinnerHisHq_GetHisFenbiDataBatch 
-        = (WinnerHisHq_GetHisFenbiDataBatchDelegate)GetProcAddress(st_api_handle, "WinnerHisHq_GetHisFenbiDataBatch"); 
-    if( !WinnerHisHq_GetHisFenbiDataBatch )
-    {
-        std::cout << " GetProcAddress WinnerHisHq_GetHisFenbiDataBatch fail " << std::endl;
-        return false;
-    }
-#endif
     return true;
 }
 
 void WinnerWin::UnInstallBacktest()
-{
-#ifdef USE_LOCAL_STATIC
-    if( WinnerHisHq_DisConnect )
-        WinnerHisHq_DisConnect();
-    if( !st_api_handle )
-    {
-        FreeLibrary(st_api_handle);
-    }
-#endif
+{ 
+}
+
+void WinnerWin::ShowBktestOrderDetail(const std::string& content)
+{ 
+    detail_win_->ShowUI("回测交易明细", content);
 }
 
 void WinnerWin::DoBktestTypeChanged(const QString&)
@@ -186,13 +165,6 @@ void WinnerWin::DoStartBacktest(bool)
     }
     app_->back_tester()->StartTest(start_date, end_date);
 
-#ifdef USE_LOCAL_STATIC
-    WinnerHisHq_GetHisFenbiDataBatch(const_cast<char*>(taskinfo_vector[0]->stock.c_str())
-            , start_date
-            , end_date
-            , callback_vector[0].get()
-            , error);
-#endif
 }
 
 
@@ -203,7 +175,7 @@ void WinnerWin::DoEnableBtnBackTest()
 
 void WinnerWin::DoBktestAddTask()
 {
-    static auto check_le_stock = [this]() ->bool
+    static auto check_le_stock = [this](TypeTask &type) ->bool
     {
         // check stock codes
         QString::SectionFlag flag = QString::SectionSkipEmpty;
@@ -216,52 +188,74 @@ void WinnerWin::DoBktestAddTask()
             this->DoStatusBar("股票代码有误!");
             return false;
         } 
+        if( type != TypeTask::ADVANCE_SECTION )
+        {
+            if( ui.dbspbox_bktest_start_price->value() < 0.01 )
+            {
+                ui.dbspbox_bktest_start_price->setFocus();
+                this->DoStatusBar("起始价格不能为0!");
+                return false;
+            }
+            if( ui.dbspbox_bktest_start_capital->value() < 0.01 )
+            {
+                ui.dbspbox_bktest_start_capital->setFocus();
+                this->DoStatusBar("起始资金不能为0!");
+                return false;
+            }
 
-        if( ui.dbspbox_bktest_start_price->value() < 0.01 )
-        {
-            ui.dbspbox_bktest_start_price->setFocus();
-            this->DoStatusBar("起始价格不能为0!");
-            return false;
-        }
-        if( ui.dbspbox_bktest_start_capital->value() < 0.01 )
-        {
-            ui.dbspbox_bktest_start_capital->setFocus();
-            this->DoStatusBar("起始资金不能为0!");
-            return false;
-        }
+            if( ui.dbspbox_bktest_raise_percent->value() < 0.1 )
+            {
+                ui.dbspbox_bktest_raise_percent->setFocus();
+                this->DoStatusBar("上升百分比不能为0!");
+                return false;
+            }
+            if( ui.dbspbox_bktest_fall_percent->value() < 0.1 )
+            {
+                ui.dbspbox_bktest_fall_percent->setFocus();
+                this->DoStatusBar("下降百分比不能为0!");
+                return false;
+            }
+            if( ui.cb_bktest_rebounce->isChecked() && ui.spinBox_bktest_rebounce->value() < 0.1 )
+            { 
+                ui.spinBox_bktest_rebounce->setFocus();
+                this->DoStatusBar("拐点值不能为0!");
+                return false;
+            }  
+            if( ui.spinBox_bktest_quantity->value() < 100 )
+            {
+                ui.spinBox_bktest_quantity->setFocus();
+                this->DoStatusBar("买卖数量不能为0!");
+                return false;
+            }
 
-        if( ui.dbspbox_bktest_raise_percent->value() < 0.1 )
-        {
-            ui.dbspbox_bktest_raise_percent->setFocus();
-            this->DoStatusBar("上升百分比不能为0!");
-            return false;
+            if( ui.cb_bktest_max_qty->isChecked() && ui.spinBox_bktest_max_qty->value() < 100 )
+            {
+                ui.cb_bktest_max_qty->setFocus();
+                this->DoStatusBar("最大仓位不能为0!");
+                return false;
+            } 
+        }else  // advance section task
+        {  
+            if( ui.dbspb_bktest_adv_max_price->value() < 0.01 )
+            {
+                ui.dbspb_bktest_adv_max_price->setFocus();
+                this->DoStatusBar("顶部价格不能为0!");
+                return false;
+            }
+            if( ui.dbspb_bktest_adv_min_price->value() < 0.01 )
+            {
+                ui.dbspb_bktest_adv_min_price->setFocus();
+                this->DoStatusBar("清仓价格不能为0!");
+                return false;
+            }
+            if( ui.spinBox_bktest_adv_qty->value() < 100 )
+            {
+                ui.spinBox_bktest_adv_qty->setFocus();
+                this->DoStatusBar("单区间股数不能为0!");
+                return false;
+            }
         }
-        if( ui.dbspbox_bktest_fall_percent->value() < 0.1 )
-        {
-            ui.dbspbox_bktest_fall_percent->setFocus();
-            this->DoStatusBar("下降百分比不能为0!");
-            return false;
-        }
-        if( ui.cb_bktest_rebounce->isChecked() && ui.spinBox_bktest_rebounce->value() < 0.1 )
-        { 
-            ui.spinBox_bktest_rebounce->setFocus();
-            this->DoStatusBar("拐点值不能为0!");
-            return false;
-        }  
-        if( ui.spinBox_bktest_quantity->value() < 100 )
-        {
-            ui.spinBox_bktest_quantity->setFocus();
-            this->DoStatusBar("买卖数量不能为0!");
-            return false;
-        }
-
-        if( ui.cb_bktest_max_qty->isChecked() && ui.spinBox_bktest_max_qty->value() < 100 )
-        {
-            ui.cb_bktest_max_qty->setFocus();
-            this->DoStatusBar("最大仓位不能为0!");
-            return false;
-        } 
-
+        
         auto start_date = ui.de_bktest_begin->date().toString("yyyyMMdd").toInt();
         auto end_date = ui.de_bktest_end->date().toString("yyyyMMdd").toInt();
 
@@ -273,41 +267,15 @@ void WinnerWin::DoBktestAddTask()
         }
         return true;
     };
-#ifdef USE_LOCAL_STATIC  
-    if( !WinnerHisHq_GetHisFenbiData )
+
+    static auto set_detail_file = [this](std::shared_ptr<T_MockStrategyPara> &mock_para, const T_TaskInformation& tsk_info)
     {
-        app_->winner_win().DoStatusBar("回测接口未安装!");
-        return;
-    }
+        mock_para->detail_file = nullptr;
+        auto file = std::make_shared<DetailFile>(this->app_->back_tester()->detail_file_dir(), true);
 
-    int ret_val = -1;
-    //ret_val = WinnerHisHq_Connect("192.168.11.5", 50010, result, error);
-    char result[1024] = {0};
-    char error[1024] = {0};
-    if( !stricmp(TSystem::utility::host().c_str(), "hzdev103") )
-        ret_val = WinnerHisHq_Connect("128.1.1.3", 50010, result, error);
-    else
-        ret_val = WinnerHisHq_Connect("192.168.1.5", 50010, result, error);
-
-    if( ret_val != 0 ) 
-    {
-        //ui.pbtn_start_backtest->setEnabled(true);
-        this->DoStatusBar("服务器未连接!");
-        return;
-    }
-
-    //-----------------
-    static std::vector<std::shared_ptr<StrategyTask> > task_vector;
-    static std::vector<std::shared_ptr<T_TaskInformation> > taskinfo_vector;
-    static std::vector<std::shared_ptr<T_FenbiCallBack> > callback_vector;
-    static std::vector<std::shared_ptr<T_MockStrategyPara> > mock_strategy_para_vector;
-
-    task_vector.clear();
-    taskinfo_vector.clear();
-    callback_vector.clear();
-    mock_strategy_para_vector.clear();
-    //--------------------
-#endif
+        if( file->Init(ToString(tsk_info)) )
+            mock_para->detail_file = file;
+    };
 
     auto task_info = std::make_shared<T_TaskInformation>();
 
@@ -323,11 +291,14 @@ void WinnerWin::DoBktestAddTask()
     task_info->assistant_field = ""; 
     task_info->continue_second = 0; 
 
+    auto start_date = ui.de_bktest_begin->date().toString("yyyyMMdd").toInt();
+    auto end_date = ui.de_bktest_end->date().toString("yyyyMMdd").toInt();
+
     auto mock_para = std::make_shared<T_MockStrategyPara>();
 
     if( task_info->type == TypeTask::BATCHES_BUY || task_info->type == TypeTask::EQUAL_SECTION )
     {
-        if( !check_le_stock() ) 
+        if( !check_le_stock(task_info->type) ) 
             return;
         task_info->rebounce = ui.cb_bktest_rebounce->isChecked() ? ui.spinBox_bktest_rebounce->value() : 0.0;
         task_info->quantity = ui.spinBox_bktest_quantity->value();
@@ -352,11 +323,12 @@ void WinnerWin::DoBktestAddTask()
         mock_para->avaliable_position = ui.spinBox_bktest_start_pos->value();
         mock_para->capital = ui.dbspbox_bktest_start_capital->value() + cur_stock_price * mock_para->avaliable_position;
         mock_para->ori_capital = mock_para->capital;
-        ToEngString(task_info->type);
-        mock_para->detail_file = std::make_shared<DetailFile>(this->app_->back_tester()->detail_file_dir() + "/bktst_0.txt");
+        set_detail_file(mock_para, *task_info);
 
     }else if( task_info->type == TypeTask::ADVANCE_SECTION )
     {
+        if( !check_le_stock(task_info->type) ) 
+            return;
         task_info->advance_section_task.is_original = true;   
         double top_price = ui.dbspb_bktest_adv_max_price->value();
         double bottom_price = ui.dbspb_bktest_adv_min_price->value();
@@ -395,73 +367,35 @@ void WinnerWin::DoBktestAddTask()
 
         mock_para->avaliable_position = 0;
         mock_para->capital = (top_price + bottom_price) * task_info->quantity * ui.spb_bktest_adv_section_count->value() / 2;
-        mock_para->ori_capital = mock_para->capital;
-        mock_para->detail_file = std::make_shared<DetailFile>(this->app_->back_tester()->detail_file_dir() + "/bktst_adveq_0.txt");
+        mock_para->ori_capital = mock_para->capital; 
+        set_detail_file(mock_para, *task_info);
+         
     }else
         return;
 
-#ifdef USE_LOCAL_STATIC     
-    mock_strategy_para_vector.push_back(std::move(mock_para));
-    taskinfo_vector.push_back( task_info );
-#endif
     std::shared_ptr<StrategyTask> task = nullptr;
     switch (task_info->type)
     {
     case TypeTask::EQUAL_SECTION:
         {
-#ifdef USE_LOCAL_STATIC 
-            task = std::make_shared<EqualSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
-            task_vector.push_back( std::move(task) );
-#else
             task = std::make_shared<EqualSectionTask>(*task_info, app_, mock_para.get()); 
-#endif
             break;
         }
     case TypeTask::ADVANCE_SECTION:
         {
-#ifdef USE_LOCAL_STATIC
-            task = std::make_shared<AdvanceSectionTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
-            task_vector.push_back( std::move(task) );
-#else
             task = std::make_shared<AdvanceSectionTask>(*task_info, app_, mock_para.get()); 
-#endif
             break;
         }
     case TypeTask::BATCHES_BUY:
         {
-#ifdef USE_LOCAL_STATIC
-            task = std::make_shared<BatchesBuyTask>(*taskinfo_vector[0], app_, mock_strategy_para_vector[0].get()); 
-            task_vector.push_back( std::move(task) );
-#else
             task = std::make_shared<BatchesBuyTask>(*task_info, app_, mock_para.get()); 
-#endif
             break;
         }
     }
-#ifndef USE_LOCAL_STATIC
-	//ui.tbview_bktest_tasks;
-	//id , 类型, 拐点 , 每次数量 top price , bottom price
-	InsertIntoBktestTbvTask(*task_info);
-	// InsertIntoTbvTasklist(ui.tbview_tasks, *task_info);
-	 
-    app_->back_tester()->AddBackTestItem(task, task_info, mock_para);
-
-#endif
  
-
-#ifdef USE_LOCAL_STATIC
-    auto fenbi_callback_obj = std::make_shared<T_FenbiCallBack>();
-    fenbi_callback_obj->call_back_func = FenbiCallBackFunc;
-    fenbi_callback_obj->para = std::addressof(task_vector[0]);
-    callback_vector.push_back(std::move(fenbi_callback_obj));
-
-    assert(callback_vector.size());
-#endif
-
-#ifdef USE_LOCAL_STATIC
-    memset(error, 0, sizeof(error)); 
-#endif
-   
+	InsertIntoBktestTbvTask(*task_info, *mock_para, start_date, end_date);
+    app_->back_tester()->AddBackTestItem(task, task_info, mock_para);
+     
 	this->DoStatusBar("添加成功!");
 }
 
@@ -474,9 +408,16 @@ void WinnerWin::DoBktestClearTask()
 	this->DoStatusBar("清除成功!");
 }
 
-void WinnerWin::DoBktestShowOrderDetail()
+void WinnerWin::DoBktestShowOrderDetail(const QModelIndex &index)
 {
-
+    if( index.column() == cst_bktest_tbview_rowindex_result )
+    {
+        QStandardItemModel * model = static_cast<QStandardItemModel *>(ui.tbview_bktest_tasks->model());
+        std::string detail_file_name = model->item(index.row(), cst_bktest_tbview_rowindex_detail_f)->text().toLocal8Bit().data();
+        std::string content;
+        app_->back_tester()->GetDetailFileContent(detail_file_name, content);
+        ShowBktestOrderDetail(content);
+    }
 }
 
 void WinnerWin::DoAdveqGetNeedCapital()
@@ -490,9 +431,6 @@ void WinnerWin::DoAdveqGetNeedCapital()
     QString::SectionFlag flag = QString::SectionSkipEmpty;
     QString text_str = ui.le_bktest_stock->text().trimmed();
     QString stock_str = text_str.section('/', 0, 0, flag);
-
-    //if( !CheckAdveqTaskWinInput(stock_str, true) )
-    //    return;
      
     double qty = ui.spinBox_bktest_adv_qty->value();
     double top_price = ui.dbspb_bktest_adv_max_price->value();
@@ -507,68 +445,19 @@ void WinnerWin::DoAdveqGetNeedCapital()
     } 
     ui.dbspb_bktest_adv_start_capital->setValue(need_capital);
 }
-
-
-#ifdef USE_LOCAL_STATIC
-void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
-{
-    //static unsigned int num = 0; 
-    static auto show_result = [](std::shared_ptr<StrategyTask>& strategy_task, int date, double price)
-    {
-        double ori_assets = strategy_task->GetOriMockAssets();
-        double assets = strategy_task->GetMockAssets(price);
-
-        auto p_str = new std::string(TSystem::utility::FormatStr("back_test %s original assets:%.2f | %d ret assets:%.2f", strategy_task->stock_code(), ori_assets, date, assets));
-        strategy_task->app()->local_logger().LogLocal(cst_back_test_tag, *p_str);
-        strategy_task->app()->AppendLog2Ui(p_str->c_str());
-        strategy_task->app()->EmitSigShowUi(p_str);
-        qDebug() << "FenbiCallBackFunc assets: " << assets << "\n";
-    };
-
-    T_FenbiCallBack *p_callback_obj = (T_FenbiCallBack*)para; 
-     
-    std::shared_ptr<StrategyTask>& strategy_task = *((std::shared_ptr<StrategyTask>*)(p_callback_obj->para));
-    if( strategy_task->has_bktest_result_fetched() )
-        return;
-
-     struct tm * timeinfo = localtime(&quote_data->time);
-     int long_date = (timeinfo->tm_year + 1900) * 10000 + (timeinfo->tm_mon + 1) * 100 + timeinfo->tm_mday;
-
-    if( long_date != p_callback_obj->date )
-    { 
-        p_callback_obj->date = long_date; 
-        strategy_task->do_mock_date_change(long_date);
-    }
-
-    auto data = std::make_shared<QuotesData>();
-   
-    data->time_stamp= quote_data->time;
-    data->cur_price = quote_data->price;
-    qDebug() << p_callback_obj->serial++ << " " << quote_data->price << "\n"; 
-
-    strategy_task->ObtainData(data);
-
-    if( strategy_task->is_waitting_removed() )
-    {
-        strategy_task->has_bktest_result_fetched(true);
-        show_result(strategy_task, p_callback_obj->date, data->cur_price);  
-
-    }else if( is_end ) 
-    {
-        show_result(strategy_task, p_callback_obj->date, data->cur_price);  
-        strategy_task->app()->Emit_SigEnableBtnBackTest();
-    }
-}
-#endif
-
-void WinnerWin::InsertIntoBktestTbvTask(T_TaskInformation &task_info)
+  
+void WinnerWin::InsertIntoBktestTbvTask(T_TaskInformation &task_info, T_MockStrategyPara &mock_para, int date_begin, int date_end)
 { 
 	QStandardItemModel * model = static_cast<QStandardItemModel *>(ui.tbview_bktest_tasks->model());
  
     model->insertRow(model->rowCount());
     int row_index = model->rowCount() - 1;
     auto align_way = Qt::AlignCenter;
-    auto item = new QStandardItem( utility::FormatStr("%d", task_info.id).c_str() );
+
+    auto item = new QStandardItem( "detail" );
+    model->setItem(row_index, cst_bktest_tbview_rowindex_result, item);
+
+    item = new QStandardItem( utility::FormatStr("%d", task_info.id).c_str() );
     model->setItem(row_index, cst_bktest_tbview_rowindex_task_id, item);
 
 	item = new QStandardItem( ToQString(task_info.type) );
@@ -579,6 +468,20 @@ void WinnerWin::InsertIntoBktestTbvTask(T_TaskInformation &task_info)
 	  
 	item = new QStandardItem( utility::FormatStr("%d", task_info.quantity).c_str() );
 	model->setItem(row_index, cst_bktest_tbview_rowindex_task_qty, item);
+     
+    item = new QStandardItem( utility::FormatStr("%d", date_begin).c_str() );
+    model->setItem(row_index, cst_bktest_tbview_rowindex_date_begin, item);
+
+    item = new QStandardItem( utility::FormatStr("%d", date_end).c_str() );
+    model->setItem(row_index, cst_bktest_tbview_rowindex_date_end, item);
+
+    std::string ck_val = ToString(task_info).c_str();
+    item = new QStandardItem( ToString(task_info).c_str() );
+    model->setItem(row_index, cst_bktest_tbview_rowindex_detail_f, item);
+
+    std::string detail_file_name = model->item(row_index, cst_bktest_tbview_rowindex_detail_f)->text().toLocal8Bit().data();
+
+    detail_file_name = detail_file_name;
     //model->item(row_index, cst_bktest_tbview_rowindex_task_type)->setTextAlignment(align_way);
 	
 	/*if( task_info.type == TypeTask::EQUAL_SECTION )

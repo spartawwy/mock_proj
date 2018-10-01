@@ -234,6 +234,8 @@ void WinnerApp::Stop()
 {
 	exit_flag_ = true;
 	//FireShutdown();
+    // because back tester use winner_api which use task_pool, so let it release first
+    back_tester_.reset();
 	Shutdown();
     this->quit();
 }

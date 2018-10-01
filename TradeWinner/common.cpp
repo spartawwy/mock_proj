@@ -4,7 +4,9 @@
 #include <cctype>
 #include <algorithm>
 #include <regex>
- 
+#include <fstream>
+#include <sstream>
+
 #include <qtextcodec.h>
 
 #include <TLib/core/tsystem_time.h>
@@ -140,6 +142,42 @@ std::string ToString(TypeAction val)
     case TypeAction::PREPARE_SELL: return  "PREPARE_SELL";
     case TypeAction::CLEAR: return  "CLEAR";
 
+    default: assert(0);
+    }
+    return "";
+}
+
+
+std::string ToString(const T_TaskInformation &info)
+{
+    switch(info.type)
+    {
+    case TypeTask::INFLECTION_BUY:
+        {
+            return TSystem::utility::FormatStr("inflect_buy_%s_%.2f_%.2f_%d", info.stock.c_str(), info.alert_price, info.rebounce, info.quantity);
+        }
+    case TypeTask::BREAKUP_BUY:     return "breakup_buy";
+    case TypeTask::BATCHES_BUY:     return "batches_buy";
+    case TypeTask::INFLECTION_SELL:  return "inflect_sell"; 
+    case TypeTask::BREAK_SELL:      return "break_sell";
+    case TypeTask::FOLLOW_SELL:     return "follow_sell"; 
+    case TypeTask::BATCHES_SELL:    return "batches_sell";
+    case TypeTask::EQUAL_SECTION:   
+        {
+            return TSystem::utility::FormatStr("equal_section_%s_%.2f_%u_%.2f_%.2f_%.2f_%.2f", info.stock.c_str(), info.alert_price, info.quantity
+                , info.secton_task.raise_percent, info.secton_task.raise_infection, info.secton_task.fall_percent, info.secton_task.fall_infection);
+        }
+    case TypeTask::ADVANCE_SECTION: 
+        {
+            auto str_portion_vector = TSystem::utility::split(info.advance_section_task.portion_sections, ";");
+            if( str_portion_vector.size() < 2 ) 
+                return "advance_section_" + info.stock;
+            // code_portions_top_down_quantity_rebounce
+            return TSystem::utility::FormatStr("advance_section_%s_%d_%s_%s_%u_%.2f", info.stock.c_str(), (str_portion_vector.size() - 1)
+                , str_portion_vector[0].c_str(), str_portion_vector[str_portion_vector.size() - 1].c_str()
+                , info.quantity, info.rebounce);
+        } 
+    case TypeTask::INDEX_RISKMAN:   return "index_riskman"; 
     default: assert(0);
     }
     return "";
@@ -460,4 +498,24 @@ int DaysOneMonth(int year, int month)   //返回一个月的天数
             break;
     }
     return re;
+}
+
+bool GetFileContent(const std::string &file_full_path,  std::string &content)
+{ 
+    content.clear();
+    std::fstream file;
+    file.open(file_full_path, std::fstream::in );
+    if( !file.is_open() )
+        return false;
+   /* char buf[1024] = {0};
+    while( file.getline(buf, sizeof(buf)) )
+    {
+        content.append(buf);
+        content.append("\n");
+    }*/
+    std::stringstream ss;
+    ss << file.rdbuf();
+    content = ss.str();
+    file.close();
+    return true;
 }

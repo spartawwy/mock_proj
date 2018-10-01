@@ -5,14 +5,19 @@
 
 static const unsigned int cst_size_limit = 10*1024*1024;
 
-DetailFile::DetailFile(const std::string &file_full_path, bool is_auto_flash)
-    : file_full_path_(file_full_path) 
+std::string DetailFile::FileEndStr(int index)
+{
+    return "." + std::to_string(index) + ".txt";
+}
+
+DetailFile::DetailFile(const std::string &dir, bool is_auto_flash)
+    : dir_(dir)
+    , file_name_() 
     , is_auto_flash_(is_auto_flash)
     , index_(0)
     , read_index_(0)
 {
-    std::string file_path = file_full_path_ + "." + std::to_string(index_++);
-    file_.open(file_path, std::fstream::out | std::ios::app);
+    
 }
 
 DetailFile::~DetailFile()
@@ -23,8 +28,12 @@ DetailFile::~DetailFile()
         read_file_.close();
 }
 
-bool DetailFile::Init()
+bool DetailFile::Init(const std::string &file_name)
 {
+    file_name_ = file_name;
+    std::string file_full_path = dir_ + "/" + file_name_ + FileEndStr(index_++);
+    file_.open(file_full_path, std::fstream::out | std::fstream::in | std::ios::app/*, _SH_DENYRW*/);
+     
     return file_.is_open();
 }
 
@@ -39,21 +48,19 @@ void DetailFile::Write(const std::string &content)
         {
             file_.close();
             file_.clear();
-            std::string file_path = file_full_path_ + "." + std::to_string(index_++);
-            file_.open(file_path, std::fstream::out | std::ios::app);
+            std::string file_full_path = dir_ + "/" + file_name_ + FileEndStr(index_++);
+            file_.open(file_full_path, std::fstream::out | std::ios::app);
         }
     }
 }
 
 std::string DetailFile::Readline()
 { 
-    char buf[1024] = {0};
-    /* std::string tmp;
-    tmp.max_size();*/
+    char buf[1024] = {0}; 
     if( !read_file_.is_open() )
-    {
-        std::string file_path = file_full_path_ + "." + std::to_string(read_index_++);
-        read_file_.open(file_path);
+    { 
+        std::string file_full_path = dir_ + "/" + file_name_ + FileEndStr(read_index_++);
+        read_file_.open(file_full_path);
         if( !read_file_.is_open() )
             return "";
     }
@@ -64,8 +71,8 @@ std::string DetailFile::Readline()
     {
         read_file_.close();
         read_file_.clear();
-        std::string file_path = file_full_path_ + "." + std::to_string(read_index_++);
-        read_file_.open(file_path);
+        std::string file_full_path = dir_ + "/" + file_name_ + FileEndStr(read_index_++);
+        read_file_.open(file_full_path);
         if( !read_file_.is_open() )
             return "";
         if( read_file_.getline(buf, sizeof(buf)) )

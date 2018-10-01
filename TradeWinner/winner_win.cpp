@@ -20,6 +20,7 @@
 
 #include "records_win.h"
 #include "calc_win.h"
+#include "detail_win.h"
 
 #include "timer_container.h"
 
@@ -145,11 +146,17 @@ WinnerWin::WinnerWin(WinnerApp *app, QWidget *parent)
     //ui.pbtn_add_indtrd_task->setDisabled(true);
     //ui.pbtn_start_backtest->setDisabled(true);
 #endif
+     detail_win_ = new DetailWin();
 }
 
 WinnerWin::~WinnerWin()
 {
     UnInstallBacktest();
+    if( detail_win_ )
+    {
+        detail_win_->close();
+        delete detail_win_;
+    }
 }
 
 // notice : task_info.stock_pinyin 's code will change to gbk
