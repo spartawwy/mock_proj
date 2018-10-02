@@ -39,7 +39,7 @@ BatchesBuyTask::BatchesBuyTask(T_TaskInformation &task_info, WinnerApp *app, T_M
         buyed_field = task_info.assistant_field;
      
     auto array_ordered = utility::split(task_info.assistant_field, ";"); //  esction index which is buyed
-    app_->local_logger().LogLocal(TagOfCurTask(), 
+    app_->local_logger().LogLocal(NormalTag(), 
         utility::FormatStr("task %d BatchesBuyTask assistant_field:%s", para_.id, task_info.assistant_field.c_str()));
     
     for( int i = 0; i < array_ordered.size(); ++i )
@@ -49,7 +49,7 @@ BatchesBuyTask::BatchesBuyTask(T_TaskInformation &task_info, WinnerApp *app, T_M
             auto index = std::stoi(array_ordered[i]);
             if( index > step_items_.size() - 1 )
             {
-                app_->local_logger().LogLocal(TagOfCurTask(), 
+                app_->local_logger().LogLocal(NormalTag(), 
                     utility::FormatStr("error: task %d BatchesBuyTask index:%d >= step_items_.size:%d", para_.id, index, step_items_.size()));
                 is_ok_ = false;
                 return;
@@ -70,7 +70,7 @@ BatchesBuyTask::BatchesBuyTask(T_TaskInformation &task_info, WinnerApp *app, T_M
         bot = bot < 0.0 ? 0 : bot;
         step_items_[i].bottom_price = para_.alert_price * bot / 100;
         if( i < 10 )
-            app_->local_logger().LogLocal(TagOfCurTask()
+            app_->local_logger().LogLocal(NormalTag()
                 , utility::FormatStr("%d index:%d step:%.2f up_price:%.2f btm_price:%.2f"
                 , para_.id, i, para_.step, step_items_[i].up_price, step_items_[i].bottom_price));
     }
@@ -105,7 +105,7 @@ void BatchesBuyTask::HandleQuoteData()
     if( is_back_test_ ) ms_for_wait_lock = 5000; 
     if( !timed_mutex_wrapper_.try_lock_for(ms_for_wait_lock) )  
     {
-        //DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
+        //DO_TAG_LOG(NormalTag(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
         app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock fail"); 
         return;
     } 
@@ -138,7 +138,7 @@ void BatchesBuyTask::HandleQuoteData()
     {
         if( ++trade_fail_ctr_count_ % 60 != 0 )
         {
-            app_->local_logger().LogLocal(TagOfCurTask(), "BatchesBuyTask::HandleQuoteData continue trade fail, do return!");
+            app_->local_logger().LogLocal(NormalTag(), "BatchesBuyTask::HandleQuoteData continue trade fail, do return!");
             goto NO_TRADE;
         }
     }
@@ -170,7 +170,7 @@ void BatchesBuyTask::HandleQuoteData()
     }
     if( qty < 100 )
     {
-        app_->local_logger().LogLocal(TagOfCurTask(), utility::FormatStr(" trigger step index %d: but capital:%.2f not enough", index, capital));
+        app_->local_logger().LogLocal(NormalTag(), utility::FormatStr(" trigger step index %d: but capital:%.2f not enough", index, capital));
         goto NO_TRADE;
     } 
     goto BEFORE_TRADE;
@@ -182,7 +182,7 @@ NO_TRADE:
   
 BEFORE_TRADE:
 
-    app_->local_logger().LogLocal(TagOfCurTask()
+    app_->local_logger().LogLocal(NormalTag()
         , utility::FormatStr(" trigger step index %d: bottom: %.2f up:%.2f %s", index, step_items_[index].bottom_price, step_items_[index].up_price, ( qty > para_.quantity ? "supplement buy other index" : "")));
  
     //is_wait_trade_result_ = true;
@@ -296,7 +296,7 @@ BEFORE_TRADE:
  
 }
 
-std::string BatchesBuyTask::TagOfCurTask()
+std::string BatchesBuyTask::NormalTag()
 { 
     return TSystem::utility::FormatStr("BatBuy_%s_%d", para_.stock.c_str(), TSystem::Today());
 }

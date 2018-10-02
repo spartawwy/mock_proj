@@ -1,8 +1,9 @@
 /*
  use assistant_field as pre trade price, if < 0.01 means it's original 
- todo: consider adding AdvanceSectionTask::Init 
+  
  1.if first run, use cur_price as reb_base_price
- 2.else only  really trade , set trade price as reb_base_price
+ 2.else only  has really trade , set trade price as reb_base_price
+ 3. mock task is default trade successfully
 */
 #include "advance_section_task.h"
 
@@ -135,9 +136,8 @@ void AdvanceSectionTask::HandleQuoteData()
     int ms_for_wait_lock = 1000;
     if( is_back_test_ ) ms_for_wait_lock = 5000;
     if( !timed_mutex_wrapper_.try_lock_for(ms_for_wait_lock) )  
-    {
-        //DO_LOG_BKTST(TagOfCurTask(), *ret_str);
-        DO_LOG_BKTST(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
+    { 
+        STTG_NORM_LOG(NormalTag(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
         app_->local_logger().LogLocal("mutex", "timed_mutex_wrapper_ lock fail"); 
         return;
     };
@@ -161,7 +161,7 @@ void AdvanceSectionTask::HandleQuoteData()
         order_type = TypeOrderCategory::SELL;
         cur_index = -1;
         qty = GetAvaliablePosition();
-        DO_LOG_BKTST(TagOfCurTask(), utility::FormatStr("task:%d %s price:%.2f trigger clearing position ", para_.id, para_.stock.c_str(), iter->cur_price));
+        STTG_NORM_LOG(NormalTag(), utility::FormatStr("task:%d %s price:%.2f trigger clearing position ", para_.id, para_.stock.c_str(), iter->cur_price));
         goto BEFORE_TRADE;
 	}
 	else if( iter->cur_price >= portions_.rbegin()->top_price() )
@@ -170,7 +170,7 @@ void AdvanceSectionTask::HandleQuoteData()
         cur_index = portions_.size();
         reb_top_price_ = iter->cur_price;
         reb_base_price_ = portions_.at(portions_.size()-1).mid_price();
-        //DO_LOG("AdvanceSec", utility::FormatStr("task:%d %s price:%.2f in stop trade section ", para_.id, para_.stock.c_str(), iter->cur_price));
+        //DO_TAG_LOG("AdvanceSec", utility::FormatStr("task:%d %s price:%.2f in stop trade section ", para_.id, para_.stock.c_str(), iter->cur_price));
         goto NOT_TRADE;
     }
     if( reb_top_price_ > portions_.rbegin()->top_price() )
@@ -210,7 +210,7 @@ void AdvanceSectionTask::HandleQuoteData()
         if( qty_can_buy < 100 )
         {
             if( is_not_enough_capital_continue_++ % 300 == 0 )
-                DO_LOG_BKTST(TagOfCurTask(), utility::FormatStr("warning:cur_p:%d  to create position but capital:%.2f not enough! | %.2f %.2f %.2f", cur_index, capital, reb_base_price_, reb_bottom_price_, iter->cur_price));
+                STTG_NORM_LOG(NormalTag(), utility::FormatStr("warning:cur_p:%d  to create position but capital:%.2f not enough! | %.2f %.2f %.2f", cur_index, capital, reb_base_price_, reb_bottom_price_, iter->cur_price));
             goto NOT_TRADE;
         }else
             is_not_enough_capital_continue_ = 0;
@@ -245,14 +245,14 @@ void AdvanceSectionTask::HandleQuoteData()
         {
             if( is_not_enough_capital_continue_++ % 300 == 0 )
             {
-                DO_LOG_BKTST(TagOfCurTask(), utility::FormatStr("cur_p:%d downward, up rebounce trigger judge buy :%.2f | %.2f %.2f %.2f", cur_index, up_rebounce, reb_base_price_, reb_top_price_, iter->cur_price));
-                DO_LOG_BKTST(TagOfCurTask(), utility::FormatStr("warning:cur_p:%d to buy but capital:%.2f not enough! | %.2f %.2f %.2f", cur_index, capital, reb_base_price_, reb_bottom_price_, iter->cur_price));
+                STTG_NORM_LOG(NormalTag(), utility::FormatStr("cur_p:%d downward, up rebounce trigger judge buy :%.2f | %.2f %.2f %.2f", cur_index, up_rebounce, reb_base_price_, reb_top_price_, iter->cur_price));
+                STTG_NORM_LOG(NormalTag(), utility::FormatStr("warning:cur_p:%d to buy but capital:%.2f not enough! | %.2f %.2f %.2f", cur_index, capital, reb_base_price_, reb_bottom_price_, iter->cur_price));
             }
             goto NOT_TRADE;
         }else
         {
             is_not_enough_capital_continue_ = 0;
-            DO_LOG_BKTST(TagOfCurTask(), utility::FormatStr("cur_p:%d downward, up rebounce trigger judge buy :%.2f | %.2f %.2f %.2f", cur_index, up_rebounce, reb_base_price_, reb_top_price_, iter->cur_price));
+            STTG_NORM_LOG(NormalTag(), utility::FormatStr("cur_p:%d downward, up rebounce trigger judge buy :%.2f | %.2f %.2f %.2f", cur_index, up_rebounce, reb_base_price_, reb_top_price_, iter->cur_price));
         }
         
         // judge if any portion need buy  
@@ -277,15 +277,15 @@ void AdvanceSectionTask::HandleQuoteData()
         {
             if( is_not_position_continue_++ % 300 == 0 )
             {
-                DO_LOG_BKTST(TagOfCurTask(), utility::FormatStr("cur_p:%d upward, down rebounce trigger judge sell :%.2f | %.2f %.2f %.2f", cur_index, down_rebounce, reb_base_price_, reb_top_price_, iter->cur_price));
-                DO_LOG_BKTST(TagOfCurTask(), utility::FormatStr("warning: cur_p:%d to sell but avaliable pos is 0 ", cur_index));
+                STTG_NORM_LOG(NormalTag(), utility::FormatStr("cur_p:%d upward, down rebounce trigger judge sell :%.2f | %.2f %.2f %.2f", cur_index, down_rebounce, reb_base_price_, reb_top_price_, iter->cur_price));
+                STTG_NORM_LOG(NormalTag(), utility::FormatStr("warning: cur_p:%d to sell but avaliable pos is 0 ", cur_index));
             }
             reset_flag_price(iter->cur_price);
             goto NOT_TRADE;
         }else
         {
             is_not_position_continue_ = 0;
-            DO_LOG_BKTST(TagOfCurTask(), utility::FormatStr("cur_p:%d upward, down rebounce trigger judge sell :%.2f | %.2f %.2f %.2f", cur_index, down_rebounce, reb_base_price_, reb_top_price_, iter->cur_price));
+            STTG_NORM_LOG(NormalTag(), utility::FormatStr("cur_p:%d upward, down rebounce trigger judge sell :%.2f | %.2f %.2f %.2f", cur_index, down_rebounce, reb_base_price_, reb_top_price_, iter->cur_price));
         }
  
         // judge if any portion need sell 
@@ -327,15 +327,15 @@ BEFORE_TRADE:
                 if( bktest_para_.capital < price * qty + CaculateFee(price*qty, order_type == TypeOrderCategory::BUY) )
                 {
                     strcpy_s(error_info, "capital not enough!");
-                    DO_BKTST_DETAIL(utility::FormatStr("port:%d Order Data Buy %d %.2f fail:%s", cur_index, qty, price, error_info));
+                    STTG_HEIGH_LOG(OrderTag(), utility::FormatStr("区间:%d %s %s 价格:%.2f 数量:%d  fail:%s", cur_index, this->code_data(), cn_order_str.c_str(), price, qty, error_info));
                 }else{
-                    DO_BKTST_DETAIL(utility::FormatStr("port:%d Order Data Buy %d %.2f", cur_index, qty, price));
+                    STTG_HEIGH_LOG(OrderTag(), utility::FormatStr("区间:%d %s %s 价格:%.2f 数量:%d ", cur_index, this->code_data(), cn_order_str.c_str(), price, qty));
                     bktest_para_.frozon_position += qty;
                     bktest_para_.capital -= price * qty + CaculateFee(price*qty, order_type == TypeOrderCategory::BUY);
                 }
             }else
             { 
-                DO_BKTST_DETAIL(utility::FormatStr("port:%d Order Data Sell %d %.2f", cur_index, qty, price));
+                STTG_HEIGH_LOG(OrderTag(), utility::FormatStr("区间:%d %s %s 价格:%.2f 数量:%d ", cur_index, this->code_data(), cn_order_str.c_str(), price, qty));
                 assert(bktest_para_.avaliable_position >= qty);
                 bktest_para_.avaliable_position -= qty;
                 bktest_para_.capital += price * qty - CaculateFee(price*qty, order_type == TypeOrderCategory::SELL);
@@ -345,10 +345,10 @@ BEFORE_TRADE:
 #ifdef USE_TRADE_FLAG
         assert(this->app_->trade_agent().account_data(market_type_));
 
-        //auto sh_hld_code  = const_cast<T_AccountData *>(this->app_->trade_agent().account_data(market_type_))->shared_holder_code;
-        this->app_->local_logger().LogLocal(TagOfOrderLog(), 
-            TSystem::utility::FormatStr("贝塔任务:%d %s %s 价格:%.2f 数量:%d ", para_.id, cn_order_str.c_str(), this->code_data(), price, qty)); 
-        this->app_->AppendLog2Ui("贝塔任务:%d %s %s 价格:%.2f 数量:%d ", para_.id, cn_order_str.c_str(), this->code_data(), price, qty);
+        std::string str = TSystem::utility::FormatStr("贝塔任务:%d %s %s 价格:%.2f 数量:%d ", para_.id, cn_order_str.c_str(), this->code_data(), price, qty);
+        DO_TAG_LOG(TagOfOrderLog(), str);
+        STTG_HEIGH_LOG(OrderTag(), str);
+        this->app_->AppendLog2Ui(str.c_str());
 
         // order the stock
         this->app_->trade_agent().SendOrder(app_->trade_client_id(), (int)order_type, 0
@@ -364,7 +364,8 @@ BEFORE_TRADE:
             if( !is_back_test_ )
             {
                 auto ret_str = new std::string(utility::FormatStr("贝塔任务:%d %s %s %.2f %d 成功!", para_.id, cn_order_str.c_str(), para_.stock.c_str(), price, qty));
-                this->app_->local_logger().LogLocal(TagOfOrderLog(), *ret_str);
+                DO_TAG_LOG(TagOfOrderLog(), *ret_str);
+                STTG_HEIGH_LOG(OrderTag(), *ret_str);
                 this->app_->EmitSigShowUi(ret_str, true);
             }
            
@@ -444,7 +445,8 @@ std::tuple<int, double, bool> AdvanceSectionTask::judge_any_pos2buy(double cur_p
         {
             if( is_do_change ) 
             {
-                DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_SELL", cur_index));
+                if( !is_back_test_ )
+                    DO_TAG_LOG(NormalTag(), TSystem::utility::FormatStr("set portion %d WAIT_SELL", cur_index));
                 portions_[cur_index].state(PortionState::WAIT_SELL);
             }
             local_qty_buy += para_.quantity;
@@ -459,7 +461,8 @@ std::tuple<int, double, bool> AdvanceSectionTask::judge_any_pos2buy(double cur_p
             {
                 if( is_do_change ) 
                 {
-                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_SELL", i));
+                    if( !is_back_test_ )
+                        DO_TAG_LOG(NormalTag(), TSystem::utility::FormatStr("set portion %d WAIT_SELL", i));
                     portions_[i].state(PortionState::WAIT_SELL);
                 }
                 local_qty_buy += para_.quantity;
@@ -477,25 +480,7 @@ std::tuple<int, double, bool> AdvanceSectionTask::judge_any_pos2sell(double cur_
 {
     bool is_on_border = true;
     int local_qty_sell = 0;
-#if 0 
-    for( int i = 0; i < cur_index - 1; ++i )
-    { 
-        assert(cur_price > portions_[i].mid_price());
-        if( local_qty_sell + para_.quantity <= para_avaliable_pos )
-        {
-            if( portions_[i].state() == PortionState::WAIT_SELL )
-            {
-                if( is_do_change )
-                {
-                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", i));
-                    portions_[i].state(PortionState::WAIT_BUY);
-                }
-                local_qty_sell += para_.quantity;
-                is_on_border = false;
-            }
-        }else
-            break;
-    }
+
     if( cur_price > portions_[cur_index].mid_price() )
     {
         if( cur_index - 1 >= 0 && local_qty_sell + para_.quantity <= para_avaliable_pos )
@@ -504,23 +489,8 @@ std::tuple<int, double, bool> AdvanceSectionTask::judge_any_pos2sell(double cur_
             {
                 if( is_do_change )
                 {
-                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", cur_index-1));
-                    portions_[cur_index-1].state(PortionState::WAIT_BUY);
-                }
-                local_qty_sell += para_.quantity;
-            }
-        }
-    }
-#else
-    if( cur_price > portions_[cur_index].mid_price() )
-    {
-        if( cur_index - 1 >= 0 && local_qty_sell + para_.quantity <= para_avaliable_pos )
-        { 
-            if( portions_[cur_index-1].state() == PortionState::WAIT_SELL )
-            {
-                if( is_do_change )
-                {
-                    DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", cur_index-1));
+                    if( !is_back_test_ )
+                        DO_TAG_LOG(NormalTag(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", cur_index-1));
                     portions_[cur_index-1].state(PortionState::WAIT_BUY);
                 }
                 local_qty_sell += para_.quantity;
@@ -536,21 +506,16 @@ std::tuple<int, double, bool> AdvanceSectionTask::judge_any_pos2sell(double cur_
         {
             if( is_do_change )
             {
-                DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", i));
+                if( !is_back_test_ )
+                    DO_TAG_LOG(NormalTag(), TSystem::utility::FormatStr("set portion %d WAIT_BUY", i));
                 portions_[i].state(PortionState::WAIT_BUY);
             }
             local_qty_sell += para_.quantity;
             is_on_border = false;
         }
     }
-#endif 
-    return std::make_tuple(local_qty_sell, portions_[cur_index].mid_price(), is_on_border);
-}
- 
 
-std::string AdvanceSectionTask::TagOfCurTask()
-{ 
-    return TSystem::utility::FormatStr("AdvSec_%d_%s_%d", para_.id, para_.stock.c_str(), TSystem::Today());
+    return std::make_tuple(local_qty_sell, portions_[cur_index].mid_price(), is_on_border);
 }
 
 
@@ -559,7 +524,9 @@ void AdvanceSectionTask::Reset(bool is_mock)
     // setup portions_  ------------------
     portions_.clear();
     if( is_mock )
+    {
         para_.advance_section_task.is_original = true;
+    }
     reb_bottom_price_ = MAX_STOCK_PRICE;
     reb_top_price_ = MIN_STOCK_PRICE;
 
@@ -575,6 +542,7 @@ void AdvanceSectionTask::Reset(bool is_mock)
         is_waitting_removed_ = true;
         return;
     }
+
     std::vector<double> price_vector;
     for( int i = 0 ; i < str_portion_vector.size(); ++i ) 
         price_vector.push_back(std::stod(str_portion_vector[i]));

@@ -27,7 +27,7 @@ public:
 
 private:
 
-    std::string TagOfCurTask(); 
+    std::string NormalTag(); 
 
     //bool  is_wait_trade_result_; 
 

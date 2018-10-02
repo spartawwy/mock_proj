@@ -59,7 +59,7 @@ void BatchesSellTask::HandleQuoteData()
 
     if( !timed_mutex_wrapper_.try_lock_for(1000) )  
     {
-        //DO_LOG(TagOfCurTask(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
+        //DO_TAG_LOG(NormalTag(), TSystem::utility::FormatStr("%d EqualSectionTask price %.2f timed_mutex wait fail", para_.id, iter->cur_price));
         app_->local_logger().LogLocal("mutex", "error: BatchesSellTask::HandleQuoteData timed_mutex_wrapper_ lock fail"); 
         app_->local_logger().LogLocal("error: BatchesSellTask::HandleQuoteData timed_mutex_wrapper_ lock fail"); 
         return;

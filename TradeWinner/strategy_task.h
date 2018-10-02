@@ -12,10 +12,13 @@
 #include "common.h"
 #include "detail_file.h"
 
-#define DO_LOG_BKTST(tag, b)  do{ app_->local_logger().LogLocal((tag), (is_back_test_ ? DateTimeString(iter->time_stamp) : "") + " " + b); }while(0);
-#define DO_BKTST_DETAIL(b)  do{ this->WriteDetail((is_back_test_ ? DateTimeString(iter->time_stamp) : "") + " " + b); }while(0);
+// bktest log use iter and ignore tag
+#define DO_BKTST_DETAIL(b)  do{ this->WriteDetail((is_back_test_ ? DateTimeString(iter->time_stamp) : "") + " " + (b)); }while(0);
+#define STTG_HEIGH_LOG(tag, b)  do{ if(is_back_test_){DO_BKTST_DETAIL(b)}else DO_TAG_LOG((tag), (b)) }while(0);
+// if bktest use inner flag to control 
+#define STTG_NORM_LOG(tag, b)  do{ if(is_back_test_){if(bktest_norm_log_flag_)DO_BKTST_DETAIL(b)}else DO_TAG_LOG((tag), (b)) }while(0);
 
- 
+
 class T_MockStrategyPara 
 {
 public:
@@ -23,10 +26,13 @@ public:
     int  frozon_position;
     double  ori_capital;
     double  capital;
+    int  date_begin;
+    int  date_end;
     std::shared_ptr<DetailFile> detail_file;
-    T_MockStrategyPara() : avaliable_position(0), frozon_position(0), ori_capital(0.0), capital(0.0), detail_file(nullptr){}
+
+    T_MockStrategyPara() : avaliable_position(0), frozon_position(0), ori_capital(0.0), capital(0.0), date_begin(0), date_end(0), detail_file(nullptr){}
     T_MockStrategyPara(const T_MockStrategyPara &lh) : avaliable_position(lh.avaliable_position), frozon_position(lh.frozon_position)
-        , ori_capital(lh.ori_capital), capital(lh.capital), detail_file(lh.detail_file){}
+        , ori_capital(lh.ori_capital), capital(lh.capital), date_begin(lh.date_begin), date_end(lh.date_end), detail_file(lh.detail_file){}
     T_MockStrategyPara & operator = (const T_MockStrategyPara &lh) 
     {
         if( this == &lh ) return *this;
@@ -34,6 +40,8 @@ public:
         frozon_position = lh.frozon_position;
         ori_capital = lh.ori_capital;
         capital = lh.capital; 
+        date_begin = lh.date_begin;
+        date_end = lh.date_end;
         detail_file = lh.detail_file;
         return *this;
     }
@@ -52,9 +60,9 @@ public:
     }
 
     virtual void HandleQuoteData() = 0;
-	virtual std::string Detail(){ return "";}
     virtual void UnReg(){ }
-
+    virtual std::string Detail(){ return "";}
+     
     bool IsPriceJumpUp(double pre_price, double cur_price);
     bool IsPriceJumpDown(double pre_price, double cur_price);
      
@@ -97,12 +105,16 @@ public:
     bool has_bktest_result_fetched() const { return has_bktest_result_fetched_; }
     void ResetBktestResult(){ bktest_para_ = ori_bktest_para_; }
     void WriteDetail(const std::string &content);
+    void bktest_norm_log_flag(bool is_open) {bktest_norm_log_flag_ = is_open;}
     //-------------------------------
 
     unsigned int life_count_; 
 
 protected:
      
+   std::string OrderTag();
+   std::string NormalTag();
+
    int HandleSellByStockPosition(double price, bool remove_task = true);
    int GetTototalPosition();
    int GetAvaliablePosition();
@@ -130,6 +142,7 @@ protected:
    
    // ---------for mock ------------
    bool is_back_test_;
+   bool bktest_norm_log_flag_;
    T_MockStrategyPara ori_bktest_para_;
    T_MockStrategyPara bktest_para_;
    int bktest_mock_date_;

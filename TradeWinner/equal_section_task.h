@@ -8,15 +8,17 @@ class EqualSectionTask: public StrategyTask
 public: 
 	static void TranslateSections(IN std::vector<T_SectionAutom> &sections, OUT std::string &sections_str);
 
-	void CalculateSections(double price, IN T_TaskInformation &task_info, OUT std::vector<T_SectionAutom> &sections, char *tag_str=nullptr);
+	void CalculateSections(bool is_mock, double price, IN T_TaskInformation &task_info, OUT std::vector<T_SectionAutom> &sections, char *tag_str=nullptr);
 
     EqualSectionTask(T_TaskInformation &task_info, WinnerApp *app, T_MockStrategyPara *mock_para=nullptr);
 
     virtual ~EqualSectionTask()
     {
     }
+    virtual void Reset(bool is_mock) override;
     virtual void HandleQuoteData() override;
     virtual void UnReg() override { timed_mutex_wrapper_.unlock(); } 
+    
 
 private:
 
@@ -24,7 +26,6 @@ private:
     void PrintSections();
 
     void do_prepare_clear_but_noposition(double cur_price, TimedMutexWrapper &timed_mutex_wrapper);
-    std::string TagOfCurTask();
 
 	std::vector<T_SectionAutom> sections_;
 

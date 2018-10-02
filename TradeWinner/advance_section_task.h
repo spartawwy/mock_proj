@@ -43,10 +43,7 @@ private:
     void reset_flag_price(double cur_price);
     std::tuple<int, double, bool> judge_any_pos2buy(double cur_price, int cur_index, int para_qty_can_buy,  bool is_do_change);
     std::tuple<int, double, bool> judge_any_pos2sell(double cur_price, int cur_index, int para_avaliable_pos,  bool is_do_change);
-
-    std::string TagOfCurTask();
-    //void ResetRebBottomPrice(){ reb_bottom_price_ = MAX_STOCK_PRICE;};
-     
+      
 private:
 
     WinnerApp *app_;

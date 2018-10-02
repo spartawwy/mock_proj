@@ -23,22 +23,24 @@ WinnerHisHq_GetHisFenbiDataBatchDelegate WinnerHisHq_GetHisFenbiDataBatch;
 
 void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
 {
-    static auto show_result = [](std::shared_ptr<StrategyTask>& strategy_task, int date, double price, bool is_end)
+    static auto show_result = [](std::shared_ptr<StrategyTask>& strategy_task, std::shared_ptr<T_MockStrategyPara> &mock_para, int cur_date, double price, bool is_end)
     {
         double ori_assets = strategy_task->GetOriMockAssets();
         double assets = strategy_task->GetMockAssets(price);
-
+          
         if( is_end )
         {
             auto profit = (assets - ori_assets) / ori_assets * 100;
-            auto p_str = new std::string(TSystem::utility::FormatStr("back_test %s original assets:%.2f | %d ret assets:%.2f\n | PROFIT PERCENT:%.2f", strategy_task->stock_code(), ori_assets, date, assets, profit));
+            auto p_str = new std::string(TSystem::utility::FormatStr("任务:%d 回测 %s %d 期初资产:%.2f | %d 期末资产:%.2f\n | 收益百分比:%.2f", strategy_task->task_id(), strategy_task->stock_code(), mock_para->date_begin, ori_assets, cur_date, assets, profit));
 
             strategy_task->app()->local_logger().LogLocal(cst_back_test_tag, *p_str);
+            if( cur_date == mock_para->date_end && mock_para->detail_file) 
+                mock_para->detail_file->Write(*p_str);
             strategy_task->app()->AppendLog2Ui(p_str->c_str());
             strategy_task->app()->EmitSigShowUi(p_str);
         }else
         {
-            auto p_str = new std::string(TSystem::utility::FormatStr("back_test %s original assets:%.2f | %d ret assets:%.2f", strategy_task->stock_code(), ori_assets, date, assets));
+            auto p_str = new std::string(TSystem::utility::FormatStr("任务:%d 回测 %s %d 期初资产:%.2f | %d 期末资产:%.2f", strategy_task->task_id(), strategy_task->stock_code(), mock_para->date_begin, ori_assets, cur_date, assets));
 
             strategy_task->app()->local_logger().LogLocal(cst_back_test_tag, *p_str);
             strategy_task->app()->AppendLog2Ui(p_str->c_str());
@@ -67,7 +69,7 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
         if( stock_code != strategy_task->stock_code() )
             return;
         //std::shared_ptr<T_TaskInformation> task_info = std::get<1>(entry.second);
-        //std::shared_ptr<T_MockStrategyPara> mock_para = std::get<2>(entry.second);
+        std::shared_ptr<T_MockStrategyPara> mock_para = std::get<2>(entry.second);
 
         T_FenbiCallBack *p_callback_obj = ((T_FenbiCallBack*)(back_tester.p_fenbi_callback_obj()));
         p_callback_obj->serial++ ;
@@ -84,11 +86,11 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
         if( strategy_task->is_waitting_removed() )
         {
             strategy_task->has_bktest_result_fetched(true);
-            show_result(strategy_task, strategy_task->bktest_mock_date(), data->cur_price, is_end);  
+            show_result(strategy_task, mock_para, strategy_task->bktest_mock_date(), data->cur_price, is_end);  
 
         }else if( is_end ) 
         {
-            show_result(strategy_task, strategy_task->bktest_mock_date(), data->cur_price, is_end);  
+            show_result(strategy_task, mock_para, strategy_task->bktest_mock_date(), data->cur_price, is_end);  
             strategy_task->app()->Emit_SigEnableBtnBackTest();
         }
     });
@@ -210,18 +212,20 @@ void BackTester::ResetItemResult(int task_id)
     mock_para->avaliable_position = 0;
     mock_para->frozon_position = 0;
     mock_para->capital = mock_para->ori_capital;
-
-    //mock_para->detail_file; // ndedt
+    if( mock_para->detail_file )
+        mock_para->detail_file->ClearContent(); 
 }
 
-void BackTester::ResetAllitemResult()
+void BackTester::ResetAllitemResult(int start_date, int end_date)
 {
-    std::for_each( std::begin(id_backtest_items_), std::end(id_backtest_items_), [this](TTaskIdMapBackTestItem::reference entry)
+    std::for_each( std::begin(id_backtest_items_), std::end(id_backtest_items_), [start_date, end_date, this](TTaskIdMapBackTestItem::reference entry)
     {
         this->ResetItemResult(entry.first);
         auto strategy_task = std::get<0>(entry.second);
         strategy_task->ResetBktestResult();
         strategy_task->Reset(true);
+        std::get<2>(entry.second)->date_begin = start_date;
+        std::get<2>(entry.second)->date_end = end_date;
     });
 }
 
@@ -235,7 +239,7 @@ void BackTester::StartTest(int start_date, int end_date)
     auto iter = id_backtest_items_.begin();
     if( iter == id_backtest_items_.end() )
         return;
-    ResetAllitemResult();
+    ResetAllitemResult(start_date, end_date);
     auto strategy_task = std::get<0>(iter->second);
     
     auto get_his_fenbi_data_batch = ((WinnerHisHq_GetHisFenbiDataBatchDelegate)WinnerHisHq_GetHisFenbiDataBatch);

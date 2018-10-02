@@ -33,7 +33,8 @@
 
 #define APP_CODE_TEXT "GBK"
 
-#define DO_LOG(tag, b)  do{ app_->local_logger().LogLocal((tag), b); }while(0);
+#define DO_TAG_LOG(tag, b)  do{ app_->local_logger().LogLocal((tag), (b)); }while(0);
+#define DO_APP_LOG(b)  do{ app_->local_logger().LogLocal((b)); }while(0);
 
 #define USE_TRADE_FLAG
 #define USE_MOCK_FLAG 

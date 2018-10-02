@@ -12,6 +12,7 @@ public:
     DetailFile(const std::string &dir, bool is_auto_flash = true);
     ~DetailFile();
     bool Init(const std::string &file_name);
+    void ClearContent();
 
     void Write(const std::string &content);
     std::string Readline();

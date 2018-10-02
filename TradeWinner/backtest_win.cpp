@@ -29,7 +29,7 @@ static const char cst_str_eqsec_bktest[] = {"区间交易回测"};
 static const char cst_str_advancesec_bktest[] = {"贝塔交易回测"};
 static const char cst_str_batchbuy_bktest[] = {"分批买入回测"};
 
-static const int cst_bktest_tbview_col_count = 10;
+static const int cst_bktest_tbview_col_count = 8;
 static const int cst_bktest_tbview_rowindex_result = 0;
 static const int cst_bktest_tbview_rowindex_task_id = 1;
 static const int cst_bktest_tbview_rowindex_task_type = 2;
@@ -37,9 +37,11 @@ static const int cst_bktest_tbview_rowindex_task_qty = 3;
 static const int cst_bktest_tbview_rowindex_task_inflect = 4; 
 static const int cst_bktest_tbview_rowindex_top_price = 5;
 static const int cst_bktest_tbview_rowindex_clear_price = 6;
-static const int cst_bktest_tbview_rowindex_date_begin = 7;
-static const int cst_bktest_tbview_rowindex_date_end = 8;
-static const int cst_bktest_tbview_rowindex_detail_f = 9;
+//
+//static const int cst_bktest_tbview_rowindex_date_begin = 7;
+//static const int cst_bktest_tbview_rowindex_date_end = 8;
+
+static const int cst_bktest_tbview_rowindex_detail_f = 7;
 
 bool WinnerWin::InitBacktestWin()
 {
@@ -79,39 +81,48 @@ bool WinnerWin::InitBacktestWin()
 #endif
     // ----------tbview_bktest_tasks----------------------
     QStandardItemModel * model = new QStandardItemModel(0, cst_bktest_tbview_col_count, ui.wid_bktest_task_tbview);
+    ui.tbview_bktest_tasks->setModel(model);
     model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_result, new QStandardItem(QString::fromLocal8Bit("交易明细")));
-    //model->horizontalHeaderItem(cst_bktest_tbview_rowindex_result)->setTextAlignment(Qt::AlignCenter);
+    model->horizontalHeaderItem(cst_bktest_tbview_rowindex_result)->setTextAlignment(Qt::AlignCenter);
+    model->horizontalHeaderItem(cst_bktest_tbview_rowindex_result)->setToolTip(QString::fromLocal8Bit("点击"));
+    ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_result, 50);
 
     model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_task_id, new QStandardItem(QString::fromLocal8Bit("任务号")));
     model->horizontalHeaderItem(cst_bktest_tbview_rowindex_task_id)->setTextAlignment(Qt::AlignCenter);
-     
+    ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_task_id, 50);
+
     model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_task_type, new QStandardItem(QString::fromLocal8Bit("类型")));
 	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_task_id)->setTextAlignment(Qt::AlignCenter);
-	
+	ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_task_type, 50);
+
     model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_task_qty, new QStandardItem(QString::fromLocal8Bit("每次数量")));
 	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_task_qty)->setTextAlignment(Qt::AlignCenter);
+    ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_task_qty, 60);
 
 	model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_task_inflect, new QStandardItem(QString::fromLocal8Bit("拐点")));
 	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_task_inflect)->setTextAlignment(Qt::AlignCenter);
+    ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_task_inflect, 50);
 
 	model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_top_price, new QStandardItem(QString::fromLocal8Bit("顶部价格")));
 	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_top_price)->setTextAlignment(Qt::AlignCenter);
+    ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_top_price, 60);
 
 	model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_clear_price, new QStandardItem(QString::fromLocal8Bit("清仓价格")));
 	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_clear_price)->setTextAlignment(Qt::AlignCenter);
+    ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_clear_price, 60);
 
+#if 0 
     model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_date_begin, new QStandardItem(QString::fromLocal8Bit("起始日期")));
     model->horizontalHeaderItem(cst_bktest_tbview_rowindex_date_begin)->setTextAlignment(Qt::AlignCenter);
-    
+    ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_date_begin, 0);
+
     model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_date_end, new QStandardItem(QString::fromLocal8Bit("结束日期")));
     model->horizontalHeaderItem(cst_bktest_tbview_rowindex_date_end)->setTextAlignment(Qt::AlignCenter);
-
-    model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_detail_f, new QStandardItem(QString::fromLocal8Bit("结束日期")));
-
-    ui.tbview_bktest_tasks->setModel(model);
-    ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_task_type, 5);
+    ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_date_end, 0);
+#endif 
+    model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_detail_f, new QStandardItem(QString::fromLocal8Bit("日志")));
     ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_detail_f, 0);
-
+    
     ui.tbview_bktest_tasks->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ret = connect(ui.tbview_bktest_tasks, SIGNAL(clicked(const QModelIndex &)), this, SLOT(DoBktestShowOrderDetail(const QModelIndex &)) );
     // ---------------------------------------------------
@@ -399,6 +410,7 @@ void WinnerWin::DoBktestAddTask()
 	this->DoStatusBar("添加成功!");
 }
 
+
 void WinnerWin::DoBktestClearTask()
 {
 	QStandardItemModel * model = static_cast<QStandardItemModel *>(ui.tbview_bktest_tasks->model());
@@ -468,13 +480,13 @@ void WinnerWin::InsertIntoBktestTbvTask(T_TaskInformation &task_info, T_MockStra
 	  
 	item = new QStandardItem( utility::FormatStr("%d", task_info.quantity).c_str() );
 	model->setItem(row_index, cst_bktest_tbview_rowindex_task_qty, item);
-     
+#if 0      
     item = new QStandardItem( utility::FormatStr("%d", date_begin).c_str() );
     model->setItem(row_index, cst_bktest_tbview_rowindex_date_begin, item);
 
     item = new QStandardItem( utility::FormatStr("%d", date_end).c_str() );
     model->setItem(row_index, cst_bktest_tbview_rowindex_date_end, item);
-
+#endif 
     std::string ck_val = ToString(task_info).c_str();
     item = new QStandardItem( ToString(task_info).c_str() );
     model->setItem(row_index, cst_bktest_tbview_rowindex_detail_f, item);

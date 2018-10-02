@@ -904,7 +904,7 @@ public:
         pte_log = new QPlainTextEdit(tab_log);
         pte_log->setObjectName(QStringLiteral("pte_log"));
         pte_log->setEnabled(true);
-        pte_log->setGeometry(QRect(0, 0, 911, 541));
+        pte_log->setGeometry(QRect(0, 0, 901, 541));
         QFont font4;
         font4.setFamily(QString::fromUtf8("\346\226\260\345\256\213\344\275\223"));
         font4.setPointSize(11);
@@ -1313,20 +1313,20 @@ public:
         pbtn_bktest_need_capital->setFont(font5);
         wid_bktest_task_tbview = new QWidget(tab_back_test);
         wid_bktest_task_tbview->setObjectName(QStringLiteral("wid_bktest_task_tbview"));
-        wid_bktest_task_tbview->setGeometry(QRect(420, 370, 431, 101));
+        wid_bktest_task_tbview->setGeometry(QRect(410, 360, 471, 111));
         tbview_bktest_tasks = new QTableView(wid_bktest_task_tbview);
         tbview_bktest_tasks->setObjectName(QStringLiteral("tbview_bktest_tasks"));
-        tbview_bktest_tasks->setGeometry(QRect(-10, 10, 441, 81));
+        tbview_bktest_tasks->setGeometry(QRect(0, 0, 451, 111));
         tbview_bktest_tasks->setContextMenuPolicy(Qt::CustomContextMenu);
         pbtn_bktest_add_task = new QPushButton(tab_back_test);
         pbtn_bktest_add_task->setObjectName(QStringLiteral("pbtn_bktest_add_task"));
-        pbtn_bktest_add_task->setGeometry(QRect(420, 350, 75, 23));
+        pbtn_bktest_add_task->setGeometry(QRect(420, 330, 75, 23));
         pbtn_bktest_clear_task = new QPushButton(tab_back_test);
         pbtn_bktest_clear_task->setObjectName(QStringLiteral("pbtn_bktest_clear_task"));
-        pbtn_bktest_clear_task->setGeometry(QRect(510, 350, 75, 23));
+        pbtn_bktest_clear_task->setGeometry(QRect(510, 330, 75, 23));
         pbtn_bktest_order_detail = new QPushButton(tab_back_test);
         pbtn_bktest_order_detail->setObjectName(QStringLiteral("pbtn_bktest_order_detail"));
-        pbtn_bktest_order_detail->setGeometry(QRect(600, 350, 75, 23));
+        pbtn_bktest_order_detail->setGeometry(QRect(600, 330, 75, 23));
         tabwid_holder->addTab(tab_back_test, QString());
         TradeWinnerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(TradeWinnerClass);
@@ -1405,7 +1405,7 @@ public:
 
         retranslateUi(TradeWinnerClass);
 
-        tabwid_holder->setCurrentIndex(8);
+        tabwid_holder->setCurrentIndex(6);
 
 
         QMetaObject::connectSlotsByName(TradeWinnerClass);

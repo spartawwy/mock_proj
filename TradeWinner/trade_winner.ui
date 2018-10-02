@@ -30,7 +30,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>8</number>
+     <number>6</number>
     </property>
     <property name="iconSize">
      <size>
@@ -2238,7 +2238,7 @@ background-color: rgb(255, 255,255);</string>
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>911</width>
+        <width>901</width>
         <height>541</height>
        </rect>
       </property>
@@ -3785,19 +3785,19 @@ background-color: rgb(255, 255,255);</string>
      <widget class="QWidget" name="wid_bktest_task_tbview" native="true">
       <property name="geometry">
        <rect>
-        <x>420</x>
-        <y>370</y>
-        <width>431</width>
-        <height>101</height>
+        <x>410</x>
+        <y>360</y>
+        <width>471</width>
+        <height>111</height>
        </rect>
       </property>
       <widget class="QTableView" name="tbview_bktest_tasks">
        <property name="geometry">
         <rect>
-         <x>-10</x>
-         <y>10</y>
-         <width>441</width>
-         <height>81</height>
+         <x>0</x>
+         <y>0</y>
+         <width>451</width>
+         <height>111</height>
         </rect>
        </property>
        <property name="contextMenuPolicy">
@@ -3809,7 +3809,7 @@ background-color: rgb(255, 255,255);</string>
       <property name="geometry">
        <rect>
         <x>420</x>
-        <y>350</y>
+        <y>330</y>
         <width>75</width>
         <height>23</height>
        </rect>
@@ -3822,7 +3822,7 @@ background-color: rgb(255, 255,255);</string>
       <property name="geometry">
        <rect>
         <x>510</x>
-        <y>350</y>
+        <y>330</y>
         <width>75</width>
         <height>23</height>
        </rect>
@@ -3835,7 +3835,7 @@ background-color: rgb(255, 255,255);</string>
       <property name="geometry">
        <rect>
         <x>600</x>
-        <y>350</y>
+        <y>330</y>
         <width>75</width>
         <height>23</height>
        </rect>

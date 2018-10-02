@@ -23,7 +23,7 @@ public:
     void ClearTestItems(){ id_backtest_items_.clear(); cur_max_task_id_ = 0; }
     int AllocTaskId() { return ++ cur_max_task_id_; }
     void ResetItemResult(int task_id);
-    void ResetAllitemResult();
+    void ResetAllitemResult(int start_date, int end_date);
     void StartTest(int start_date, int end_date);
 
     TTaskIdMapBackTestItem & id_backtest_items() { return id_backtest_items_; }

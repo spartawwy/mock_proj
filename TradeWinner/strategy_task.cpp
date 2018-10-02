@@ -24,6 +24,7 @@ StrategyTask::StrategyTask(T_TaskInformation &task_info, WinnerApp *app, T_MockS
     , strand_(app->task_pool())
     , timed_mutex_wrapper_()
     , is_back_test_(bktest_para != nullptr)
+    , bktest_norm_log_flag_(false)
     , bktest_mock_assets_(0.0)
     , has_bktest_result_fetched_(false)
     , ori_bktest_price_(0.0)
@@ -49,6 +50,7 @@ StrategyTask::StrategyTask(const std::string &stock, WinnerApp *app, T_MockStrat
     , strand_(app->task_pool())
     , timed_mutex_wrapper_()
     , is_back_test_(bktest_para != nullptr)
+    , bktest_norm_log_flag_(false)
     , bktest_mock_assets_(0.0)
     , has_bktest_result_fetched_(false)
     , ori_bktest_price_(0.0)
@@ -58,6 +60,16 @@ StrategyTask::StrategyTask(const std::string &stock, WinnerApp *app, T_MockStrat
     {
        bktest_para_ = ori_bktest_para_ = *bktest_para;
     }
+}
+
+std::string StrategyTask::OrderTag()
+{
+    return TSystem::utility::FormatStr("%s_%d_order_%d", ToString(para_).c_str(), para_.id, TSystem::Today());
+}
+
+std::string StrategyTask::NormalTag()
+{
+    return TSystem::utility::FormatStr("%s_%d_%d", ToString(para_).c_str(), para_.id, TSystem::Today());
 }
 
 bool StrategyTask::IsPriceJumpUp(double pre_price, double cur_price)

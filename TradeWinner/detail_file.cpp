@@ -31,10 +31,30 @@ DetailFile::~DetailFile()
 bool DetailFile::Init(const std::string &file_name)
 {
     file_name_ = file_name;
-    std::string file_full_path = dir_ + "/" + file_name_ + FileEndStr(index_++);
+    std::string file_full_path = dir_ + "/" + file_name_ + FileEndStr(index_);
     file_.open(file_full_path, std::fstream::out | std::fstream::in | std::ios::app/*, _SH_DENYRW*/);
      
-    return file_.is_open();
+    bool ret = file_.is_open();
+    if( ret ) ++index_;
+    return ret;
+}
+
+void DetailFile::ClearContent()
+{ 
+    int index = file_.is_open() ? (index_ - 1) : index_;
+    std::string file_full_path = dir_ + "/" + file_name_ + FileEndStr(index);
+
+    if( file_.is_open() )
+        file_.close();
+    file_.clear();
+
+    file_.open(file_full_path, std::fstream::out | std::ios::trunc);
+    file_ << "" << std::endl; 
+    if( file_.is_open() )
+        file_.close();
+    file_.clear();
+    
+    file_.open(file_full_path, std::fstream::out | std::fstream::in | std::ios::app);
 }
 
 void DetailFile::Write(const std::string &content)
@@ -48,8 +68,10 @@ void DetailFile::Write(const std::string &content)
         {
             file_.close();
             file_.clear();
-            std::string file_full_path = dir_ + "/" + file_name_ + FileEndStr(index_++);
+            std::string file_full_path = dir_ + "/" + file_name_ + FileEndStr(index_);
             file_.open(file_full_path, std::fstream::out | std::ios::app);
+            if( file_.is_open() )
+                ++index_;
         }
     }
 }
