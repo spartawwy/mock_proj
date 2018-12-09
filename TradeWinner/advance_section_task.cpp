@@ -497,12 +497,12 @@ std::tuple<int, double, bool> AdvanceSectionTask::judge_any_pos2sell(double cur_
             }
         }
     }
-    for( int i = cur_index-1; i >= 1; --i )
+    for( int i = cur_index-1; i >= 0; --i )
     {
         assert(cur_price > portions_[i].mid_price());
         if( local_qty_sell + para_.quantity > para_avaliable_pos )
             break;
-        if( portions_[i-1].state() == PortionState::WAIT_SELL )
+        if( portions_[i].state() == PortionState::WAIT_SELL )
         {
             if( is_do_change )
             {
