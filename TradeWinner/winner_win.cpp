@@ -46,7 +46,7 @@ static const int cst_tab_index_task_list = 0;
 static const int cst_tab_index_buy_task = 1;
 static const int cst_tab_index_sell_task = 2;
 static const int cst_tab_index_eqsec_task = 3;
-static const int cst_tab_advsec_task = 4;
+static const int cst_tab_index_adveq_task = 4;
 static const int cst_tab_capital = 5;
 static const int cst_tab_index_log = 6;
 static const int cst_tab_index_stkindex_task = 7;
@@ -129,6 +129,9 @@ WinnerWin::WinnerWin(WinnerApp *app, QWidget *parent)
     //------------------tab equal section task----------------
 	InitEqSectionTaskWin();
 	 
+    //------------------tab advance equal task----------------
+    InitAdveqTaskWin();
+
     //------------------tab index trade task----------------
 	InitIndexTradeWin();
 
@@ -326,10 +329,12 @@ void WinnerWin::keyPressEvent(QKeyEvent *event)
 		}else if( ui.le_eqsec_stock->hasFocus() )
 		{
 			m_eqsec_list_hint_->close();
-		}
-        else if( ui.le_bktest_stock->hasFocus() )
+		}else if( ui.le_bktest_stock->hasFocus() )
 		{
 			m_backtest_list_hint_->close();
+        }else if( ui.le_adveq_stock->hasFocus() )
+        {
+            m_adveq_list_hint_->close();
 		}
 	}else if( event->key() == Qt::Key_F12 )
 	{
@@ -348,7 +353,10 @@ void WinnerWin::keyPressEvent(QKeyEvent *event)
 		}else if( ui.le_bktest_stock->hasFocus() )
 		{
 			m_backtest_list_hint_->setFocus();
-		}
+        }else if( ui.le_adveq_stock->hasFocus() )
+        {
+            m_adveq_list_hint_->setFocus();
+        }
     }
 }
 
@@ -427,6 +435,7 @@ void WinnerWin::SlotTabChanged(int /*index*/)
     m_eqsec_list_hint_->hide();
     m_indtrd_list_hint_->hide();
     m_backtest_list_hint_->hide();
+    m_adveq_list_hint_->hide();
 }
 
 void WinnerWin::SlotTbvTasksContextMenu(QPoint p)
@@ -904,6 +913,12 @@ void WinnerWin::AssignHintListAndLineEdit(HintList *& p_list, QLineEdit *&p_edit
         p_edit = ui.le_buytask_stock;
         p_dbspb_alert_price = ui.dbspbox_buytask_alert_price;
         p_dbspb_percent = ui.dbspbox_buytask_alert_percent;
+    }else if( ui.tabwid_holder->currentIndex() == cst_tab_index_adveq_task )
+    {   
+        p_list = m_adveq_list_hint_;
+        p_edit = ui.le_adveq_stock;
+        //p_dbspb_alert_price = ui.dbspbox_eqsec_start_price;
+        p_dbspb_percent = nullptr;
     }else if( ui.tabwid_holder->currentIndex() == cst_tab_index_eqsec_task )
     {   
         p_list = m_eqsec_list_hint_;
@@ -1045,6 +1060,31 @@ void WinnerWin::DoShowTaskDetail(int task_id)
             ui.tabwid_holder->setCurrentIndex(cst_tab_index_eqsec_task);
         }
         break;
+    case TypeTask::ADVANCE_SECTION:
+        {
+            ui.le_adveq_stock->setText(QString("%1/%2").arg(p_tskinfo->stock.c_str()).arg(QString::fromLocal8Bit(p_tskinfo->stock_pinyin.c_str())) );
+            // p_tskinfo->advance_section_task.portion_sections.size();
+
+            auto str_portion_vector = utility::split(p_tskinfo->advance_section_task.portion_sections, ";");
+            if( str_portion_vector.size() && str_portion_vector.at(str_portion_vector.size()-1) == "" )
+                str_portion_vector.pop_back();
+
+            auto max_val = std::stod( str_portion_vector.at(str_portion_vector.size()-1) );
+            ui.dbspb_adveq_max_price->setValue(max_val);
+
+            auto min_val = std::stod( str_portion_vector.at(0) );
+            ui.dbspb_adveq_min_price->setValue(min_val);
+
+            ui.spb_adveq_section_count->setValue(str_portion_vector.size()-1);
+            ui.spb_adveq_rebounce->setValue(p_tskinfo->rebounce);
+
+            ui.spinBox_adveq_qty->setValue(p_tskinfo->quantity);
+            ui.combox_adveq_price_level->setCurrentText(ToQString(static_cast<TypeQuoteLevel>(p_tskinfo->target_price_level)));
+            ui.timeEdit_adveq_begin->setTime(Int2Qtime(p_tskinfo->start_time));
+            ui.timeEdit_adveq_end->setTime(Int2Qtime(p_tskinfo->end_time));
+            ui.tabwid_holder->setCurrentIndex(cst_tab_index_adveq_task);
+            break;
+        }
 	case TypeTask::INDEX_RISKMAN:
         {
 			ui.combox_stkindex->setCurrentText(IndexCode2IndexName(p_tskinfo->stock.c_str()));
