@@ -45,6 +45,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;cxx;c;def</Extensions>
     </Filter>
+    <Filter Include="win\taskwin">
+      <UniqueIdentifier>{52816f17-1a88-4457-9ed6-7dbad50f7872}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -116,9 +119,6 @@
     <ClCompile Include="winner_win.cpp">
       <Filter>win</Filter>
     </ClCompile>
-    <ClCompile Include="sell_task_win.cpp">
-      <Filter>win</Filter>
-    </ClCompile>
     <ClCompile Include="broker_cfg_win.cpp">
       <Filter>win</Filter>
     </ClCompile>
@@ -133,9 +133,6 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_message_win.cpp">
       <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="buy_task_win.cpp">
-      <Filter>win</Filter>
     </ClCompile>
     <ClCompile Include="breakup_buy_task.cpp">
       <Filter>task</Filter>
@@ -154,9 +151,6 @@
     </ClCompile>
     <ClCompile Include="equal_section_task.cpp">
       <Filter>task</Filter>
-    </ClCompile>
-    <ClCompile Include="eqsection_task_win.cpp">
-      <Filter>win</Filter>
     </ClCompile>
     <ClCompile Include="rwini.cpp">
       <Filter>moudle</Filter>
@@ -235,6 +229,18 @@
     </ClCompile>
     <ClCompile Include="detail_win.cpp">
       <Filter>win</Filter>
+    </ClCompile>
+    <ClCompile Include="eqsection_task_win.cpp">
+      <Filter>win\taskwin</Filter>
+    </ClCompile>
+    <ClCompile Include="buy_task_win.cpp">
+      <Filter>win\taskwin</Filter>
+    </ClCompile>
+    <ClCompile Include="sell_task_win.cpp">
+      <Filter>win\taskwin</Filter>
+    </ClCompile>
+    <ClCompile Include="adveq_task_win.cpp">
+      <Filter>win\taskwin</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

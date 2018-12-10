@@ -61,7 +61,7 @@ bool WinnerWin::InitBacktestWin()
     ret = QObject::connect(m_backtest_list_hint_, SIGNAL(clicked(QModelIndex)), this, SLOT(OnClickedListWidget(QModelIndex)));
     ret = QObject::connect(m_backtest_list_hint_, SIGNAL(choiceStr(QString)), this, SLOT(ChangeFromStationText(QString)));
      
-    ret = QObject::connect(ui.pbtn_bktest_need_capital, SIGNAL(clicked(bool)), this, SLOT(DoAdveqGetNeedCapital()));
+    ret = QObject::connect(ui.pbtn_bktest_need_capital, SIGNAL(clicked(bool)), this, SLOT(DoBktestAdveqGetNeedCapital()));
 
     ret = connect(ui.pbtn_start_backtest, SIGNAL(clicked(bool)), this, SLOT(DoStartBacktest(bool)));
     ret = connect(this->app_, SIGNAL(SigEnableBtnBackTest()), this, SLOT(DoEnableBtnBackTest()));
@@ -432,7 +432,7 @@ void WinnerWin::DoBktestShowOrderDetail(const QModelIndex &index)
     }
 }
 
-void WinnerWin::DoAdveqGetNeedCapital()
+void WinnerWin::DoBktestAdveqGetNeedCapital()
 {
     if( ui.dbspb_bktest_adv_max_price->value() < ui.dbspb_bktest_adv_min_price->value() + 0.05 )
     {

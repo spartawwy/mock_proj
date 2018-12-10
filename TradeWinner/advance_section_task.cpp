@@ -592,3 +592,35 @@ void AdvanceSectionTask::Reset(bool is_mock)
         } 
     }
 }
+
+
+void AdvanceSectionTask::SetSectionState(double price, int position)
+{
+    auto cur_portion_iter = portions_.end();
+    cur_portion_iter = std::find_if( std::begin(portions_), std::end(portions_),[price, this](Portion &entry)
+	{
+		if( !(price < entry.bottom_price()) && price < entry.top_price() ) return true;
+		else return false;
+	});
+    if( cur_portion_iter == std::end(portions_) )
+        return;
+	auto cur_index = cur_portion_iter->index();
+
+    int remain_pos = position;
+    // from curindex to top index
+    for( int i = cur_index; i < portions_.size(); ++i )
+    {
+        if( remain_pos < para_.quantity )
+            break;
+        portions_[i].state(PortionState::WAIT_SELL);
+        remain_pos -= para_.quantity;
+    }
+
+    para_.advance_section_task.portion_states.clear();
+    for( auto item :portions_)
+    {
+        para_.advance_section_task.portion_states += std::to_string((unsigned char)item.state()) + ";";
+    }
+    if( para_.advance_section_task.portion_states.size() > 0 )
+        para_.advance_section_task.portion_states.resize(para_.advance_section_task.portion_states.size() - 1);
+}

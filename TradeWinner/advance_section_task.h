@@ -36,6 +36,8 @@ public:
 
     virtual void Reset(bool is_mock) override;
 
+    void SetSectionState(double price, int position);
+
 protected:
 
 private:

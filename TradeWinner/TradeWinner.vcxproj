@@ -162,6 +162,7 @@
   <ItemGroup>
     <ClCompile Include="about_soft_win.cpp" />
     <ClCompile Include="advance_section_task.cpp" />
+    <ClCompile Include="adveq_task_win.cpp" />
     <ClCompile Include="backtest_win.cpp" />
     <ClCompile Include="back_tester.cpp" />
     <ClCompile Include="batches_buy_task.cpp" />

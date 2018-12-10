@@ -97,6 +97,11 @@ public slots:
 
 	void DoRebounceCheckBoxChanged(int);
 
+    //--------------advance equal task related---
+    void DoAddAdveqTask();
+    void ResetAdveqTaskTime();
+    void DoAdveqGetNeedCapital();
+
     //---------------index trade task related----
 	void DoAddIndexTradeTask();
 	void DoTrdIndexRadioCrossDownChecked(bool);
@@ -110,7 +115,8 @@ public slots:
     void DoBktestTypeChanged(const QString&);
     void DoStartBacktest(bool);
     void DoEnableBtnBackTest();
-    void DoAdveqGetNeedCapital();
+
+    void DoBktestAdveqGetNeedCapital();
     void DoBktestAddTask();
     void DoBktestClearTask();
     void DoBktestShowOrderDetail(const QModelIndex &); 
@@ -158,6 +164,10 @@ private:
     // equal section task related
     void InitEqSectionTaskWin();
 
+    // advance equal section task related
+    void InitAdveqTaskWin();
+    bool CheckAdveqTaskWinInput(const QString &stock_str, bool is_calc_capital = false);
+
 	// index trade task related 
 	void InitIndexTradeWin();
 
@@ -180,6 +190,9 @@ private:
 
 	// eqsection task related
     HintList *m_eqsec_list_hint_; 
+
+    // advance equal task related
+    HintList *m_adveq_list_hint_; 
 
 	// index trade task related
     HintList *m_indtrd_list_hint_; 
