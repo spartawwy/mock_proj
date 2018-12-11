@@ -20,6 +20,7 @@ public:
 		double bottom_price() const{ return bottom_price_; } 
 		double mid_price() const{ return mid_price_; } 
 		double top_price() const{ return top_price_; } 
+        std::string Detail();
 
 	private:
 		int index_; 
@@ -46,6 +47,10 @@ private:
     std::tuple<int, double, bool> judge_any_pos2buy(double cur_price, int cur_index, int para_qty_can_buy,  bool is_do_change);
     std::tuple<int, double, bool> judge_any_pos2sell(double cur_price, int cur_index, int para_avaliable_pos,  bool is_do_change);
       
+    std::string Detail();
+    std::string TagOfCurTask();
+    void LogState(double cur_price, int cur_index, bool is_order, const std::string &other_info);
+
 private:
 
     WinnerApp *app_;
@@ -63,8 +68,9 @@ private:
     unsigned int is_not_position_continue_;
 
     //volatile bool  is_wait_trade_result_; 
-
+    unsigned inter_count_for_debug_;
 };
 
+std::string ToString(AdvanceSectionTask::PortionState val);
 
 #endif // ADVANCE_SECTION_TASK_SSDFS3DFDS_H_

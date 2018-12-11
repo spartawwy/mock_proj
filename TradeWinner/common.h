@@ -119,6 +119,7 @@ enum class TaskStatChangeType : char
 {
     CUR_PRICE_CHANGE = 0,
     CUR_STATE_CHANGE,
+    PRE_TRIGG_PRICE_CHANGE,
 };
 
 // in database, STOP and WAITING is enough

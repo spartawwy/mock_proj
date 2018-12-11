@@ -28,7 +28,7 @@
 //static const QString cst_str_Inflection_buy = QString::fromLocal8Bit("拐点买入");
 
 
-static const unsigned short cst_col_count = 11;
+static const unsigned short cst_col_count = 12;
 
 static const int cst_tbview_tasks_rowindex_task_id = 0;
 static const int cst_tbview_tasks_rowindex_state = 1;
@@ -41,6 +41,7 @@ static const int cst_tbview_tasks_rowindex_price_level = 7;
 static const int cst_tbview_tasks_rowindex_start_time = 8;
 static const int cst_tbview_tasks_rowindex_end_time = 9;
 static const int cst_tbview_tasks_rowindex_task_type = 10;
+static const int cst_tbview_tasks_rowindex_pretrigged = 11;
 
 static const int cst_tab_index_task_list = 0;
 static const int cst_tab_index_buy_task = 1;
@@ -51,6 +52,10 @@ static const int cst_tab_capital = 5;
 static const int cst_tab_index_log = 6;
 static const int cst_tab_index_stkindex_task = 7;
 static const int cst_tab_index_backtest = 8;
+
+static const int cst_small_width = 60;
+static const int cst_normal_width = 80;
+static const int cst_big_width = 120;
 
 WinnerWin::WinnerWin(WinnerApp *app, QWidget *parent)
     : QMainWindow(parent)
@@ -112,8 +117,23 @@ WinnerWin::WinnerWin(WinnerApp *app, QWidget *parent)
 
     model->setHorizontalHeaderItem(cst_tbview_tasks_rowindex_task_type, new QStandardItem("类型"));
      
+    model->setHorizontalHeaderItem(cst_tbview_tasks_rowindex_pretrigged, new QStandardItem(QString::fromLocal8Bit("上次触发价")));
+	model->horizontalHeaderItem(cst_tbview_tasks_rowindex_pretrigged)->setTextAlignment(Qt::AlignCenter);
+
     ui.tbview_tasks->setModel(model);
-    ui.tbview_tasks->setColumnWidth(cst_tbview_tasks_rowindex_task_type, 5);
+    
+	ui.tbview_tasks->setColumnWidth(cst_tbview_tasks_rowindex_task_id, cst_small_width);
+	ui.tbview_tasks->setColumnWidth(cst_tbview_tasks_rowindex_state, cst_small_width);
+	ui.tbview_tasks->setColumnWidth(cst_tbview_tasks_rowindex_task_name, cst_small_width);
+	ui.tbview_tasks->setColumnWidth(cst_tbview_tasks_rowindex_cur_price, cst_small_width);
+	ui.tbview_tasks->setColumnWidth(cst_tbview_tasks_rowindex_trigger_price, cst_small_width);
+	ui.tbview_tasks->setColumnWidth(cst_tbview_tasks_rowindex_quantity, cst_small_width);
+	ui.tbview_tasks->setColumnWidth(cst_tbview_tasks_rowindex_start_time, cst_normal_width);
+	ui.tbview_tasks->setColumnWidth(cst_tbview_tasks_rowindex_end_time, cst_normal_width);
+
+    ui.tbview_tasks->setColumnWidth(cst_tbview_tasks_rowindex_task_type, 1);
+    ui.tbview_tasks->setColumnWidth(cst_tbview_tasks_rowindex_pretrigged, 70);
+    ui.tbview_tasks->setColumnWidth(cst_tbview_tasks_rowindex_stock_name, 120);
 
     ui.tbview_tasks->setEditTriggers(QAbstractItemView::NoEditTriggers);
     bool ret = connect(ui.tbview_tasks, SIGNAL(doubleClicked(const QModelIndex)), this, SLOT(DoTabTasksDbClick(const QModelIndex)));
@@ -236,6 +256,13 @@ void WinnerWin::InsertIntoTbvTasklist(QTableView *tbv , T_TaskInformation &task_
     item = new QStandardItem( utility::FormatStr("%d", task_info.type).c_str() );
     model->setItem(row_index, cst_tbview_tasks_rowindex_task_type, item);
     model->item(row_index, cst_tbview_tasks_rowindex_task_type)->setTextAlignment(align_way);  
+
+    QString str;
+    if( task_info.type == TypeTask::EQUAL_SECTION )
+        str = task_info.assistant_field.c_str();
+    item = new QStandardItem(str);
+    model->setItem(row_index, cst_tbview_tasks_rowindex_pretrigged, item);
+    model->item(row_index, cst_tbview_tasks_rowindex_pretrigged)->setTextAlignment(align_way);  
 }
  
 void WinnerWin::Init()
@@ -743,7 +770,18 @@ void WinnerWin::changeEvent(QEvent * event)
 void WinnerWin::DoTaskStatChangeSignal(StrategyTask* p_task, int val)
 {
     assert(p_task);
-
+    static auto find_target_index = [this](int task_id)->int
+	{
+		for( int i = 0; i < ui.tbview_tasks->model()->rowCount(); ++i )
+        {
+            if( task_id == static_cast<QStandardItemModel *>(ui.tbview_tasks->model())->item(i, cst_tbview_tasks_rowindex_task_id)->text().toUInt() ) 
+            {
+                return i;
+            }
+        }
+		return -1;
+	};
+    QStandardItemModel *model = static_cast<QStandardItemModel *>(ui.tbview_tasks->model());
     switch(static_cast<TaskStatChangeType>(val))
     {
     case TaskStatChangeType::CUR_PRICE_CHANGE:
@@ -772,7 +810,18 @@ void WinnerWin::DoTaskStatChangeSignal(StrategyTask* p_task, int val)
             }
             break;
         }
-    }
+    case TaskStatChangeType::PRE_TRIGG_PRICE_CHANGE:
+		{
+			auto i = find_target_index(p_task->task_id());
+			if( i >= 0 )
+			{ 
+                QString str = QString("%1").arg(p_task->pre_trigged_price());
+				model->item(i, cst_tbview_tasks_rowindex_pretrigged)->setText(str);
+                return;
+			}
+            break; 
+		}
+    }//switch
 
 }
 

@@ -18,6 +18,7 @@ StrategyTask::StrategyTask(T_TaskInformation &task_info, WinnerApp *app, T_MockS
     , tp_start_(Int2Qtime(task_info.start_time))
     , tp_end_(Int2Qtime(task_info.end_time))
     , cur_price_(0.0)
+    , pre_trigged_price_(0.0)
     , cur_state_(static_cast<TaskCurrentState>(task_info.state) != TaskCurrentState::STOP ? TaskCurrentState::WAITTING : TaskCurrentState::STOP)
     , is_waitting_removed_(false)
     , life_count_(0)

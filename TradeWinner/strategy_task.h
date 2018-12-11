@@ -92,7 +92,8 @@ public:
 
     QTime tp_start() { return tp_start_; }
     QTime tp_end() { return tp_end_; }
-     
+    double pre_trigged_price() { return pre_trigged_price_; }
+
     // ---------for mock ------------ 
     virtual void Reset(bool is_mock) {}
     int bktest_mock_date() { return bktest_mock_date_; }
@@ -132,7 +133,8 @@ protected:
    QTime  tp_end_;
 
    double  cur_price_;
-   
+   double  pre_trigged_price_;
+
    volatile TaskCurrentState cur_state_;
    volatile bool is_waitting_removed_; 
 
