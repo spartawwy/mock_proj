@@ -306,8 +306,9 @@ struct T_IndexRelateTask
 	T_IndexRelateTask(const T_IndexRelateTask &lh) : rel_type(lh.rel_type), is_down_trigger(lh.is_down_trigger), stock_code(lh.stock_code), is_buy(lh.is_buy){}
 };
 
-struct T_AdvanceSectionTask
+class T_AdvanceSectionTask
 {
+public:
 	std::string portion_sections;
 	std::string portion_states;
     double pre_trade_price;
@@ -315,10 +316,14 @@ struct T_AdvanceSectionTask
     T_AdvanceSectionTask() :  pre_trade_price(0.0), is_original(false){}
     T_AdvanceSectionTask(const T_AdvanceSectionTask &lh) : portion_sections(lh.portion_sections), portion_states(lh.portion_states)
         , pre_trade_price(lh.pre_trade_price), is_original(lh.is_original){}
+    T_AdvanceSectionTask(T_AdvanceSectionTask &&lh) : portion_sections(std::move(lh.portion_sections)), portion_states(std::move(lh.portion_states))
+        , pre_trade_price(lh.pre_trade_price), is_original(lh.is_original)
+    {}
 };
 
-struct T_TaskInformation
+class T_TaskInformation
 {
+public:
     unsigned int id;
     TypeTask  type;
     std::string stock;        // TEXT not null, alse can be index code--when type is INDEX_RISKMAN 
@@ -346,7 +351,12 @@ struct T_TaskInformation
 		, rebounce(lh.rebounce), continue_second(lh.continue_second), step(lh.step), quantity(lh.quantity), secton_task(lh.secton_task), index_rel_task(lh.index_rel_task), advance_section_task(lh.advance_section_task)
 		, target_price_level(lh.target_price_level), start_time(lh.start_time), end_time(lh.end_time), is_loop(lh.is_loop), state(lh.state), bs_times(lh.bs_times)
 		, assistant_field(lh.assistant_field) { }
-
+     
+    T_TaskInformation(T_TaskInformation&& lh) : id(lh.id), type(lh.type), stock(std::move(lh.stock)), stock_pinyin(std::move(lh.stock_pinyin)), alert_price(lh.alert_price), back_alert_trigger(lh.back_alert_trigger)
+		, rebounce(lh.rebounce), continue_second(lh.continue_second), step(lh.step), quantity(lh.quantity), secton_task(std::move(lh.secton_task)), index_rel_task(std::move(lh.index_rel_task)), advance_section_task(std::move(lh.advance_section_task))
+		, target_price_level(lh.target_price_level), start_time(lh.start_time), end_time(lh.end_time), is_loop(lh.is_loop), state(lh.state), bs_times(lh.bs_times)
+		, assistant_field(std::move(lh.assistant_field)) 
+    { }
 };
 
 struct StockPrice

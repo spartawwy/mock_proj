@@ -1117,7 +1117,12 @@ void WinnerWin::DoShowTaskDetail(int task_id)
             auto str_portion_vector = utility::split(p_tskinfo->advance_section_task.portion_sections, ";");
             if( str_portion_vector.size() && str_portion_vector.at(str_portion_vector.size()-1) == "" )
                 str_portion_vector.pop_back();
-
+            assert(str_portion_vector.size());
+            if( str_portion_vector.size() < 1 )
+            {
+                ui.pte_log->appendPlainText(QString("advance section task %1 portion empty!").arg(task_id));
+                return;
+            }
             auto max_val = std::stod( str_portion_vector.at(str_portion_vector.size()-1) );
             ui.dbspb_adveq_max_price->setValue(max_val);
 

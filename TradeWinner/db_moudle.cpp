@@ -271,7 +271,7 @@ void DBMoudle::LoadAllTaskInfo(std::unordered_map<int, std::shared_ptr<T_TaskInf
                 , "can't find table TaskInfo: ");
 
     std::string sql  = utility::FormatStr("SELECT id, type, stock, alert_price, back_alert_trigger, rebounce, continue_second, step, quantity, target_price_level, start_time, end_time, is_loop, state, user_id, stock_pinyin, bs_times, assistant_field"
-        " FROM TaskInfo WHERE user_id=%d AND type NOT IN (%d, %d) ORDER BY id ", app_->user_info().id, (int)TypeTask::EQUAL_SECTION, (int)TypeTask::INDEX_RISKMAN);
+        " FROM TaskInfo WHERE user_id=%d AND type NOT IN (%d, %d, %d) ORDER BY id ", app_->user_info().id, (int)TypeTask::EQUAL_SECTION, (int)TypeTask::ADVANCE_SECTION, (int)TypeTask::INDEX_RISKMAN);
     qDebug() << sql.c_str() << "\n";
     //std::make_shared<std::string>();
     db_conn_->ExecuteSQL(sql.c_str(),[&taskinfos, this](int num_cols, char** vals, char** names)->int
@@ -378,6 +378,53 @@ void DBMoudle::LoadAllTaskInfo(std::unordered_map<int, std::shared_ptr<T_TaskInf
         return 0;
     });
 
+    // advance section task
+    sql = utility::FormatStr("SELECT t.id, t.type, t.stock, t.stock_pinyin, t.rebounce, "
+        " t.quantity, t.target_price_level, t.start_time, t.end_time, t.state, t.user_id, "
+        " a.portion_sections, a.portion_states, a.pre_trade_price, a.is_original "
+        " FROM TaskInfo t INNER JOIN AdvanceSectionTask a ON t.id=a.id WHERE t.user_id=%d order by t.id ", app_->user_info().id);
+    db_conn_->ExecuteSQL(sql.c_str(),[&taskinfos, this](int num_cols, char** vals, char** names)->int
+    {
+        auto task_info = std::make_shared<T_TaskInformation>();
+
+        try
+        {
+            task_info->id = boost::lexical_cast<int>(*(vals));
+            task_info->type = static_cast<TypeTask>(boost::lexical_cast<int>(*(vals + 1)));
+            task_info->stock = *(vals + 2);
+            if( task_info->stock.length() < 6 )
+            {
+                app_->local_logger().LogLocal("error", utility::FormatStr("task %d stock %s", task_info->id, task_info->stock.c_str()));
+                return 0;
+            }
+
+            task_info->stock_pinyin = *(vals + 3);
+            utf8ToGbk(task_info->stock_pinyin);
+            task_info->rebounce = boost::lexical_cast<double>(*(vals + 4));
+            task_info->quantity = boost::lexical_cast<int>(*(vals + 5));
+            if( task_info->quantity <= 0 || task_info->quantity % 100 != 0 )
+            {
+                app_->local_logger().LogLocal("error", utility::FormatStr("task %d quantity %d", task_info->id, task_info->quantity));
+                return 0;
+            }
+            task_info->target_price_level = boost::lexical_cast<int>(*(vals + 6));
+            task_info->start_time = boost::lexical_cast<int>(*(vals + 7));
+            task_info->end_time = boost::lexical_cast<int>(*(vals + 8)); 
+            task_info->state = boost::lexical_cast<int>(*(vals + 9));
+            //auto userid = boost::lexical_cast<int>(*(vals + 10));
+
+            task_info->advance_section_task.portion_sections = *(vals + 11);
+            task_info->advance_section_task.portion_states = *(vals + 12);
+            task_info->advance_section_task.pre_trade_price = boost::lexical_cast<double>(*(vals + 13));
+            task_info->advance_section_task.is_original = boost::lexical_cast<bool>(*(vals + 14));
+
+        }catch(boost::exception& )
+        {
+            return 0;
+        }
+        taskinfos.insert( std::make_pair(task_info->id, task_info) );
+        return 0;
+    });
     //IndexRelateTask task --------------- 
         
     sql = utility::FormatStr("SELECT t.id, t.type, t.stock, t.stock_pinyin, t.alert_price, t.continue_second, "
@@ -674,6 +721,11 @@ bool DBMoudle::AddTaskInfo(std::shared_ptr<T_TaskInformation> &info)
     if( info->type == TypeTask::EQUAL_SECTION && !utility::ExistTable("EqualSectionTask", *db_conn_) )
     {  // throw exception
         return false; 
+    }else if( info->type == TypeTask::ADVANCE_SECTION && !utility::ExistTable("AdvanceSectionTask", *db_conn_))
+    {
+        //if( error ) sprintf(error, "not exist table AdvanceSectionTask\0");
+        return false;
+
     }else if( info->type == TypeTask::INDEX_RISKMAN && !utility::ExistTable("IndexRelateTask", *db_conn_) )
     {   // throw exception
         return false; 
@@ -702,6 +754,18 @@ bool DBMoudle::AddTaskInfo(std::shared_ptr<T_TaskInformation> &info)
                 , info->secton_task.min_position);
              WriteLock locker(equalsection_table_mutex_);
              ret = db_conn_->ExecuteSQL(sql.c_str()); 
+        }else if( info->type == TypeTask::ADVANCE_SECTION )
+        {
+             sql = utility::FormatStr("INSERT INTO AdvanceSectionTask VALUES(%d, '%s', '%s', %.2f, %d) "
+                , app_->Cookie_MaxTaskId() + 1
+                , info->advance_section_task.portion_sections.c_str() 
+                , info->advance_section_task.portion_states.c_str() 
+                , info->advance_section_task.pre_trade_price
+                , (int)info->advance_section_task.is_original
+                );
+            WriteLock locker(advsection_table_mutex_);
+            ret = db_conn_->ExecuteSQL(sql.c_str()); 
+
         }else if( info->type == TypeTask::INDEX_RISKMAN )
         {
             sql = utility::FormatStr("INSERT INTO IndexRelateTask VALUES( %d, %d, '%s', %d, %d )"
@@ -766,6 +830,22 @@ bool DBMoudle::DelTaskInfo(int task_id, TypeTask type)
                 return 0;
             });
 #ifdef USE_DB_STRAND           
+        });
+#endif
+     }else if( type == TypeTask::ADVANCE_SECTION )
+     {
+        // del related recorde in table IndexRelateTask
+#ifdef USE_DB_STRAND
+        strand_->PostTask([task_id, this]()
+        {
+#endif
+        std::string sql = utility::FormatStr("DELETE FROM AdvanceSectionTask WHERE id=%d ", task_id);
+        WriteLock locker(advsection_table_mutex_);
+        db_conn_->ExecuteSQL(sql.c_str(),[this](int num_cols, char** vals, char** names)->int
+        { 
+            return 0;
+        });
+#ifdef USE_DB_STRAND
         });
 #endif
     }else if( type == TypeTask::INDEX_RISKMAN )
