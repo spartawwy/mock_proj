@@ -92,7 +92,7 @@ bool StrategyTask::IsPriceJumpUp(double pre_price, double cur_price)
 
 bool StrategyTask::IsPriceJumpDown(double pre_price, double cur_price)
 {
-    return IsPriceJumpUp(cur_price, pre_price);
+    return cur_price < 0.0001 || IsPriceJumpUp(cur_price, pre_price);
 }
 
 double StrategyTask::GetQuoteTargetPrice(const QuotesData& data, bool is_buy)

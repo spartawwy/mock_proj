@@ -23,7 +23,8 @@ void BreakDownTask::HandleQuoteData()
     assert(iter);
 
     double pre_price = quote_data_queue_.size() > 1 ? (*(++data_iter))->cur_price : iter->cur_price;
-
+    if( IsPriceJumpDown(pre_price, iter->cur_price) || IsPriceJumpUp(pre_price, iter->cur_price) )
+        return;
     if( iter->cur_price > 0 && iter->cur_price < para_.alert_price )
     {
         if( time_point_open_warning_ != 0 )

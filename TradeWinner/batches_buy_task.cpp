@@ -131,6 +131,8 @@ void BatchesBuyTask::HandleQuoteData()
     } 
     double pre_price = quote_data_queue_.size() > 1 ? (*(++data_iter))->cur_price : iter->cur_price;
       
+    if( IsPriceJumpDown(pre_price, iter->cur_price) || IsPriceJumpUp(pre_price, iter->cur_price) )
+		goto NO_TRADE;
     if( !(iter->cur_price < para_.alert_price) )
         goto NO_TRADE;
 

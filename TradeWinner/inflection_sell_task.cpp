@@ -34,13 +34,9 @@ void InflectionSellTask::HandleQuoteData()
 
     double pre_price = quote_data_queue_.size() > 1 ? (*(++data_iter))->cur_price : iter->cur_price;
 
-    if( IsPriceJumpUp(pre_price, iter->cur_price) )
-    {
-        app_->local_logger().LogLocal(
-                    TSystem::utility::FormatStr("%d InflectionSellTask price jump %.2f to %.2f", para_.id, pre_price, iter->cur_price));
+    if( IsPriceJumpDown(pre_price, iter->cur_price) || IsPriceJumpUp(pre_price, iter->cur_price) )
         return;
-    }
-
+     
     bool is_to_send = false;
     bool is_first_open = false;
     if( time_point_open_warning_ != 0 ) // if warning has been opened

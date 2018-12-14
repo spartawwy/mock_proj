@@ -64,10 +64,13 @@ void BatchesSellTask::HandleQuoteData()
         app_->local_logger().LogLocal("error: BatchesSellTask::HandleQuoteData timed_mutex_wrapper_ lock fail"); 
         return;
     }
-     
+    double pre_price = quote_data_queue_.size() > 1 ? (*(++data_iter))->cur_price : iter->cur_price;     
+    if( IsPriceJumpDown(pre_price, iter->cur_price) || IsPriceJumpUp(pre_price, iter->cur_price) )
+		goto NO_TRADE;
+
     if( iter->cur_price < para_.alert_price - 0.0001 )
         goto NO_TRADE;
-
+    
     { 
         bool is_to_clear = false;
         int index = in_which_part(this, iter->cur_price);
