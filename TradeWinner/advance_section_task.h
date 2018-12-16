@@ -68,7 +68,8 @@ private:
     unsigned int is_not_position_continue_;
 
     //volatile bool  is_wait_trade_result_; 
-    unsigned inter_count_for_debug_;
+    unsigned int inter_count_for_debug_;
+    unsigned int clearing_count_;
 };
 
 std::string ToString(AdvanceSectionTask::PortionState val);

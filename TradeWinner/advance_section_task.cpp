@@ -35,73 +35,13 @@ AdvanceSectionTask::AdvanceSectionTask(T_TaskInformation &task_info, WinnerApp *
     , is_not_position_continue_(0)
     //, is_wait_trade_result_(false)
     , inter_count_for_debug_(0)
+    , clearing_count_(0)
 { 
     assert(para_.advance_section_task.portion_sections.size() > 2 );
     assert(para_.rebounce > 0.0);
      
     Reset(false);
-#if 0 
-	// setup portions_  ------------------
-    portions_.clear();
-    auto str_portion_vector = utility::split(para_.advance_section_task.portion_sections, ";");
-    if( str_portion_vector.size() && str_portion_vector.at(str_portion_vector.size()-1) == "" )
-        str_portion_vector.pop_back();
-     
-    if( str_portion_vector.size() < 2 )
-    {
-        ShowError(utility::FormatStr("error: AdvanceSectionTask %d str_portion_vector.size() < 2", para_.id));
-        is_waitting_removed_ = true;
-        return;
-    }
-    std::vector<double> price_vector;
-    for( int i = 0 ; i < str_portion_vector.size(); ++i ) 
-        price_vector.push_back(std::stod(str_portion_vector[i]));
 
-    std::vector<std::string> str_portion_stat_vector = utility::split(para_.advance_section_task.portion_states, ";");
-
-    int portion_num = 0;
-    if( !para_.advance_section_task.is_original )
-    {  
-        if( str_portion_stat_vector.size() != str_portion_vector.size() )
-        {
-            ShowError(utility::FormatStr("error: AdvanceSectionTask %d portion_states.size != portion_sections.size", para_.id));
-            is_waitting_removed_ = true;
-            return;
-        }
-        try
-        { 
-            for( portion_num = 0; portion_num < str_portion_vector.size() - 1; ++portion_num ) 
-            {  
-                portions_.emplace_back(portion_num, price_vector[portion_num]
-                         , price_vector[portion_num + 1]
-                         , (PortionState)std::stoi(str_portion_stat_vector[portion_num]));
-            }
-        }
-        catch (...)
-        {
-            ShowError(utility::FormatStr("error: AdvanceSectionTask %d illegal content in portion_sections or portion_states", para_.id));
-            is_waitting_removed_ = true;
-            return;
-        } 
-    }else // original
-    { 
-        try
-        { 
-            for( portion_num = 0; portion_num < str_portion_vector.size() - 1; ++portion_num ) 
-            {  
-                portions_.emplace_back(portion_num, price_vector[portion_num]
-                    , price_vector[portion_num + 1]
-                    , PortionState::UNKNOW);
-            }
-        }
-        catch (...)
-        {
-            ShowError(utility::FormatStr("error: AdvanceSectionTask %d illegal content in portion_sections or portion_states", para_.id));
-            is_waitting_removed_ = true;
-            return;
-        } 
-    }
-#endif
 }
 
 void AdvanceSectionTask::LogState(double cur_price, int cur_index, bool is_order, const std::string &other_info)
@@ -175,16 +115,30 @@ void AdvanceSectionTask::HandleQuoteData()
 	int cur_index = 0; 
 	auto cur_portion_iter = portions_.end();
 
-	if( iter->cur_price < portions_.begin()->bottom_price() ) // in clear section 
+	if( iter->cur_price < para_.advance_section_task.clear_price ) // in clear section 
 	{ 
+
         action = TypeAction::CLEAR;
         order_type = TypeOrderCategory::SELL;
         cur_index = -1;
         qty = GetAvaliablePosition();
-        STTG_NORM_LOG(NormalTag(), utility::FormatStr("task:%d %s price:%.2f trigger clearing position ", para_.id, para_.stock.c_str(), iter->cur_price));
-        goto BEFORE_TRADE;
-	}
-	else if( iter->cur_price >= portions_.rbegin()->top_price() )
+        if( qty > 0 )
+        { 
+            clearing_count_ = 0;
+            STTG_NORM_LOG(NormalTag(), utility::FormatStr("task:%d %s price:%.2f trigger clearing avaliable %d", para_.id, para_.stock.c_str(), iter->cur_price, qty));
+            goto BEFORE_TRADE;
+        }else
+        {
+            if( clearing_count_++ % 100 == 0 )
+                STTG_NORM_LOG(NormalTag(), utility::FormatStr("task:%d %s price:%.2f trigger clearing but avaliable pos 0", para_.id, para_.stock.c_str(), iter->cur_price));
+            goto NOT_TRADE;
+        }
+	}else if(iter->cur_price < portions_.begin()->bottom_price() + 0.001 )
+    {
+        action = TypeAction::NOOP;
+        cur_index = 0; 
+        goto NOT_TRADE;
+    }else if( iter->cur_price >= portions_.rbegin()->top_price() )
     { 
 		action = TypeAction::NOOP;
         cur_index = portions_.size();
@@ -202,7 +156,7 @@ void AdvanceSectionTask::HandleQuoteData()
 
 	cur_portion_iter = std::find_if( std::begin(portions_), std::end(portions_),[&iter, this](Portion &entry)
 	{
-		if( iter->cur_price >= entry.bottom_price() && iter->cur_price < entry.top_price() ) return true;
+		if( iter->cur_price > entry.bottom_price() - 0.0001 && iter->cur_price < entry.top_price() ) return true;
 		else return false;
 	});
     if( cur_portion_iter == std::end(portions_) )
@@ -452,12 +406,22 @@ BEFORE_TRADE:
 
             }else
             { 
-                ShowError(utility::FormatStr("贝塔任务:%d %s 已破底清仓! 将移除任务!", para_.id, para_.stock.c_str()));
+                ShowError(utility::FormatStr("贝塔任务:%d %s 已破底清仓!", para_.id, para_.stock.c_str()));
+                para_.advance_section_task.portion_states.clear(); 
+                for(auto item: this->portions_)
+                {
+                    para_.advance_section_task.portion_states.append(std::to_string(int(PortionState::WAIT_BUY))); 
+                }
+                para_.advance_section_task.pre_trade_price = pre_trigged_price_ = price;
+                para_.advance_section_task.is_original = false;
                 if( !is_back_test_ )
                 {
-                    is_waitting_removed_ = true;
+                    //is_waitting_removed_ = true; 
+                    // save to db: save cur_price as start_price in assistant_field 
+                    app_->db_moudle().UpdateAdvanceSection(para_);
+                    AddFill2DB(price, qty, order_type == TypeOrderCategory::BUY);
                     timed_mutex_wrapper_.unlock();
-                    this->app_->RemoveTask(this->task_id(), TypeTask::ADVANCE_SECTION); // invoker delete self
+                    //this->app_->RemoveTask(this->task_id(), TypeTask::ADVANCE_SECTION); // invoker delete self
                     return;
                 }
             }

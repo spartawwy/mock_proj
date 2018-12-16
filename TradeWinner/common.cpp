@@ -177,9 +177,9 @@ std::string ToString(const T_TaskInformation &info)
             if( str_portion_vector.size() < 2 ) 
                 return "advance_section_" + info.stock;
             // code_portions_top_down_quantity_rebounce
-            return TSystem::utility::FormatStr("adv_sec_%s_%d_%s_%s_%u_%.2f", info.stock.c_str(), (str_portion_vector.size() - 1)
+            return TSystem::utility::FormatStr("adv_sec_%s_%d_%s_%s_%u_%.2f_%.2f_%u", info.stock.c_str(), (str_portion_vector.size() - 1)
                 , str_portion_vector[0].c_str(), str_portion_vector[str_portion_vector.size() - 1].c_str()
-                , info.quantity, info.rebounce);
+                , info.quantity, info.rebounce, info.advance_section_task.clear_price, str_portion_vector.size()-1);
         } 
     case TypeTask::INDEX_RISKMAN:   return "index_riskman"; 
     default: assert(0);

@@ -1022,7 +1022,7 @@ void WinnerWin::DoShowTaskDetail(int task_id)
 
             auto min_val = std::stod( str_portion_vector.at(0) );
             ui.dbspb_adveq_min_price->setValue(min_val);
-
+            ui.dbspb_adveq_clear_price->setValue(p_tskinfo->advance_section_task.clear_price);
             ui.spb_adveq_section_count->setValue(str_portion_vector.size()-1);
             ui.spb_adveq_rebounce->setValue(p_tskinfo->rebounce);
 

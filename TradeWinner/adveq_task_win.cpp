@@ -75,7 +75,7 @@ void WinnerWin::DoAddAdveqTask()
     }
     sprintf_s(buf, "%.2f\0", top_price);
     task_info->advance_section_task.portion_sections.append(buf);
-     
+    task_info->advance_section_task.clear_price = ui.dbspb_adveq_clear_price->value();
     auto advance_section_task = std::make_shared<AdvanceSectionTask>(*task_info, this->app_);
      
 #ifdef ADVSEC_BUILDPOS_CONDIDER_EXISTPOS
@@ -172,6 +172,18 @@ bool WinnerWin::CheckAdveqTaskWinInput(const QString &stock_str, bool is_calc_ca
     if( ui.dbspb_adveq_max_price->value() < ui.dbspb_adveq_min_price->value() + 0.05 )
     {
         app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("顶部价格必须大于底部价格一定值!"));
+        return false;
+    }
+    if( ui.dbspb_adveq_clear_price->value() < 0.001 )
+    {
+        app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("清仓价格必须大于0!"));
+        ui.dbspb_adveq_clear_price->setFocus();
+        return false;
+    }
+    if( ui.dbspb_adveq_clear_price->value() > ui.dbspb_adveq_min_price->value() )
+    {
+        app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("清仓价格不能大于底部价格!"));
+        ui.dbspb_adveq_clear_price->setFocus();
         return false;
     }
     int section_count = ui.spb_adveq_section_count->value();

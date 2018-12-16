@@ -312,12 +312,13 @@ public:
 	std::string portion_sections;
 	std::string portion_states;
     double pre_trade_price;
+    double clear_price;
 	bool is_original;
-    T_AdvanceSectionTask() :  pre_trade_price(0.0), is_original(false){}
+    T_AdvanceSectionTask() :  pre_trade_price(0.0), clear_price(0.0), is_original(false){}
     T_AdvanceSectionTask(const T_AdvanceSectionTask &lh) : portion_sections(lh.portion_sections), portion_states(lh.portion_states)
-        , pre_trade_price(lh.pre_trade_price), is_original(lh.is_original){}
+        , pre_trade_price(lh.pre_trade_price), clear_price(lh.clear_price), is_original(lh.is_original){}
     T_AdvanceSectionTask(T_AdvanceSectionTask &&lh) : portion_sections(std::move(lh.portion_sections)), portion_states(std::move(lh.portion_states))
-        , pre_trade_price(lh.pre_trade_price), is_original(lh.is_original)
+        , pre_trade_price(lh.pre_trade_price), clear_price(lh.clear_price), is_original(lh.is_original)
     {}
 };
 

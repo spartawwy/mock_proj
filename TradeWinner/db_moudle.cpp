@@ -93,6 +93,7 @@ CREATE TABLE AdvanceSectionTask(id INTEGER,
                                 portion_sections TEXT,
                                 portion_states TEXT,
                                 pre_trade_price DOUBLE,
+                                clear_price DOUBLE,
                                 is_original BOOL,
                                 PRIMARY KEY(id));
 
@@ -381,7 +382,7 @@ void DBMoudle::LoadAllTaskInfo(std::unordered_map<int, std::shared_ptr<T_TaskInf
     // advance section task
     sql = utility::FormatStr("SELECT t.id, t.type, t.stock, t.stock_pinyin, t.rebounce, "
         " t.quantity, t.target_price_level, t.start_time, t.end_time, t.state, t.user_id, "
-        " a.portion_sections, a.portion_states, a.pre_trade_price, a.is_original "
+        " a.portion_sections, a.portion_states, a.pre_trade_price, a.clear_price, a.is_original "
         " FROM TaskInfo t INNER JOIN AdvanceSectionTask a ON t.id=a.id WHERE t.user_id=%d order by t.id ", app_->user_info().id);
     db_conn_->ExecuteSQL(sql.c_str(),[&taskinfos, this](int num_cols, char** vals, char** names)->int
     {
@@ -416,7 +417,8 @@ void DBMoudle::LoadAllTaskInfo(std::unordered_map<int, std::shared_ptr<T_TaskInf
             task_info->advance_section_task.portion_sections = *(vals + 11);
             task_info->advance_section_task.portion_states = *(vals + 12);
             task_info->advance_section_task.pre_trade_price = boost::lexical_cast<double>(*(vals + 13));
-            task_info->advance_section_task.is_original = boost::lexical_cast<bool>(*(vals + 14));
+            task_info->advance_section_task.clear_price = boost::lexical_cast<double>(*(vals + 14));
+            task_info->advance_section_task.is_original = boost::lexical_cast<bool>(*(vals + 15));
 
         }catch(boost::exception& )
         {
@@ -756,11 +758,12 @@ bool DBMoudle::AddTaskInfo(std::shared_ptr<T_TaskInformation> &info)
              ret = db_conn_->ExecuteSQL(sql.c_str()); 
         }else if( info->type == TypeTask::ADVANCE_SECTION )
         {
-             sql = utility::FormatStr("INSERT INTO AdvanceSectionTask VALUES(%d, '%s', '%s', %.2f, %d) "
+             sql = utility::FormatStr("INSERT INTO AdvanceSectionTask VALUES(%d, '%s', '%s', %.2f, %.2f, %d) "
                 , app_->Cookie_MaxTaskId() + 1
                 , info->advance_section_task.portion_sections.c_str() 
                 , info->advance_section_task.portion_states.c_str() 
                 , info->advance_section_task.pre_trade_price
+                , info->advance_section_task.clear_price
                 , (int)info->advance_section_task.is_original
                 );
             WriteLock locker(advsection_table_mutex_);

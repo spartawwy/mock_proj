@@ -29,19 +29,21 @@ static const char cst_str_eqsec_bktest[] = {"区间交易回测"};
 static const char cst_str_advancesec_bktest[] = {"贝塔交易回测"};
 static const char cst_str_batchbuy_bktest[] = {"分批买入回测"};
 
-static const int cst_bktest_tbview_col_count = 8;
+static const int cst_bktest_tbview_col_count = 10;
 static const int cst_bktest_tbview_rowindex_result = 0;
 static const int cst_bktest_tbview_rowindex_task_id = 1;
 static const int cst_bktest_tbview_rowindex_task_type = 2;
 static const int cst_bktest_tbview_rowindex_task_qty = 3;
 static const int cst_bktest_tbview_rowindex_task_inflect = 4; 
 static const int cst_bktest_tbview_rowindex_top_price = 5;
-static const int cst_bktest_tbview_rowindex_clear_price = 6;
+static const int cst_bktest_tbview_rowindex_btm_price = 6;
+static const int cst_bktest_tbview_rowindex_clear_price = 7;
+static const int cst_bktest_tbview_rowindex_portion_num = 8;
 //
 //static const int cst_bktest_tbview_rowindex_date_begin = 7;
 //static const int cst_bktest_tbview_rowindex_date_end = 8;
 
-static const int cst_bktest_tbview_rowindex_detail_f = 7;
+static const int cst_bktest_tbview_rowindex_detail_f = 9;
 
 bool WinnerWin::InitBacktestWin()
 {
@@ -107,10 +109,17 @@ bool WinnerWin::InitBacktestWin()
 	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_top_price)->setTextAlignment(Qt::AlignCenter);
     ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_top_price, 60);
 
-	model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_clear_price, new QStandardItem(QString::fromLocal8Bit("清仓价格")));
-	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_clear_price)->setTextAlignment(Qt::AlignCenter);
+	model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_btm_price, new QStandardItem(QString::fromLocal8Bit("底部价格")));
+	model->horizontalHeaderItem(cst_bktest_tbview_rowindex_btm_price)->setTextAlignment(Qt::AlignCenter);
+    ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_btm_price, 60);
+
+    model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_clear_price, new QStandardItem(QString::fromLocal8Bit("清仓价格")));
+    model->horizontalHeaderItem(cst_bktest_tbview_rowindex_clear_price)->setTextAlignment(Qt::AlignCenter);
     ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_clear_price, 60);
 
+    model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_portion_num, new QStandardItem(QString::fromLocal8Bit("区间数")));
+    model->horizontalHeaderItem(cst_bktest_tbview_rowindex_portion_num)->setTextAlignment(Qt::AlignCenter);
+    ui.tbview_bktest_tasks->setColumnWidth(cst_bktest_tbview_rowindex_portion_num, 60);
 #if 0 
     model->setHorizontalHeaderItem(cst_bktest_tbview_rowindex_date_begin, new QStandardItem(QString::fromLocal8Bit("起始日期")));
     model->horizontalHeaderItem(cst_bktest_tbview_rowindex_date_begin)->setTextAlignment(Qt::AlignCenter);
@@ -348,6 +357,13 @@ void WinnerWin::DoBktestAddTask()
             app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("顶部价格必须大于底部价格一定值!"));
             return;
         }
+        double clear_price = ui.dbspb_bktest_adv_clear_price->value();
+        if( clear_price > bottom_price )
+        {
+            app_->msg_win().ShowUI(QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("清仓价格不能大于底部价格!"));
+            return;
+        }
+        task_info->advance_section_task.clear_price = clear_price;
         int section_count = ui.spb_bktest_adv_section_count->value();
         if( section_count < 2 )
         {
@@ -480,6 +496,13 @@ void WinnerWin::InsertIntoBktestTbvTask(T_TaskInformation &task_info, T_MockStra
 	  
 	item = new QStandardItem( utility::FormatStr("%d", task_info.quantity).c_str() );
 	model->setItem(row_index, cst_bktest_tbview_rowindex_task_qty, item);
+     
+    item = new QStandardItem( utility::FormatStr("%.2f", task_info.advance_section_task.clear_price).c_str() );
+    model->setItem(row_index, cst_bktest_tbview_rowindex_clear_price, item);
+
+    auto sec_vector = utility::split(task_info.advance_section_task.portion_sections, ";");
+    item = new QStandardItem( utility::FormatStr("%d", sec_vector.size() - 1).c_str() );
+    model->setItem(row_index, cst_bktest_tbview_rowindex_portion_num, item);
 #if 0      
     item = new QStandardItem( utility::FormatStr("%d", date_begin).c_str() );
     model->setItem(row_index, cst_bktest_tbview_rowindex_date_begin, item);
@@ -492,8 +515,7 @@ void WinnerWin::InsertIntoBktestTbvTask(T_TaskInformation &task_info, T_MockStra
     model->setItem(row_index, cst_bktest_tbview_rowindex_detail_f, item);
 
     std::string detail_file_name = model->item(row_index, cst_bktest_tbview_rowindex_detail_f)->text().toLocal8Bit().data();
-
-    detail_file_name = detail_file_name;
+     
     //model->item(row_index, cst_bktest_tbview_rowindex_task_type)->setTextAlignment(align_way);
 	
 	/*if( task_info.type == TypeTask::EQUAL_SECTION )
