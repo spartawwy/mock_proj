@@ -35,6 +35,8 @@ public:
 
     bool GetDetailFileContent(const std::string &file_tag,  std::string &content);
 
+    T_MockStrategyPara * FindtItemMockStrategyPara(int task_id);
+
 private:
      
     WinnerApp * app_;

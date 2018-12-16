@@ -26,7 +26,10 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
     static auto show_result = [](std::shared_ptr<StrategyTask>& strategy_task, std::shared_ptr<T_MockStrategyPara> &mock_para, int cur_date, double price, bool is_end)
     {
         double ori_assets = strategy_task->GetOriMockAssets();
-        double assets = strategy_task->GetMockAssets(price);
+        double real_price = price;
+        if( price < 0.0001 )
+            real_price = mock_para->pre_price;
+        double assets = strategy_task->GetMockAssets(real_price);
           
         if( is_end )
         {
@@ -82,7 +85,9 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
             strategy_task->do_mock_date_change(long_date);
         }
         strategy_task->ObtainData(data);
-        
+        auto rel_mock_para = back_tester.FindtItemMockStrategyPara(task_id);
+        if( rel_mock_para && data->cur_price > 0.0001 )
+            rel_mock_para->pre_price = data->cur_price;
         if( strategy_task->is_waitting_removed() )
         {
             strategy_task->has_bktest_result_fetched(true);
@@ -204,14 +209,13 @@ void BackTester::AddBackTestItem(std::shared_ptr<StrategyTask> &task, std::share
 
 void BackTester::ResetItemResult(int task_id)
 {
-    auto item = id_backtest_items_.find(task_id);
-    if( item == id_backtest_items_.end() )
+    T_MockStrategyPara * mock_para = FindtItemMockStrategyPara(task_id);
+    if( mock_para )
         return;
-    auto tuple_item = item->second;
-    std::shared_ptr<T_MockStrategyPara>  &mock_para = std::get<2>(tuple_item);
     mock_para->avaliable_position = 0;
     mock_para->frozon_position = 0;
     mock_para->capital = mock_para->ori_capital;
+    mock_para->pre_price = 0.0;
     if( mock_para->detail_file )
         mock_para->detail_file->ClearContent(); 
 }
@@ -266,4 +270,14 @@ bool BackTester::GetDetailFileContent(const std::string &file_tag,  std::string 
        ret = true;
    }
    return ret;
+}
+
+T_MockStrategyPara * BackTester::FindtItemMockStrategyPara(int task_id)
+{
+    auto item = id_backtest_items_.find(task_id);
+    if( item == id_backtest_items_.end() )
+        return nullptr;
+    auto tuple_item = item->second;
+    std::shared_ptr<T_MockStrategyPara>  &mock_para = std::get<2>(tuple_item);
+    return mock_para.get();
 }

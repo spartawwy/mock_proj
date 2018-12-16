@@ -28,11 +28,12 @@ public:
     double  capital;
     int  date_begin;
     int  date_end;
+    double pre_price;
     std::shared_ptr<DetailFile> detail_file;
 
-    T_MockStrategyPara() : avaliable_position(0), frozon_position(0), ori_capital(0.0), capital(0.0), date_begin(0), date_end(0), detail_file(nullptr){}
+    T_MockStrategyPara() : avaliable_position(0), frozon_position(0), ori_capital(0.0), capital(0.0), date_begin(0), date_end(0), pre_price(0.0), detail_file(nullptr){}
     T_MockStrategyPara(const T_MockStrategyPara &lh) : avaliable_position(lh.avaliable_position), frozon_position(lh.frozon_position)
-        , ori_capital(lh.ori_capital), capital(lh.capital), date_begin(lh.date_begin), date_end(lh.date_end), detail_file(lh.detail_file){}
+        , ori_capital(lh.ori_capital), capital(lh.capital), date_begin(lh.date_begin), date_end(lh.date_end), pre_price(lh.pre_price), detail_file(lh.detail_file){}
     T_MockStrategyPara & operator = (const T_MockStrategyPara &lh) 
     {
         if( this == &lh ) return *this;
@@ -42,6 +43,7 @@ public:
         capital = lh.capital; 
         date_begin = lh.date_begin;
         date_end = lh.date_end;
+        pre_price = lh.pre_price;
         detail_file = lh.detail_file;
         return *this;
     }
