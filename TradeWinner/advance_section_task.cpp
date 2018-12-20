@@ -117,7 +117,6 @@ void AdvanceSectionTask::HandleQuoteData()
 
 	if( iter->cur_price < para_.advance_section_task.clear_price ) // in clear section 
 	{ 
-
         action = TypeAction::CLEAR;
         order_type = TypeOrderCategory::SELL;
         cur_index = -1;
@@ -133,7 +132,10 @@ void AdvanceSectionTask::HandleQuoteData()
                 STTG_NORM_LOG(NormalTag(), utility::FormatStr("task:%d %s price:%.2f trigger clearing but avaliable pos 0", para_.id, para_.stock.c_str(), iter->cur_price));
             goto NOT_TRADE;
         }
-	}else if(iter->cur_price < portions_.begin()->bottom_price() + 0.001 )
+	}else
+        clearing_count_ = 0;
+
+    if(iter->cur_price < portions_.begin()->bottom_price() + 0.001 )
     {
         action = TypeAction::NOOP;
         cur_index = 0; 
@@ -161,8 +163,8 @@ void AdvanceSectionTask::HandleQuoteData()
 	});
     if( cur_portion_iter == std::end(portions_) )
     {
-        assert(false);
-        app_->local_logger().LogLocal(utility::FormatStr("error: task %d AdvanceSectionTask::HandleQuoteData can't find portions!", para_.id));
+        //assert(false);
+        //app_->local_logger().LogLocal(utility::FormatStr("error: task %d AdvanceSectionTask::HandleQuoteData can't find portions!", para_.id));
         goto NOT_TRADE;
     }  
 	cur_index = cur_portion_iter->index();
@@ -312,7 +314,16 @@ BEFORE_TRADE:
         // to choice price to order
         auto price = 0.0;
         if( action == TypeAction::CLEAR )
-            price = iter->price_b_3;
+        {
+            if( iter->price_b_3 > 0.001 )
+                price = iter->price_b_3;
+            else if( iter->price_b_2 > 0.001 )
+                price = iter->price_b_2;
+            else if( iter->price_b_1 > 0.001 )
+                price = iter->price_b_1;
+            else 
+                price = iter->cur_price;
+        }
         else
             price = GetQuoteTargetPrice(*iter, order_type == TypeOrderCategory::BUY ? true : false);
         std::string cn_order_str = order_type == TypeOrderCategory::BUY ? "买入" : "卖出";
@@ -366,9 +377,6 @@ BEFORE_TRADE:
                 STTG_HEIGH_LOG(OrderTag(), *ret_str);
                 this->app_->EmitSigShowUi(ret_str, true);
             }
-           
-            para_.advance_section_task.is_original = false;
-            para_.advance_section_task.pre_trade_price = price;
 
             if( action != TypeAction::CLEAR )
             {  
@@ -379,6 +387,8 @@ BEFORE_TRADE:
                     judge_any_pos2sell(iter->cur_price, cur_index, avaliable_pos, true);
                 pre_trigged_price_ = price;
                 app()->Emit(this, static_cast<int>(TaskStatChangeType::PRE_TRIGG_PRICE_CHANGE));
+                para_.advance_section_task.pre_trade_price = price;
+                para_.advance_section_task.is_original = false;
                 // reset ----- 
                 reset_flag_price(price);
                 is_not_enough_capital_continue_ = 0;
@@ -395,8 +405,7 @@ BEFORE_TRADE:
                     default: assert(false); break;
                     }
                 }
-                para_.advance_section_task.pre_trade_price = price;
-                para_.advance_section_task.is_original = false;
+                
                 if( !is_back_test_ )
                 {
                     // save to db: save cur_price as start_price in assistant_field 
@@ -406,14 +415,27 @@ BEFORE_TRADE:
 
             }else
             { 
-                ShowError(utility::FormatStr("贝塔任务:%d %s 已破底清仓!", para_.id, para_.stock.c_str()));
-                para_.advance_section_task.portion_states.clear(); 
-                for(auto item: this->portions_)
+                auto total = GetTototalPosition();
+                int remain = total - qty;
+                remain = std::max(remain, 0);
+                ShowError(utility::FormatStr("贝塔任务:%d %s 已破底清理仓位:%d 剩余t+1: %d", para_.id, para_.stock.c_str(), qty, remain));
+                
+                for( int i = portions_.size()-1; i >= 0; --i )
                 {
-                    para_.advance_section_task.portion_states.append(std::to_string(int(PortionState::WAIT_BUY))); 
+                    if( remain >= para_.quantity )
+                    {
+                        portions_[i].state(PortionState::WAIT_SELL);
+                        remain -= para_.quantity;
+                    }else
+                        portions_[i].state(PortionState::WAIT_BUY);
                 }
-                para_.advance_section_task.pre_trade_price = pre_trigged_price_ = price;
-                para_.advance_section_task.is_original = false;
+                para_.advance_section_task.portion_states.clear(); 
+                for( int i = 0; i < portions_.size(); ++i )
+                { 
+                    para_.advance_section_task.portion_states.append(std::to_string(int(portions_[i].state()))); 
+                }
+                //para_.advance_section_task.pre_trade_price = price;
+                pre_trigged_price_ = price;
                 if( !is_back_test_ )
                 {
                     //is_waitting_removed_ = true; 
