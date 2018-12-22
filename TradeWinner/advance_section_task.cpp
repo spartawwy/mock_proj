@@ -454,7 +454,7 @@ BEFORE_TRADE:
         }
         timed_mutex_wrapper_.unlock();
     });
-
+       
     return;
 
 }
