@@ -398,6 +398,17 @@ void WinnerWin::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, v
         case 65: _t->DoTabTasksDbClick((*reinterpret_cast< const QModelIndex(*)>(_a[1]))); break;
         default: ;
         }
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        switch (_id) {
+        default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+        case 22:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+            case 0:
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QTableView* >(); break;
+            }
+            break;
+        }
     }
 }
 
@@ -431,7 +442,7 @@ int WinnerWin::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         _id -= 66;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
         if (_id < 66)
-            *reinterpret_cast<int*>(_a[0]) = -1;
+            qt_static_metacall(this, _c, _id, _a);
         _id -= 66;
     }
     return _id;

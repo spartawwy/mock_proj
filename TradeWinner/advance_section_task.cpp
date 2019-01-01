@@ -399,9 +399,18 @@ BEFORE_TRADE:
                 {
                     switch( item.state() )
                     {
-                    case PortionState::WAIT_BUY: para_.advance_section_task.portion_states.append(std::to_string(int(PortionState::WAIT_BUY)));break;
-                    case PortionState::WAIT_SELL: para_.advance_section_task.portion_states.append(std::to_string(int(PortionState::WAIT_SELL)));break;
-                    case PortionState::UNKNOW: para_.advance_section_task.portion_states.append(std::to_string(int(PortionState::UNKNOW)));break;
+                    case PortionState::WAIT_BUY: 
+                        para_.advance_section_task.portion_states.append(std::to_string(int(PortionState::WAIT_BUY)));
+                        para_.advance_section_task.portion_states.append(";");
+                        break;
+                    case PortionState::WAIT_SELL: 
+                        para_.advance_section_task.portion_states.append(std::to_string(int(PortionState::WAIT_SELL)));
+                        para_.advance_section_task.portion_states.append(";");
+                        break;
+                    case PortionState::UNKNOW: 
+                        para_.advance_section_task.portion_states.append(std::to_string(int(PortionState::UNKNOW)));
+                        para_.advance_section_task.portion_states.append(";");
+                        break;
                     default: assert(false); break;
                     }
                 }
@@ -584,9 +593,9 @@ void AdvanceSectionTask::Reset(bool is_mock)
     int portion_num = 0;
     if( !para_.advance_section_task.is_original )
     {  
-        if( str_portion_stat_vector.size() != str_portion_vector.size() )
+        if( str_portion_stat_vector.size() != str_portion_vector.size() - 1 )
         {
-            ShowError(utility::FormatStr("error: AdvanceSectionTask %d portion_states.size != portion_sections.size", para_.id));
+            ShowError(utility::FormatStr("error: AdvanceSectionTask %d portion_states.size:%d != portion_sections.size-1:%d", para_.id, str_portion_stat_vector.size(), str_portion_vector.size() - 1 ));
             is_waitting_removed_ = true;
             return;
         }
