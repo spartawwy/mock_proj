@@ -67,7 +67,20 @@ void AdvanceSectionTask::HandleQuoteData()
 	auto data_iter = quote_data_queue_.rbegin();
 	std::shared_ptr<QuotesData> & iter = *data_iter;
 	assert(iter);
-
+#if 0 
+    //----debug----------
+    static auto time_stamp_to_date = [](__int64 time)
+    { 
+        struct tm * timeinfo = localtime(&time);
+        int long_date = (timeinfo->tm_year + 1900) * 10000 + (timeinfo->tm_mon + 1) * 100 + timeinfo->tm_mday;
+        return long_date;
+    };
+    int ck_date = time_stamp_to_date(iter->time_stamp);
+    if( ck_date > 20180720 )
+        ck_date = ck_date;
+    if( iter->cur_price > 11 )
+        iter->cur_price = iter->cur_price;
+#endif
 	const double pre_price = quote_data_queue_.size() > 1 ? (*(++data_iter))->cur_price : iter->cur_price;
 	if( IsPriceJumpDown(pre_price, iter->cur_price) || IsPriceJumpUp(pre_price, iter->cur_price) )
 	{
@@ -563,10 +576,12 @@ std::tuple<int, double, bool> AdvanceSectionTask::judge_any_pos2sell(double cur_
 void AdvanceSectionTask::Reset(bool is_mock)
 {
     // setup portions_  ------------------
+    quote_data_queue_.clear();
     portions_.clear();
     if( is_mock )
     {
         para_.advance_section_task.is_original = true;
+        bktest_mock_date_ = 0;
     }
     reb_bottom_price_ = MAX_STOCK_PRICE;
     reb_top_price_ = MIN_STOCK_PRICE;

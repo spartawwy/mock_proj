@@ -9,12 +9,12 @@
 #include <TLib/tool/tsystem_exe_frame.h>
 
 #include "winner_app.h"
-
-using namespace TSystem;
- 
+#ifdef PUBLISH 
 #include "VMProtectSDK.h"
 
 #pragma comment(lib, "VMProtectSDK32.lib")
+
+
 void print_state(INT state)
 {
     if (state& SERIAL_STATE_FLAG_CORRUPTED)
@@ -74,7 +74,9 @@ bool ValidSerial()
 	return TRUE;
 }
 
+#endif
 
+using namespace TSystem;
 class TheFrame : public TSystem::ExecutableFrame
 {
  

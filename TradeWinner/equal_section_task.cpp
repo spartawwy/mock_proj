@@ -129,6 +129,7 @@ void EqualSectionTask::Reset(bool is_mock)
     if( is_mock )
     {
         para_.secton_task.is_original = true;
+        bktest_mock_date_ = 0;
     }
     if( para_.secton_task.is_original )
         CalculateSections(is_mock, para_.alert_price, para_, sections_, "EqualSectionTask::EqualSectionTask line 134");

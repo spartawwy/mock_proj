@@ -157,15 +157,17 @@ double StrategyTask::GetMockAssets(double price)
         this->has_get_mock_assets_ = true;
     });
     app()->local_logger().LogLocal("Waitfor mock assets");
-    if( TSystem::WaitFor( [this]()->bool
-    { 
-        return this->has_get_mock_assets_;
-    }, 5*1000*1000) )
+    if( TSystem::WaitFor( [this]()->bool{ return this->has_get_mock_assets_;}, 5*10*1000*1000 /*micro sec*/) )
     {
+        app()->local_logger().LogLocal(" ret Waitfor mock assets");
 
     }else
+    {
         this->has_get_mock_assets_ = this->has_get_mock_assets_;
-    app()->local_logger().LogLocal(" ret Waitfor mock assets");
+        this->bktest_mock_assets_ = (bktest_para_.avaliable_position + bktest_para_.frozon_position) * price + bktest_para_.capital;
+        app()->local_logger().LogLocal(" Waitfor mock assets timeout");
+    }
+    
     return bktest_mock_assets_;
 
 }

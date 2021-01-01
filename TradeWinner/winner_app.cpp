@@ -121,7 +121,7 @@ bool WinnerApp::Init()
 		return false;
 	}
     //-------------------------------end---------------------------------
-#if 0
+#if 0 
 	db_moudle_.LoadAllUserBrokerInfo();
 
 	p_user_account_info_ = db_moudle_.FindUserAccountInfo(user_info_.id);

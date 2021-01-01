@@ -23,27 +23,33 @@ WinnerHisHq_GetHisFenbiDataBatchDelegate WinnerHisHq_GetHisFenbiDataBatch;
 
 void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
 {
-    static auto show_result = [](std::shared_ptr<StrategyTask>& strategy_task, std::shared_ptr<T_MockStrategyPara> &mock_para, int cur_date, double price, bool is_end)
+    static auto time_stamp_to_date = [](__int64 time)
+    { 
+        struct tm * timeinfo = localtime(&time);
+        int long_date = (timeinfo->tm_year + 1900) * 10000 + (timeinfo->tm_mon + 1) * 100 + timeinfo->tm_mday;
+        return long_date;
+    };
+    static auto show_result = [](std::shared_ptr<StrategyTask>& strategy_task, std::shared_ptr<T_MockStrategyPara> &mock_para, int date, std::shared_ptr<QuotesData> &data, bool is_end)
     {
         double ori_assets = strategy_task->GetOriMockAssets();
-        double real_price = price;
-        if( price < 0.0001 )
-            real_price = mock_para->pre_price;
+        double real_price = data->cur_price;
+        if( data->cur_price < 0.0001 )
+            real_price = mock_para->pre_data->cur_price;
         double assets = strategy_task->GetMockAssets(real_price);
           
         if( is_end )
         {
             auto profit = (assets - ori_assets) / ori_assets * 100;
-            auto p_str = new std::string(TSystem::utility::FormatStr("任务:%d 回测 %s %d 期初资产:%.2f | %d 期末资产:%.2f\n | 收益百分比:%.2f", strategy_task->task_id(), strategy_task->stock_code(), mock_para->date_begin, ori_assets, cur_date, assets, profit));
+            auto p_str = new std::string(TSystem::utility::FormatStr("任务:%d 回测 %s %d 期初资产:%.2f | %d 期末资产:%.2f\n | 收益百分比:%.2f", strategy_task->task_id(), strategy_task->stock_code(), mock_para->date_begin, ori_assets, date, assets, profit));
 
             strategy_task->app()->local_logger().LogLocal(cst_back_test_tag, *p_str);
-            if( cur_date == mock_para->date_end && mock_para->detail_file) 
+            if( date == mock_para->date_end && mock_para->detail_file) 
                 mock_para->detail_file->Write(*p_str);
             strategy_task->app()->AppendLog2Ui(p_str->c_str());
             strategy_task->app()->EmitSigShowUi(p_str);
         }else
         {
-            auto p_str = new std::string(TSystem::utility::FormatStr("任务:%d 回测 %s %d 期初资产:%.2f | %d 期末资产:%.2f", strategy_task->task_id(), strategy_task->stock_code(), mock_para->date_begin, ori_assets, cur_date, assets));
+            auto p_str = new std::string(TSystem::utility::FormatStr("任务:%d 回测 %s %d 期初资产:%.2f | %d 期末资产:%.2f", strategy_task->task_id(), strategy_task->stock_code(), mock_para->date_begin, ori_assets, date, assets));
 
             strategy_task->app()->local_logger().LogLocal(cst_back_test_tag, *p_str);
             strategy_task->app()->AppendLog2Ui(p_str->c_str());
@@ -58,13 +64,14 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
     BackTester &back_tester = *(BackTester*)(((T_FenbiCallBack*)para)->para);
 
     auto data = std::make_shared<QuotesData>(); 
+    
     data->time_stamp= quote_data->time;
     data->cur_price = quote_data->price;
-    //qDebug() << p_callback_obj->serial++ 
+    //qDebug() << p_callback_obj->serial++  
+    //struct tm * timeinfo = localtime(&quote_data->time);
+    int long_date = time_stamp_to_date(quote_data->time);
+
     std::string stock_code = quote_data->code;
-    struct tm * timeinfo = localtime(&quote_data->time);
-    int long_date = (timeinfo->tm_year + 1900) * 10000 + (timeinfo->tm_mon + 1) * 100 + timeinfo->tm_mday;
-     
     std::for_each(back_tester.id_backtest_items().begin(), back_tester.id_backtest_items().end(), [&stock_code, &data, &back_tester, is_end, long_date](TTaskIdMapBackTestItem::reference entry)
     {
         auto task_id = entry.first;
@@ -79,23 +86,35 @@ void  FenbiCallBackFunc(T_QuoteAtomData *quote_data, bool is_end, void *para)
 
         if( strategy_task->has_bktest_result_fetched() )
             return;
-        if( long_date != strategy_task->bktest_mock_date() )
+        int target_date = long_date;
+        if( long_date > strategy_task->bktest_mock_date() )
         { 
             //p_callback_obj->date = long_date; 
             strategy_task->do_mock_date_change(long_date);
-        }
-        strategy_task->ObtainData(data);
+        } 
+        strategy_task->app()->local_logger().LogLocal("Deubg", utility::FormatStr("line 95 date:%d", long_date));
+
         auto rel_mock_para = back_tester.FindtItemMockStrategyPara(task_id);
-        if( rel_mock_para && data->cur_price > 0.0001 )
-            rel_mock_para->pre_price = data->cur_price;
+        std::shared_ptr<QuotesData> target_data = data;
+        if( long_date > 1980 && data->cur_price > 0.001 )
+        {
+             strategy_task->ObtainData(data);
+             
+             if( rel_mock_para )
+                rel_mock_para->pre_data = data;
+        }else
+        {
+            if( rel_mock_para )
+                target_data = rel_mock_para->pre_data;
+        }
         if( strategy_task->is_waitting_removed() )
         {
             strategy_task->has_bktest_result_fetched(true);
-            show_result(strategy_task, mock_para, strategy_task->bktest_mock_date(), data->cur_price, is_end);  
+            show_result(strategy_task, mock_para, strategy_task->bktest_mock_date(), target_data, is_end);  
 
         }else if( is_end ) 
         {
-            show_result(strategy_task, mock_para, strategy_task->bktest_mock_date(), data->cur_price, is_end);  
+            show_result(strategy_task, mock_para, strategy_task->bktest_mock_date(), target_data, is_end);  
             strategy_task->app()->Emit_SigEnableBtnBackTest();
         }
     });
@@ -210,12 +229,12 @@ void BackTester::AddBackTestItem(std::shared_ptr<StrategyTask> &task, std::share
 void BackTester::ResetItemResult(int task_id)
 {
     T_MockStrategyPara * mock_para = FindtItemMockStrategyPara(task_id);
-    if( mock_para )
+    if( !mock_para )
         return;
     mock_para->avaliable_position = 0;
     mock_para->frozon_position = 0;
     mock_para->capital = mock_para->ori_capital;
-    mock_para->pre_price = 0.0;
+    mock_para->pre_data = nullptr;
     if( mock_para->detail_file )
         mock_para->detail_file->ClearContent(); 
 }
